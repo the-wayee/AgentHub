@@ -1,0 +1,6 @@
+spring:
+  application:
+    name: AgentX
+
+server:
+  port: 8888
