@@ -4,3 +4,15 @@ spring:
 
 server:
   port: 8888
+
+# LLM服务配置
+llm:
+  provider:
+    default: ${LLM_DEFAULT_PROVIDER:siliconflow}
+    providers:
+      siliconflow:
+        name: SiliconFlow
+        api-url: ${SILICONFLOW_API_URL:https://api.siliconflow.cn/v1/chat/completions}
+        api-key: ${SILICONFLOW_API_KEY:}
+        model: ${SILICONFLOW_MODEL:THUDM/GLM-4-9B-0414}
+        timeout: ${SILICONFLOW_TIMEOUT:30000}

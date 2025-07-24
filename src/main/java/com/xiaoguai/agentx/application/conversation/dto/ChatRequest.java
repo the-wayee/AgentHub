@@ -2,13 +2,11 @@ package com.xiaoguai.agentx.application.conversation.dto;
 
 
 import jakarta.validation.constraints.NotBlank;
-import lombok.Data;
 
 /**
  * @Author: the-way
  * @Verson: v1.0
  */
-@Data
 public class ChatRequest {
 
     /**
@@ -25,10 +23,43 @@ public class ChatRequest {
     /**
      * 会话id
      */
-    private Long sessionId;
+    private String sessionId;
 
     /**
      * 模型
      */
     private String model;
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    public String getProvider() {
+        return provider;
+    }
+
+    public void setProvider(String provider) {
+        this.provider = provider;
+    }
+
+    public String getSessionId() {
+        return sessionId;
+    }
+
+    public void setSessionId(String sessionId) {
+        this.sessionId = sessionId;
+    }
+
+    public String getModel() {
+        return model;
+    }
+
+    public void setModel(String model) {
+        this.model = model;
+    }
+
 }
