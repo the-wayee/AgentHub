@@ -3,15 +3,19 @@ package com.xiaoguai.agentx.application.conversation.service;
 
 import com.xiaoguai.agentx.application.conversation.dto.ChatRequest;
 import com.xiaoguai.agentx.application.conversation.dto.ChatResponse;
+import com.xiaoguai.agentx.application.conversation.dto.StreamChatRequest;
+import com.xiaoguai.agentx.application.conversation.dto.StreamChatResponse;
 import com.xiaoguai.agentx.domain.llm.model.LlmRequest;
 import com.xiaoguai.agentx.domain.llm.model.LlmResponse;
 import com.xiaoguai.agentx.domain.llm.service.LlmService;
+import com.xiaoguai.agentx.infrastrcture.llm.siliconflow.SiliconFlowLlmService;
 import jakarta.annotation.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
+import java.util.function.BiConsumer;
 
 /**
  * @Author: the-way
@@ -52,6 +56,40 @@ public class ConversationService {
         chatResponse.setSessionId(request.getSessionId());
         chatResponse.setModel(llmResponse.getModel());
         return chatResponse;
+    }
+
+    public void chatStream(StreamChatRequest request, BiConsumer<StreamChatResponse, Boolean> consumer) {
+        logger.info("===>接收到请求消息:{}", request.getMessage());
+
+        LlmService llmService = getLlmService(request.getProvider());
+
+        LlmRequest llmRequest = new LlmRequest();
+        llmRequest.setStream(true);
+        llmRequest.addUserMessage(request.getMessage());
+
+        if (request.getModel() != null && !request.getModel().isBlank()) {
+            logger.info("===>用户使用模型:{}", request.getModel());
+            llmRequest.setModel(request.getModel());
+        } else {
+            logger.info("===>使用默认模型:{}", llmService.getDefaultModel());
+        }
+
+        if (llmService instanceof SiliconFlowLlmService siliconFlowLlmService) {
+            logger.info("===>使用siliconFlow流式服务");
+
+            siliconFlowLlmService.chatStreamList(llmRequest, (chunk, isLast) -> {
+                StreamChatResponse response = new StreamChatResponse();
+                response.setStream(true);
+                response.setMessage(chunk);
+                response.setModel(llmRequest.getModel() == null ? siliconFlowLlmService.getDefaultModel() : llmRequest.getModel());
+                response.setProvider(siliconFlowLlmService.getProvideeName());
+                response.setDone(isLast);
+
+                consumer.accept(response, isLast);
+            });
+        } else {
+            logger.info("该服务不支持流式响应,使用传统分块");
+        }
     }
 
 

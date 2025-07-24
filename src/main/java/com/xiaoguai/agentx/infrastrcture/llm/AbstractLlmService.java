@@ -125,4 +125,14 @@ public abstract class AbstractLlmService implements LlmService {
     public String getDefaultModel() {
         return defaultModel;
     }
+
+    /**
+     * 准备请求体，将通用请求转为服务商特定格式
+     */
+    protected abstract String prepareRequestBody(LlmRequest request);
+
+    /**
+     * 解析响应，将服务商特定格式转为通用响应
+     */
+    protected abstract LlmResponse parseResponse(String responseBody);
 }

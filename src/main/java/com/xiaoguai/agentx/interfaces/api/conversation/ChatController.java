@@ -14,6 +14,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -55,22 +56,26 @@ public class ChatController {
     /**
      * 流式输出
      */
-    @GetMapping(value = "/chat/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    @PostMapping(value = "/chat/stream")
     public SseEmitter chatStream(@RequestBody @Validated StreamChatRequest request) {
 
         SseEmitter sseEmitter = new SseEmitter(0L);
 
         executorService.execute(() -> {
-            try {
-                for (int i = 0; i < 100; i++) {
-                    sseEmitter.send("正在发送第" + i + "条消息");
-                    Thread.sleep(100);
+            conversationService.chatStream(request, (response, isLast) -> {
+
+                try {
+                    sseEmitter.send(response);
+                    if (isLast) {
+                        sseEmitter.complete();
+                    }
+                } catch (IOException e) {
+                    logger.error("===>SSE响应出错:{}", e.getMessage());
+                    sseEmitter.completeWithError(e);
                 }
-                sseEmitter.complete();
-            } catch (Exception e) {
-                sseEmitter.completeWithError(e);
-            }
+            });
         });
         return sseEmitter;
     }
+
 }
