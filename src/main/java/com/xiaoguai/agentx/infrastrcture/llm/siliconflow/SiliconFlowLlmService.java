@@ -87,6 +87,10 @@ public class SiliconFlowLlmService extends AbstractLlmService {
 
         requestBody.put("messages", messageArray);
 
+
+        // 深度思考
+//        requestBody.put("enable_thinking", false);
+
         // temperature
         if (request.getTemperature() != null) {
             requestBody.put("temperature", request.getTemperature());

@@ -1,11 +1,11 @@
 <template>
   <div>
-      <Sseview></Sseview>
+      <ChatApp></ChatApp>
   </div>
 </template>
 
 <script setup lang="ts">
-import Sseview from './components/Sseview.vue';
+import ChatApp from './components/ChatApp.vue';
 </script>
 
 <style scoped>
