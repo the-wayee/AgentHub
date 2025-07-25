@@ -5,6 +5,7 @@ import com.xiaoguai.agentx.domain.llm.service.LlmService;
 import com.xiaoguai.agentx.infrastrcture.llm.siliconflow.SiliconFlowLlmService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -20,6 +21,7 @@ public class LlmConfig {
 
 
     @Bean
+    @Primary
     public LlmService defaultLlmService(SiliconFlowLlmService siliconFlowLlmService) {
         return siliconFlowLlmService;
     }

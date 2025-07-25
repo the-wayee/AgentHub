@@ -7,12 +7,78 @@ package com.xiaoguai.agentx.application.conversation.dto;
  * @Date: 2025-07-24 13:47
  * @Description: 聊天服务响应
  */
-public class StreamChatResponse extends StreamChatRequest {
+public class StreamChatResponse {
+
+
+    /**
+     * 响应内容
+     */
+    private String content;
+
+    /**
+     * 会话ID
+     */
+    private String sessionId;
+
+    /**
+     * 使用的服务商
+     */
+    private String provider;
+
+    /**
+     * 使用的模型
+     */
+    private String model;
 
     /**
      * 是否完成
      */
     private boolean isDone;
+
+    /**
+     * 时间戳
+     */
+    private Long timestamp = System.currentTimeMillis();
+
+    public StreamChatResponse() {
+    }
+
+    public StreamChatResponse(String content, boolean isDone) {
+        this.content = content;
+        this.isDone = isDone;
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
+    }
+
+    public String getSessionId() {
+        return sessionId;
+    }
+
+    public void setSessionId(String sessionId) {
+        this.sessionId = sessionId;
+    }
+
+    public String getProvider() {
+        return provider;
+    }
+
+    public void setProvider(String provider) {
+        this.provider = provider;
+    }
+
+    public String getModel() {
+        return model;
+    }
+
+    public void setModel(String model) {
+        this.model = model;
+    }
 
     public boolean isDone() {
         return isDone;

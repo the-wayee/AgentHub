@@ -55,7 +55,7 @@ public abstract class AbstractLlmService implements LlmService {
 
 
     @Override
-    public List<String> chatStream(LlmRequest request) {
+    public List<String> chatStreamList(LlmRequest request) {
         logger.warn("使用默认流式响应实现（非真正流式），建议子类覆盖此方法提供真正的流式实现");
         LlmResponse response = chat(request);
         String content = response.getContent();

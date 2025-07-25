@@ -1,6 +1,7 @@
 package com.xiaoguai.agentx.domain.llm.service;
 
 
+import com.xiaoguai.agentx.domain.llm.callback.StreamResponseHandler;
 import com.xiaoguai.agentx.domain.llm.model.LlmRequest;
 import com.xiaoguai.agentx.domain.llm.model.LlmResponse;
 
@@ -21,9 +22,14 @@ public interface LlmService {
     LlmResponse chat(LlmRequest request);
 
     /**
+     * 流式输出(假)
+     */
+    List<String> chatStreamList(LlmRequest request);
+
+    /**
      * 流式输出
      */
-    List<String> chatStream(LlmRequest request);
+    void chatStream(LlmRequest request, StreamResponseHandler callback);
     /**
      * 获取供应商名称
      */

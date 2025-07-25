@@ -4,6 +4,7 @@ package com.xiaoguai.agentx.infrastrcture.llm.siliconflow;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
+import com.xiaoguai.agentx.domain.llm.callback.StreamResponseHandler;
 import com.xiaoguai.agentx.domain.llm.model.LlmMessage;
 import com.xiaoguai.agentx.domain.llm.model.LlmRequest;
 import com.xiaoguai.agentx.domain.llm.model.LlmResponse;
@@ -53,7 +54,8 @@ public class SiliconFlowLlmService extends AbstractLlmService {
     }
 
 
-    public void chatStreamList(LlmRequest request, StreamResponseHandler handler) {
+    @Override
+    public void chatStream(LlmRequest request, StreamResponseHandler handler) {
         if (request.getModel() == null || "default".equals(request.getModel())) {
             logger.info("未指定模型，使用默认模型===>{}", getDefaultModel());
             request.setModel(getDefaultModel());
@@ -61,7 +63,7 @@ public class SiliconFlowLlmService extends AbstractLlmService {
         request.setStream(true);
         try {
             String requestJson = prepareRequestBody(request);
-            senStreamChatRequest(requestJson, handler);
+            sendStreamChatRequest(requestJson, handler);
         } catch (Exception e) {
             logger.error("调用siliconFlow流式服务出错{}", e.getMessage());
             handler.onChunk("调用流式服务时发生错误：" + e.getMessage(), true);
@@ -158,17 +160,10 @@ public class SiliconFlowLlmService extends AbstractLlmService {
     }
 
 
-    @FunctionalInterface
-    public interface StreamResponseHandler {
-
-        /**
-         * 处理流式分块
-         */
-        void onChunk(String chunk, boolean isLast);
-    }
-
-
-    private void senStreamChatRequest(String requestJson, StreamResponseHandler handler) {
+    /**
+     * 使用回调进行响应
+     */
+    private void sendStreamChatRequest(String requestJson, StreamResponseHandler handler) {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(apiUrl))
                 .header("Content-Type", "application/json")
