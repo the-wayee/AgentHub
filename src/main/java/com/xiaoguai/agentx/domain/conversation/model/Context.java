@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.extension.activerecord.Model;
+import com.xiaoguai.agentx.infrastrcture.typehandler.JsonTypeHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,7 +38,7 @@ public class Context extends Model<Context> {
     /**
      * 活跃消息ID列表，JSON数组
      */
-//    @TableField(value = "active_messages", typeHandler = org.xhy.infrastructure.typehandler.JsonTypeHandler.class)
+    @TableField(value = "active_messages", typeHandler = JsonTypeHandler.class)
     private String activeMessages;
 
     /**

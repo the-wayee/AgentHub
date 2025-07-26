@@ -24,7 +24,7 @@ public class UserContext {
     /**
      * 上下文获取用户ID
      */
-    public static String getUserID() {
+    public static String getUserId() {
         return USER_HOLDER.get();
     }
 

@@ -36,10 +36,10 @@ public class SessionServiceImpl implements SessionService {
     }
 
     @Override
-    public SessionDTO createSession(String title, String description, String userId) {
+    public SessionDTO createSession(String title,  String userId, String description) {
         Session session = Session.createNew(title, userId);
         session.setDescription(description);
-        session.insert();
+        sessionRepository.insert(session);
 
         // 初始化上下文
         contextService.initializeContext(session.getId());

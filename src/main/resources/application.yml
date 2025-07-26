@@ -1,9 +1,27 @@
 spring:
   application:
     name: AgentX
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:agentx}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+  # 跨域配置
+  mvc:
+    cors:
+      allowed-origins: "*"
+      allowed-methods: "*"
+      allowed-headers: "*"
+      allow-credentials: true
+      max-age: 3600
 
 server:
-  port: 8888
+  port: 8080
+  servlet:
+    context-path: /api
 
 # LLM服务配置
 llm:
@@ -16,3 +34,21 @@ llm:
         api-key: ${SILICONFLOW_API_KEY:}
         model: ${SILICONFLOW_MODEL:THUDM/GLM-4-9B-0414}
         timeout: ${SILICONFLOW_TIMEOUT:30000}
+
+
+# MyBatis-Plus配置
+mybatis-plus:
+  mapper-locations: classpath*:/mapper/**/*.xml
+  type-aliases-package: com.xiaoguai.agentx.domain
+  configuration:
+    map-underscore-to-camel-case: true
+    cache-enabled: false
+    default-enum-type-handler: org.apache.ibatis.type.EnumOrdinalTypeHandler
+    type-handlers-package: com.xiaoguai.agentx.infrastrcture.typehandler
+  global-config:
+    db-config:
+      id-type: auto
+      logic-delete-field: deleted_at
+      logic-delete-value: now()
+      logic-not-delete-value: "null"
+    banner: false

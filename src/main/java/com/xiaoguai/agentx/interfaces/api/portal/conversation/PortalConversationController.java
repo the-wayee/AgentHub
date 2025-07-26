@@ -23,6 +23,7 @@ import java.util.concurrent.Executors;
 @CrossOrigin("*")
 @RestController
 @RequestMapping("/conversation")
+@Deprecated
 public class PortalConversationController {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
