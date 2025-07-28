@@ -3,7 +3,7 @@ package com.xiaoguai.agentx.domain.conversation.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.xiaoguai.agentx.domain.conversation.common.exception.EntityNotFoundException;
+import com.xiaoguai.agentx.domain.common.exception.EntityNotFoundException;
 import com.xiaoguai.agentx.domain.conversation.model.Session;
 import com.xiaoguai.agentx.domain.conversation.model.SessionDTO;
 import com.xiaoguai.agentx.domain.conversation.repository.SessionRepository;

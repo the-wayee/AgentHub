@@ -1,4 +1,4 @@
-package com.xiaoguai.agentx.domain.conversation.common.exception;
+package com.xiaoguai.agentx.domain.common.exception;
 
 
 /**
