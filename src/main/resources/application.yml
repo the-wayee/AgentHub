@@ -45,6 +45,7 @@ mybatis-plus:
     cache-enabled: false
     default-enum-type-handler: org.apache.ibatis.type.EnumOrdinalTypeHandler
     type-handlers-package: com.xiaoguai.agentx.infrastrcture.typehandler
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
   global-config:
     db-config:
       id-type: auto

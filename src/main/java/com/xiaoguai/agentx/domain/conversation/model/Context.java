@@ -7,10 +7,9 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.extension.activerecord.Model;
 import com.xiaoguai.agentx.infrastrcture.typehandler.JsonTypeHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -19,9 +18,6 @@ import java.util.List;
  */
 @TableName("context")
 public class Context extends Model<Context> {
-
-    private final Logger logger = LoggerFactory.getLogger(getClass());
-
 
     /**
      * 上下文唯一ID
@@ -63,7 +59,7 @@ public class Context extends Model<Context> {
      * 全参构造函数
      */
     public Context(String id, String sessionId, String activeMessages,
-            String summary, LocalDateTime updatedAt) {
+                   String summary, LocalDateTime updatedAt) {
         this.id = id;
         this.sessionId = sessionId;
         this.activeMessages = activeMessages;
@@ -72,6 +68,8 @@ public class Context extends Model<Context> {
     }
 
     // Getter和Setter方法
+
+
     public String getId() {
         return id;
     }
@@ -163,22 +161,22 @@ public class Context extends Model<Context> {
      * 解析activeMessages字符串为List
      */
     private List<String> parseActiveMessages() {
-        if (activeMessages == null || activeMessages.isBlank()) {
-            return Collections.emptyList();
+        if (activeMessages == null || activeMessages.isEmpty()) {
+            return new ArrayList<>();
         }
 
         try {
             return JSON.parseArray(activeMessages, String.class);
         } catch (Exception e) {
-            logger.error("<解析activeMessages失败，源JSON为>: {}", activeMessages);
-            return Collections.emptyList();
+            return new ArrayList<>();
         }
     }
 
-    /**
-     * 将List格式化为JSON数组字符串
-     */
     private String formatActiveMessages(List<String> messages) {
-        return JSON.toJSONString(messages == null ? Collections.emptyList() : messages);
+        if (messages == null || messages.isEmpty()) {
+            return "[]";
+        }
+        return JSON.toJSONString(messages);
     }
+
 }

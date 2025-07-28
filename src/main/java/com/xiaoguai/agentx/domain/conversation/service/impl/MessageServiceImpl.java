@@ -12,6 +12,7 @@ import com.xiaoguai.agentx.domain.conversation.repository.SessionRepository;
 import com.xiaoguai.agentx.domain.conversation.service.ContextService;
 import com.xiaoguai.agentx.domain.conversation.service.MessageService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -57,6 +58,7 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
+    @Transactional
     public MessageDTO saveAssistantMessage(String sessionId, String content, String model, String provider, Integer tokenCount) {
         Session session = sessionRepository.selectById(sessionId);
         if (session == null) {
@@ -78,6 +80,7 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
+    @Transactional
     public MessageDTO saveSystemMessage(String sessionId, String content) {
         Session session = sessionRepository.selectById(sessionId);
         if (session == null) {
@@ -133,11 +136,13 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
+    @Transactional
     public void deleteMessage(String messageId) {
         messageRepository.deleteById(messageId);
     }
 
     @Override
+    @Transactional
     public void deleteSessionMessages(String sessionId) {
         // 使用LambdaQueryWrapper删除指定会话的所有消息
         LambdaQueryWrapper<Message> wrapper = Wrappers.<Message>lambdaQuery()

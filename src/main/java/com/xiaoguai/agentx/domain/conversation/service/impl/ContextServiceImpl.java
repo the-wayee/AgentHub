@@ -10,6 +10,7 @@ import com.xiaoguai.agentx.domain.conversation.repository.ContextRepository;
 import com.xiaoguai.agentx.domain.conversation.repository.MessageRepository;
 import com.xiaoguai.agentx.domain.conversation.service.ContextService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -51,15 +52,18 @@ public class ContextServiceImpl implements ContextService {
     }
 
     @Override
+    @Transactional
     public void addMessageToContext(String messageId, String sessionId) {
         Context context = getOrCreateContext(sessionId);
         context.addMessage(messageId);
+        contextRepository.updateById(context);
 
         // 更新会话需要判断是否需要滑动窗口
         updateContext(sessionId);
     }
 
     @Override
+    @Transactional
     public void updateContext(String sessionId) {
         Context context = getOrCreateContext(sessionId);
 
@@ -74,6 +78,7 @@ public class ContextServiceImpl implements ContextService {
     }
 
     @Override
+    @Transactional
     public void clearContext(String sessionId) {
         Context context = getOrCreateContext(sessionId);
         context.clear();
@@ -82,11 +87,13 @@ public class ContextServiceImpl implements ContextService {
     }
 
     @Override
+    @Transactional
     public void initializeContext(String sessionId) {
         getOrCreateContext(sessionId);
     }
 
     @Override
+    @Transactional
     public void deleteContext(String sessionId) {
         Context context = getOrCreateContext(sessionId);
 

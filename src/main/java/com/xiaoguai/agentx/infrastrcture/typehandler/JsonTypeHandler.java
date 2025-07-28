@@ -56,7 +56,7 @@ public class JsonTypeHandler<T> extends BaseTypeHandler<T> {
         // 创建PostgreSQL的JSON对象
         PGobject jsonObject = new PGobject();
         jsonObject.setType("json");
-        jsonObject.setValue(JsonUtils.toJsonString(parameter));
+        jsonObject.setValue(parameter.toString());
         ps.setObject(i, jsonObject);
     }
 

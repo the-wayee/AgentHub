@@ -1,11 +1,13 @@
 package com.xiaoguai.agentx.domain.llm.service;
 
 
+import com.xiaoguai.agentx.application.conversation.dto.StreamChatResponse;
 import com.xiaoguai.agentx.domain.llm.callback.StreamResponseHandler;
 import com.xiaoguai.agentx.domain.llm.model.LlmRequest;
 import com.xiaoguai.agentx.domain.llm.model.LlmResponse;
 
 import java.util.List;
+import java.util.function.BiConsumer;
 
 /**
  * @Author: the-way

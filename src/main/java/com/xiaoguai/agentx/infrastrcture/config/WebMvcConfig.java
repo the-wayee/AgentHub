@@ -25,8 +25,8 @@ public class WebMvcConfig implements WebMvcConfigurer {
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(userAuthInterceptor)
                 // 添加拦截路径 - 拦截所有API请求
-                .addPathPatterns("/api/**")
+                .addPathPatterns("/**")
                 // 排除不需要鉴权的路径，例如登录、注册等
-                .excludePathPatterns("/api/auth/login", "/api/auth/register");
+                .excludePathPatterns("/auth/login", "/auth/register");
     }
 }

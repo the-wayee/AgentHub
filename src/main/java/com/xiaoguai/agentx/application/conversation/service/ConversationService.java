@@ -23,7 +23,7 @@ import java.util.function.BiConsumer;
  * @Date: 2025-07-24 13:18
  * @Description: 聊天服务
  */
-@Service
+@Service("conversationService1")
 public class ConversationService {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());

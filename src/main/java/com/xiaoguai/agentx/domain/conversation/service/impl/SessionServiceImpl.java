@@ -36,6 +36,7 @@ public class SessionServiceImpl implements SessionService {
     }
 
     @Override
+    @Transactional
     public SessionDTO createSession(String title,  String userId, String description) {
         Session session = Session.createNew(title, userId);
         session.setDescription(description);
@@ -95,6 +96,7 @@ public class SessionServiceImpl implements SessionService {
     }
 
     @Override
+    @Transactional
     public SessionDTO updateSession(String sessionId, String title, String description) {
         Session session = sessionRepository.selectById(sessionId);
         if (session == null) {
@@ -107,6 +109,7 @@ public class SessionServiceImpl implements SessionService {
     }
 
     @Override
+    @Transactional
     public SessionDTO archiveSession(String sessionId) {
         Session session = sessionRepository.selectById(sessionId);
         if (session == null) {
@@ -119,6 +122,7 @@ public class SessionServiceImpl implements SessionService {
     }
 
     @Override
+    @Transactional
     public SessionDTO activeSession(String sessionId) {
         Session session = sessionRepository.selectById(sessionId);
         if (session == null) {
@@ -130,7 +134,7 @@ public class SessionServiceImpl implements SessionService {
     }
 
     @Override
-    @Transactional(rollbackFor =  Exception.class)
+    @Transactional
     public void deleteSession(String sessionId) {
         Session session = sessionRepository.selectById(sessionId);
         if (session == null) {

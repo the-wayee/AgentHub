@@ -1,6 +1,7 @@
 package com.xiaoguai.agentx.domain.conversation.service.impl;
 
 
+import com.xiaoguai.agentx.application.conversation.dto.StreamChatResponse;
 import com.xiaoguai.agentx.domain.conversation.model.Message;
 import com.xiaoguai.agentx.domain.conversation.model.MessageDTO;
 import com.xiaoguai.agentx.domain.conversation.model.SessionDTO;
@@ -14,6 +15,7 @@ import com.xiaoguai.agentx.domain.llm.service.LlmService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.List;
@@ -71,10 +73,21 @@ public class ConversationServiceImpl implements ConversationService {
             llmRequest.setMessages(llmMessages);
 
             // 3.调用llm聊天服务
+            StreamChatResponse response = new StreamChatResponse();
+            StringBuilder sb = new StringBuilder();
+            // 组装response
+            response.setProvider(llmService.getProvideeName());
+            response.setModel(llmService.getDefaultModel());
+            response.setSessionId(sessionId);
             llmService.chatStream(llmRequest, ((chunk, isLast) -> {
                 try {
-                    sseEmitter.send(chunk);
+                    response.setContent(chunk);
+                    sb.append(chunk);
+                    response.setDone(isLast);
+                    sseEmitter.send(response);
                     if (isLast) {
+                        messageService.saveAssistantMessage(sessionId, sb.toString(),
+                                llmService.getDefaultModel(), llmService.getProvideeName(), null);
                         sseEmitter.complete();
                     }
                 } catch (Exception e) {
@@ -83,7 +96,6 @@ public class ConversationServiceImpl implements ConversationService {
                 }
             }));
         });
-
         // 4. 返回sse发射器
         return sseEmitter;
 
