@@ -53,3 +53,8 @@ mybatis-plus:
       logic-delete-value: now()
       logic-not-delete-value: "null"
     banner: false
+
+
+logging:
+  level:
+    org.springframework.web: DEBUG

@@ -57,7 +57,7 @@ public class ConversationServiceImpl implements ConversationService {
     @Override
     public SseEmitter chat(String sessionId, String content) {
         // 1.设置sse发射器
-        SseEmitter sseEmitter = new SseEmitter();
+        SseEmitter sseEmitter = new SseEmitter(0L);
 
         // 2. 保存用户消息
         messageService.sendUserMessage(sessionId, content);

@@ -8,6 +8,8 @@ interface SessionSidebarProps {
   onSelectSession: (sessionId: string) => void
   onNewSession: () => void
   onDeleteSession: (sessionId: string) => void
+  showArchived: boolean
+  onToggleArchived: () => void
 }
 
 export function SessionSidebar({
@@ -16,6 +18,8 @@ export function SessionSidebar({
   onSelectSession,
   onNewSession,
   onDeleteSession,
+  showArchived,
+  onToggleArchived
 }: SessionSidebarProps) {
   const formatDate = (date: Date): string => {
     const now = new Date()
@@ -31,7 +35,7 @@ export function SessionSidebar({
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+      <div className="p-4 border-b border-gray-200 dark:border-gray-700 space-y-2">
         <button
           onClick={onNewSession}
           className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
@@ -39,6 +43,24 @@ export function SessionSidebar({
           <Plus className="w-5 h-5" />
           New Chat
         </button>
+
+        <div className="flex items-center justify-between px-2 py-1">
+          <span className="text-sm text-gray-600 dark:text-gray-300">显示归档</span>
+          <button
+            onClick={onToggleArchived}
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
+              showArchived ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-700'
+            }`}
+            role="switch"
+            aria-checked={showArchived}
+          >
+            <span
+              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                showArchived ? 'translate-x-6' : 'translate-x-1'
+              }`}
+            />
+          </button>
+        </div>
       </div>
 
       {/* Sessions list */}

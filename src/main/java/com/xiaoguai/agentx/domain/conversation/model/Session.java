@@ -54,7 +54,7 @@ public class Session extends Model<Session> {
      * 是否归档
      */
     @TableField("is_archived")
-    private boolean isArchived;
+    private boolean archived;
 
     /**
      * 会话元数据，可存储其他自定义信息
@@ -72,15 +72,15 @@ public class Session extends Model<Session> {
      * 全参构造函数
      */
     public Session(String id, String title, String userId, String description,
-            LocalDateTime createdAt, LocalDateTime updatedAt,
-            boolean isArchived, String metadata) {
+                   LocalDateTime createdAt, LocalDateTime updatedAt,
+                   boolean archived, String metadata) {
         this.id = id;
         this.title = title;
         this.userId = userId;
         this.description = description;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
-        this.isArchived = isArchived;
+        this.archived = archived;
         this.metadata = metadata;
     }
 
@@ -134,11 +134,11 @@ public class Session extends Model<Session> {
     }
 
     public boolean isArchived() {
-        return isArchived;
+        return archived;
     }
 
     public void setArchived(boolean archived) {
-        isArchived = archived;
+        this.archived = archived;
     }
 
     public String getMetadata() {
@@ -176,7 +176,7 @@ public class Session extends Model<Session> {
      * 归档会话
      */
     public void archive() {
-        this.isArchived = true;
+        this.archived = true;
         this.updatedAt = LocalDateTime.now();
     }
 
@@ -184,7 +184,7 @@ public class Session extends Model<Session> {
      * 恢复已归档会话
      */
     public void unarchive() {
-        this.isArchived = false;
+        this.archived = false;
         this.updatedAt = LocalDateTime.now();
     }
 
@@ -198,7 +198,7 @@ public class Session extends Model<Session> {
         dto.setDescription(this.description);
         dto.setCreatedAt(this.createdAt);
         dto.setUpdatedAt(this.updatedAt);
-        dto.setArchived(this.isArchived);
+        dto.setArchived(this.archived);
         return dto;
     }
 }

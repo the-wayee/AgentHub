@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react"
 import type { Message } from "../types/chat"
 import { MessageBubble } from "./MessageBubble"
 import { MessageCircle } from "lucide-react"
@@ -8,6 +9,17 @@ interface ChatWindowProps {
 }
 
 export function ChatWindow({ messages, isLoading }: ChatWindowProps) {
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+  }
+
+  // 当消息更新时滚动到底部
+  useEffect(() => {
+    scrollToBottom()
+  }, [messages, isLoading]) // 当消息或加载状态改变时触发
+
   return (
     <div className="flex-1 overflow-y-auto p-4 space-y-4">
       {messages.map((message) => (
@@ -37,6 +49,9 @@ export function ChatWindow({ messages, isLoading }: ChatWindowProps) {
           </div>
         </div>
       )}
+
+      {/* 用于滚动的空白 div */}
+      <div ref={messagesEndRef} />
     </div>
   )
 }

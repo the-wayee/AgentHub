@@ -14,18 +14,30 @@ import type { ChatSession, Message, Model, Tool, KnowledgeBase } from "./types/c
 // API 相关类型定义
 interface StreamResponse {
   content: string;        // 响应内容
-  sessionId?: string;     // 会话ID
-  provider?: string;      // 使用的服务商
-  model?: string;        // 使用的模型
+  sessionId: string;      // 会话ID
+  provider: string;       // 使用的服务商
+  model: string;         // 使用的模型
   done: boolean;         // 是否完成
 }
 
-interface CreateAndChatRequest {
-  content: string;
+interface CreateSessionRequest {
+  title: string;
+  description?: string;
+}
+
+interface SessionDTO {
+  id: string;
+  title: string;
+  description?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface SendMessageRequest {
   content: string;
+  model?: string;
+  tool?: string;
+  knowledgeBase?: string;
 }
 
 export default function ChatInterface() {
@@ -38,6 +50,7 @@ export default function ChatInterface() {
   const [selectedModel, setSelectedModel] = useState<string>("gpt-4")
   const [selectedTool, setSelectedTool] = useState<string>("none")
   const [selectedKnowledgeBase, setSelectedKnowledgeBase] = useState<string>("none")
+  const [showArchived, setShowArchived] = useState<boolean>(false)
 
   // Mock data - Replace with actual API calls
   const [availableModels] = useState<Model[]>([
@@ -61,32 +74,57 @@ export default function ChatInterface() {
     { id: "customer-support", name: "Customer Support", description: "Support articles and FAQs" },
   ])
 
-  const [chatSessions, setChatSessions] = useState<ChatSession[]>([
-    {
-      id: "1",
-      title: "Welcome Chat",
-      messages: [
-        {
-          id: "1",
-          role: "assistant",
-          content: "Hello! How can I help you today?",
-          timestamp: new Date(),
-        },
-      ],
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-  ])
+  const [chatSessions, setChatSessions] = useState<ChatSession[]>([])
 
   // Get current messages
   const currentMessages = chatSessions.find((s) => s.id === currentSessionId)?.messages || []
 
-  // Initialize current session
+  // 加载会话列表
   useEffect(() => {
-    if (chatSessions.length > 0 && !currentSessionId) {
-      setCurrentSessionId(chatSessions[0].id)
+    const fetchSessions = async () => {
+      try {
+        const url = new URL('/api/conversation/session', window.location.origin);
+        url.searchParams.set('archived', showArchived.toString());
+        
+        const response = await fetch(url.toString(), {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json'
+          },
+          credentials: 'include'
+        });
+
+        if (!response.ok) {
+          throw new Error('加载会话列表失败');
+        }
+
+        const data = await response.json();
+        const sessions: SessionDTO[] = data.data;
+        
+        // 将 SessionDTO 转换为 ChatSession
+        const chatSessions: ChatSession[] = sessions.map(session => ({
+          id: session.id,
+          title: session.title,
+          messages: [], // 初始时消息列表为空，可以在选择会话时再加载消息
+          createdAt: new Date(session.createdAt),
+          updatedAt: new Date(session.updatedAt)
+        }));
+
+        setChatSessions(chatSessions);
+      } catch (error) {
+        console.error("加载会话列表失败:", error);
+      }
+    };
+
+    fetchSessions();
+  }, [showArchived])
+
+  // 初始化：清除当前会话
+  useEffect(() => {
+    if (chatSessions.length === 0) {
+      setCurrentSessionId("")
     }
-  }, [chatSessions, currentSessionId])
+  }, [chatSessions])
 
   // Event handlers
   const toggleSidebar = () => {
@@ -98,16 +136,41 @@ export default function ChatInterface() {
     setSidebarOpen(false) // Close sidebar on mobile after selection
   }
 
-  const createNewSession = () => {
-    const newSession: ChatSession = {
-      id: Date.now().toString(),
-      title: `Chat ${chatSessions.length + 1}`,
-      messages: [],
-      createdAt: new Date(),
-      updatedAt: new Date(),
+  const createNewSession = async () => {
+    try {
+      const response = await fetch('/api/conversation/session', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          title: `Chat ${chatSessions.length + 1}`,
+          description: '新的对话'
+        } as CreateSessionRequest),
+        credentials: 'include'
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || '创建会话失败');
+      }
+      
+      const data = await response.json();
+      const sessionDTO: SessionDTO = data.data;
+      
+      const newSession: ChatSession = {
+        id: sessionDTO.id,
+        title: sessionDTO.title,
+        messages: [],
+        createdAt: new Date(sessionDTO.createdAt),
+        updatedAt: new Date(sessionDTO.updatedAt),
+      }
+      setChatSessions([newSession, ...chatSessions])
+      setCurrentSessionId(newSession.id)
+    } catch (error) {
+      console.error("创建会话失败:", error);
     }
-    setChatSessions([newSession, ...chatSessions])
-    setCurrentSessionId(newSession.id)
   }
 
   const deleteSession = (sessionId: string) => {
@@ -130,6 +193,10 @@ export default function ChatInterface() {
     setSelectedKnowledgeBase(kbId)
   }
 
+  const toggleArchivedSessions = () => {
+    setShowArchived(!showArchived)
+  }
+
   // 通过 fetch POST 处理 SSE 流
   const postSSE = async (
     url: string,
@@ -138,39 +205,88 @@ export default function ChatInterface() {
   ): Promise<void> => {
     const response = await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Accept': 'text/event-stream',
+      },
       body: JSON.stringify(body),
       credentials: 'include',
     });
-    if (!response.body) throw new Error('No response body');
+
+    if (!response.ok) {
+      throw new Error('请求失败: ' + response.status);
+    }
+    
+    if (!response.body) {
+      throw new Error('No response body');
+    }
+
     const reader = response.body.getReader();
-    const decoder = new TextDecoder('utf-8');
+    const decoder = new TextDecoder();
     let buffer = '';
-    while (true) {
-      const { value, done } = await reader.read();
-      if (done) break;
-      buffer += decoder.decode(value, { stream: true });
-      let lines = buffer.split('\n');
-      buffer = lines.pop() || '';
-      for (const line of lines) {
-        if (line.startsWith('data:')) {
-          const json = line.replace(/^data:/, '').trim();
-          if (json) {
-            const data = JSON.parse(json) as StreamResponse;
-            onToken(data);
-            if (data.done) return;
+    let lastFlushTime = Date.now();
+
+    try {
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        
+        // 保留最后一行（可能是不完整的）
+        buffer = lines.pop() || '';
+        for (const line of lines) {
+          if (line.trim()) {
+            try {
+              // 处理 SSE 格式，移除 "data:" 前缀
+              const jsonStr = line.replace(/^data:\s*/, '').trim();
+              if (jsonStr) {
+                const data = JSON.parse(jsonStr) as StreamResponse;
+                onToken(data);
+                // 强制 React 立即更新
+                await new Promise(resolve => setTimeout(resolve, 0));
+                if (data.done) {
+                  return;
+                }
+              }
+            } catch (e) {
+              console.error('解析 SSE 消息失败:', e, line);
+            }
           }
         }
+
+        // 如果缓冲区中有内容且距离上次刷新超过100ms，强制刷新
+        const currentTime = Date.now();
+        if (buffer && currentTime - lastFlushTime > 100) {
+          const jsonStr = buffer.replace(/^data:\s*/, '').trim();
+          if (jsonStr) {
+            try {
+              const data = JSON.parse(jsonStr) as StreamResponse;
+              onToken(data);
+              await new Promise(resolve => setTimeout(resolve, 0));
+            } catch (e) {
+              // 忽略不完整的JSON解析错误
+            }
+          }
+          lastFlushTime = currentTime;
+        }
       }
+    } finally {
+      reader.cancel();
     }
   };
 
   // 发送消息
   const sendMessage = async (content: string) => {
     if (!content.trim() || isLoading) return;
+    
+    if (!currentSessionId) {
+      alert("请先创建会话");
+      return;
+    }
 
     const currentSession = chatSessions.find((s) => s.id === currentSessionId);
-    // 允许首次无会话
 
     // 添加用户消息
     const userMessage: Message = {
@@ -205,58 +321,24 @@ export default function ChatInterface() {
     const baseUrl = '/api';
 
     try {
-      let sessionId = currentSessionId;
-      if (!sessionId) {
-        // 第一次：创建会话并发送消息
-        await postSSE(
-          `${baseUrl}/session/create-and-chat`,
-          { content: content.trim() },
-          (data) => {
-            if (data.sessionId && !sessionId) {
-              sessionId = data.sessionId;
-              setCurrentSessionId(sessionId);
-              // 新建会话
-              setChatSessions((sessions) => [
-                {
-                  id: sessionId!,
-                  title: content.slice(0, 50) + (content.length > 50 ? "..." : ""),
-                  messages: [userMessage],
-                  createdAt: new Date(),
-                  updatedAt: new Date(),
-                },
-                ...sessions,
-              ]);
-            }
-            if (data.content) {
-              responseContent += data.content;
-            }
-          }
-        );
-      } else {
-        // 后续：直接发送消息
-        await postSSE(
-          `${baseUrl}/chat/${sessionId}`,
-          { content: content.trim() },
-          (data) => {
-            if (data.content) {
-              responseContent += data.content;
-            }
-          }
-        );
+      if (!currentSessionId) {
+        console.error("请先创建会话");
+        return;
       }
 
-      // 添加助手回复
+      // 创建一个初始的助手回复消息
+      const assistantMessageId = (Date.now() + 1).toString();
       setChatSessions((sessions) =>
         sessions.map((s) =>
-          s.id === sessionId
+          s.id === currentSessionId
             ? {
                 ...s,
                 messages: [
                   ...s.messages,
                   {
-                    id: (Date.now() + 1).toString(),
+                    id: assistantMessageId,
                     role: "assistant",
-                    content: responseContent,
+                    content: "",
                     timestamp: new Date(),
                   },
                 ],
@@ -264,6 +346,37 @@ export default function ChatInterface() {
               }
             : s
         )
+      );
+
+      // 发送消息并流式更新回复内容
+      await postSSE(
+        `${baseUrl}/conversation/chat/${currentSessionId}`,
+        {
+          content: content.trim(),
+          model: selectedModel,
+          tool: selectedTool,
+          knowledgeBase: selectedKnowledgeBase
+        } as SendMessageRequest,
+        (data) => {
+          if (data.content) {
+            responseContent += data.content;
+            // 每次收到新内容就更新消息
+            setChatSessions((sessions) =>
+              sessions.map((s) =>
+                s.id === currentSessionId
+                  ? {
+                      ...s,
+                      messages: s.messages.map((msg) =>
+                        msg.id === assistantMessageId
+                          ? { ...msg, content: responseContent }
+                          : msg
+                      ),
+                    }
+                  : s
+              )
+            );
+          }
+        }
       );
     } catch (error) {
       console.error("Error sending message:", error);
@@ -295,6 +408,8 @@ export default function ChatInterface() {
           onSelectSession={selectSession}
           onNewSession={createNewSession}
           onDeleteSession={deleteSession}
+          showArchived={showArchived}
+          onToggleArchived={toggleArchivedSessions}
         />
       </div>
 
