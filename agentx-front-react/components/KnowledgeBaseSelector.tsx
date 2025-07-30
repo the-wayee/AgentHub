@@ -1,5 +1,6 @@
 "use client"
 import type { KnowledgeBase } from "../types/chat"
+import { Select } from 'antd'
 
 interface KnowledgeBaseSelectorProps {
   selectedKnowledgeBase: string
@@ -7,25 +8,23 @@ interface KnowledgeBaseSelectorProps {
   onKnowledgeBaseChange: (kbId: string) => void
 }
 
-export function KnowledgeBaseSelector({
-  selectedKnowledgeBase,
-  knowledgeBases,
-  onKnowledgeBaseChange,
-}: KnowledgeBaseSelectorProps) {
+export function KnowledgeBaseSelector({ selectedKnowledgeBase, knowledgeBases, onKnowledgeBaseChange }: KnowledgeBaseSelectorProps) {
   return (
-    <div className="relative">
-      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Knowledge Base</label>
-      <select
-        value={selectedKnowledgeBase}
-        onChange={(e) => onKnowledgeBaseChange(e.target.value)}
-        className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-      >
-        {knowledgeBases.map((kb) => (
-          <option key={kb.id} value={kb.id}>
-            {kb.name}
-          </option>
-        ))}
-      </select>
-    </div>
+    <Select
+      value={selectedKnowledgeBase}
+      onChange={onKnowledgeBaseChange}
+      style={{ minWidth: 160, borderRadius: 12, background: 'linear-gradient(90deg, #f0fdf4 0%, #f3e8ff 100%)' }}
+      styles={{ popup: { root: { borderRadius: 12 } } }}
+      optionLabelProp="label"
+    >
+      {knowledgeBases.map(kb => (
+        <Select.Option key={kb.id} value={kb.id} label={kb.name}>
+          <div className="flex flex-col">
+            <span className="font-bold text-purple-700">{kb.name}</span>
+            <span className="text-xs text-gray-500">{kb.description}</span>
+          </div>
+        </Select.Option>
+      ))}
+    </Select>
   )
 }

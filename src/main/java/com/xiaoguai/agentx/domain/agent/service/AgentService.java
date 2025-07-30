@@ -2,7 +2,9 @@ package com.xiaoguai.agentx.domain.agent.service;
 
 
 import com.xiaoguai.agentx.domain.agent.model.AgentDTO;
+import com.xiaoguai.agentx.domain.agent.model.AgentVersionDTO;
 import com.xiaoguai.agentx.domain.agent.model.entity.AgentEntity;
+import com.xiaoguai.agentx.domain.agent.model.entity.AgentVersionEntity;
 
 import java.util.List;
 
@@ -43,4 +45,19 @@ public interface AgentService {
      * @return 更新后的Agent信息
      */
     List<AgentDTO> getUserAgents(String userId, String name);
+
+    /**
+     *  发布Agent版本
+     * @param agentId agentId
+     * @param agentVersionEntity 实体对象
+     */
+    AgentVersionDTO publishAgentVersion(String agentId, AgentVersionEntity agentVersionEntity);
+
+
+    /**
+     * 获取Agent的最新版本
+     * @param agentId agentId
+     */
+    AgentVersionDTO getAgentLatestVersion(String agentId);
+
 }

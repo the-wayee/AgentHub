@@ -21,7 +21,7 @@ export function ChatWindow({ messages, isLoading }: ChatWindowProps) {
   }, [messages, isLoading]) // 当消息或加载状态改变时触发
 
   return (
-    <div className="flex-1 overflow-y-auto p-4 space-y-4">
+    <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-gradient-to-br from-blue-50 via-pink-50 to-green-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 animate__animated animate__fadeIn">
       {messages.map((message) => (
         <MessageBubble key={message.id} message={message} />
       ))}
@@ -29,11 +29,11 @@ export function ChatWindow({ messages, isLoading }: ChatWindowProps) {
       {/* Loading indicator */}
       {isLoading && (
         <div className="flex justify-start">
-          <div className="bg-gray-200 dark:bg-gray-700 rounded-lg p-3 max-w-xs lg:max-w-md">
+          <div className="bg-white/80 dark:bg-gray-700 rounded-lg p-3 max-w-xs lg:max-w-md shadow animate__animated animate__pulse">
             <div className="flex space-x-1">
-              <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-              <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.1s" }}></div>
-              <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
+              <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"></div>
+              <div className="w-2 h-2 bg-pink-400 rounded-full animate-bounce" style={{ animationDelay: "0.1s" }}></div>
+              <div className="w-2 h-2 bg-green-400 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
             </div>
           </div>
         </div>
@@ -41,10 +41,10 @@ export function ChatWindow({ messages, isLoading }: ChatWindowProps) {
 
       {/* Empty state */}
       {messages.length === 0 && (
-        <div className="flex items-center justify-center h-full text-gray-500 dark:text-gray-400">
+        <div className="flex items-center justify-center h-full text-gray-500 dark:text-gray-400 animate__animated animate__fadeIn">
           <div className="text-center">
             <MessageCircle className="w-16 h-16 mx-auto mb-4 opacity-50" />
-            <p className="text-lg">Start a conversation</p>
+            <p className="text-lg font-bold">Start a conversation</p>
             <p className="text-sm">Send a message to begin chatting with the AI assistant.</p>
           </div>
         </div>

@@ -1,5 +1,6 @@
 "use client"
 import type { Model } from "../types/chat"
+import { Select, Tag } from 'antd'
 
 interface ModelSelectorProps {
   selectedModel: string
@@ -9,19 +10,21 @@ interface ModelSelectorProps {
 
 export function ModelSelector({ selectedModel, models, onModelChange }: ModelSelectorProps) {
   return (
-    <div className="relative">
-      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Model</label>
-      <select
-        value={selectedModel}
-        onChange={(e) => onModelChange(e.target.value)}
-        className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-      >
-        {models.map((model) => (
-          <option key={model.id} value={model.id}>
-            {model.name} ({model.provider})
-          </option>
-        ))}
-      </select>
-    </div>
+    <Select
+      value={selectedModel}
+      onChange={onModelChange}
+      style={{ minWidth: 140, borderRadius: 12, background: 'linear-gradient(90deg, #e0e7ff 0%, #fce7f3 100%)' }}
+      styles={{ popup: { root: { borderRadius: 12 } } }}
+      optionLabelProp="label"
+    >
+      {models.map(model => (
+        <Select.Option key={model.id} value={model.id} label={model.name}>
+          <div className="flex items-center gap-2">
+            <span className="font-bold text-blue-700">{model.name}</span>
+            <Tag color="blue" className="ml-2">{model.provider}</Tag>
+          </div>
+        </Select.Option>
+      ))}
+    </Select>
   )
 }
