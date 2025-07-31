@@ -3,6 +3,8 @@ export interface Message {
   role: "user" | "assistant"
   content: string
   timestamp: Date
+  reasonContent?: string
+  reasoning?: boolean
 }
 
 export interface ChatSession {

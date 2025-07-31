@@ -5,4 +5,6 @@ export interface MessageDTO {
     createdAt: string;
     provider?: string;
     model?: string;
+    reasonContent?: string;
+    reasoning?: boolean;
 }

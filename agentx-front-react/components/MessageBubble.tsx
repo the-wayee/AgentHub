@@ -11,6 +11,9 @@ export function MessageBubble({ message }: MessageBubbleProps) {
   }
 
   const isUser = message.role === "user"
+  const isAssistant = message.role === "assistant"
+  const hasReasoning = !!message.reasonContent
+
   return (
     <div className={`flex ${isUser ? "justify-end" : "justify-start"} animate__animated animate__fadeInUp`}> 
       <div
@@ -25,6 +28,14 @@ export function MessageBubble({ message }: MessageBubbleProps) {
           {isUser ? <Smile className="w-4 h-4 opacity-70" /> : <Bot className="w-4 h-4 opacity-70" />}
           <span className="text-xs opacity-60">{isUser ? '我' : 'AI'}</span>
         </div>
+        {/* 推理内容 */}
+        {isAssistant && hasReasoning && (
+          <div className="mb-2 px-3 py-2 rounded-lg border bg-yellow-50 dark:bg-yellow-900 border-yellow-200 dark:border-yellow-700 text-yellow-800 dark:text-yellow-100 text-sm flex items-start gap-2">
+            <span className="font-bold text-yellow-600 dark:text-yellow-200 mr-2">推理</span>
+            <span className="whitespace-pre-wrap">{message.reasonContent}</span>
+          </div>
+        )}
+        {/* 正文内容 */}
         <div className="whitespace-pre-wrap text-base leading-relaxed">{message.content}</div>
         <div
           className={`text-xs mt-2 opacity-70 text-right ${

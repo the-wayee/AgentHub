@@ -63,6 +63,8 @@ export function useSessionManager(): UseSessionManagerResult & { loadSessions: (
                   role: msg.role as "user" | "assistant",
                   content: msg.content,
                   timestamp: new Date(msg.createdAt),
+                  reasonContent: msg.reasonContent,
+                  reasoning: msg.reasoning,
                 }))
               }
             : session
@@ -237,6 +239,7 @@ export function useSessionManager(): UseSessionManagerResult & { loadSessions: (
 
     setIsLoading(true);
     let responseContent = '';
+    let responseReasonContent = '';
 
     try {
       const assistantMessageId = (Date.now() + 1).toString();
@@ -266,8 +269,13 @@ export function useSessionManager(): UseSessionManagerResult & { loadSessions: (
           ...options
         },
         (data) => {
-          if (data.content) {
+          if (!data.reasoning) {
             responseContent += data.content;
+          }
+          if (data.reasoning) {
+            responseReasonContent += data.reasonContent;
+          }
+          if (data.content || data.reasonContent) {
             setChatSessions((sessions) =>
               sessions.map((s) =>
                 s.id === currentSessionId
@@ -275,7 +283,12 @@ export function useSessionManager(): UseSessionManagerResult & { loadSessions: (
                       ...s,
                       messages: s.messages.map((msg) =>
                         msg.id === assistantMessageId
-                          ? { ...msg, content: responseContent }
+                          ? {
+                              ...msg,
+                              content: responseContent,
+                              reasonContent: responseReasonContent,
+                              reasoning: data.reasoning,
+                            }
                           : msg
                       ),
                     }

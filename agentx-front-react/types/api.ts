@@ -4,6 +4,8 @@ export interface StreamResponse {
   provider: string;      
   model: string;        
   done: boolean;        
+  reasonContent?: string;
+  reasoning?: boolean;
 }
 
 export interface CreateSessionRequest {
