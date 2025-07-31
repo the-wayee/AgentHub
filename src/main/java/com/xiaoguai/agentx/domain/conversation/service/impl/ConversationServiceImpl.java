@@ -79,10 +79,16 @@ public class ConversationServiceImpl implements ConversationService {
             response.setProvider(llmService.getProvideeName());
             response.setModel(llmService.getDefaultModel());
             response.setSessionId(sessionId);
-            llmService.chatStream(llmRequest, ((chunk, isLast) -> {
+            llmService.chatStream(llmRequest, ((chunk, isLast, isReasoning) -> {
                 try {
-                    response.setContent(chunk);
-                    sb.append(chunk);
+                    if (isReasoning) {
+                        response.setReasonContent(chunk);
+                        response.setReasoning(true);
+                    } else {
+                        response.setContent(chunk);
+                        response.setReasoning(false);
+                        sb.append(chunk);
+                    }
                     response.setDone(isLast);
                     sseEmitter.send(response);
                     if (isLast) {

@@ -77,7 +77,7 @@ public class ConversationService {
         if (llmService instanceof SiliconFlowLlmService siliconFlowLlmService) {
             logger.info("===>使用siliconFlow流式服务");
 
-            siliconFlowLlmService.chatStream(llmRequest, (chunk, isLast) -> {
+            siliconFlowLlmService.chatStream(llmRequest, (chunk, isLast, isReasoning) -> {
                 StreamChatResponse response = new StreamChatResponse();
                 response.setContent(chunk);
                 response.setModel(llmRequest.getModel() == null ? siliconFlowLlmService.getDefaultModel() : llmRequest.getModel());

@@ -13,5 +13,5 @@ public interface StreamResponseHandler {
     /**
      * 流式输出分块响应
      */
-    void onChunk(String chunk, boolean isLast);
+    void onChunk(String chunk, boolean isLast, boolean isReasoning);
 }

@@ -66,7 +66,7 @@ public class SiliconFlowLlmService extends AbstractLlmService {
             sendStreamChatRequest(requestJson, handler);
         } catch (Exception e) {
             logger.error("调用siliconFlow流式服务出错{}", e.getMessage());
-            handler.onChunk("调用流式服务时发生错误：" + e.getMessage(), true);
+            handler.onChunk("调用流式服务时发生错误：" + e.getMessage(), true, false);
         }
     }
 
@@ -186,10 +186,10 @@ public class SiliconFlowLlmService extends AbstractLlmService {
                 line = line.trim();
                 if (line.startsWith("data: ")) {
                     line = line.substring("data: ".length());
-
+                    logger.info(line);
                     if ("[DONE]".equals(line)) {
                         // 最后一个
-                        handler.onChunk("", true);
+                        handler.onChunk("", true, false);
                         break;
                     }
                     // 解析数据
@@ -198,9 +198,13 @@ public class SiliconFlowLlmService extends AbstractLlmService {
                         JSONObject choice = data.getJSONArray("choices").getJSONObject(0);
                         if (choice.containsKey("delta")) {
                             JSONObject delta = choice.getJSONObject("delta");
-                            if (delta.containsKey("content")) {
+                            if (delta.containsKey("content") && delta.getString("content") != null) {
                                 String content = delta.getString("content");
-                                handler.onChunk(content, false);
+                                handler.onChunk(content, false, false);
+                            }
+                            if (delta.containsKey("reasoning_content") && delta.getString("reasoning_content") != null) {
+                                String reasoning = delta.getString("reasoning_content");
+                                handler.onChunk(reasoning, false, true);
                             }
                         }
                     }
