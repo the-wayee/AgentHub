@@ -18,11 +18,11 @@ interface StreamResponse {
 }
 
 interface APIRequestParams {
-  message: string;
+  messageEntity: string;
   model: string;
   tool: string;
   knowledgeBase: string;
-  messages: Message[];
+  messageEntities: Message[];
 }
 
 export default function ChatInterface() {
@@ -62,7 +62,7 @@ export default function ChatInterface() {
     {
       id: "1",
       title: "Welcome Chat",
-      messages: [
+      messageEntities: [
         {
           id: "1",
           role: "assistant",
@@ -75,10 +75,10 @@ export default function ChatInterface() {
     },
   ])
 
-  // Get current messages
-  const currentMessages = chatSessions.find((s) => s.id === currentSessionId)?.messages || []
+  // Get current messageEntities
+  const currentMessages = chatSessions.find((s) => s.id === currentSessionId)?.messageEntities || []
 
-  // Initialize current session
+  // Initialize current sessionEntity
   useEffect(() => {
     if (chatSessions.length > 0 && !currentSessionId) {
       setCurrentSessionId(chatSessions[0].id)
@@ -99,7 +99,7 @@ export default function ChatInterface() {
     const newSession: ChatSession = {
       id: Date.now().toString(),
       title: `Chat ${chatSessions.length + 1}`,
-      messages: [],
+      messageEntities: [],
       createdAt: new Date(),
       updatedAt: new Date(),
     }
@@ -127,7 +127,7 @@ export default function ChatInterface() {
     setSelectedKnowledgeBase(kbId)
   }
 
-  // Create SSE connection and handle message streaming
+  // Create SSE connection and handle messageEntity streaming
   const createSSEConnection = (
     url: string, 
     params: APIRequestParams,
@@ -154,7 +154,7 @@ export default function ChatInterface() {
             resolve();
           }
         } catch (error) {
-          console.error('Error parsing SSE message:', error);
+          console.error('Error parsing SSE messageEntity:', error);
           eventSource.close();
           reject(error);
         }
@@ -175,7 +175,7 @@ export default function ChatInterface() {
         body: JSON.stringify(params),
         credentials: 'include'
       }).catch(error => {
-        console.error('Error sending message data:', error);
+        console.error('Error sending messageEntity data:', error);
         eventSource.close();
         reject(error);
       });
@@ -188,26 +188,26 @@ export default function ChatInterface() {
     const currentSession = chatSessions.find((s) => s.id === currentSessionId);
     if (!currentSession) return;
 
-    // Add user message
-    const userMessage: Message = {
+    // Add user messageEntity
+    const userMessageEntity: Message = {
       id: Date.now().toString(),
       role: "user",
       content: content.trim(),
       timestamp: new Date(),
     };
 
-    const updatedMessages = [...currentSession.messages, userMessage];
+    const updatedMessages = [...currentSession.messageEntities, userMessageEntity];
 
-    // Update session title if it's the first message
+    // Update sessionEntity title if it's the first messageEntity
     const updatedTitle =
-      currentSession.messages.length === 0
+      currentSession.messageEntities.length === 0
         ? content.slice(0, 50) + (content.length > 50 ? "..." : "")
         : currentSession.title;
 
     const updatedSession = {
       ...currentSession,
       title: updatedTitle,
-      messages: updatedMessages,
+      messageEntities: updatedMessages,
       updatedAt: new Date(),
     };
 
@@ -220,11 +220,11 @@ export default function ChatInterface() {
     try {
       const baseUrl = '/api';
       const requestParams: APIRequestParams = {
-        message: content,
+        messageEntity: content,
         model: selectedModel,
         tool: selectedTool,
         knowledgeBase: selectedKnowledgeBase,
-        messages: updatedMessages,
+        messageEntities: updatedMessages,
       };
 
       let fullResponse = '';
@@ -233,7 +233,7 @@ export default function ChatInterface() {
       if (!currentSessionId) {
         // 首次发送消息，创建会话
         await createSSEConnection(
-          `${baseUrl}/session/create-and-chat`,
+          `${baseUrl}/sessionEntity/create-and-chat`,
           requestParams,
           (content, sessionId) => {
             if (sessionId) {
@@ -253,24 +253,24 @@ export default function ChatInterface() {
         );
       }
 
-      // Add assistant message
-      const assistantMessage: Message = {
+      // Add assistant messageEntity
+      const assistantMessageEntity: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
         content: fullResponse,
         timestamp: new Date(),
       };
 
-      // Update chat session with assistant's response
+      // Update chat sessionEntity with assistant's response
       setChatSessions((sessions) =>
         sessions.map((s) =>
           s.id === currentSessionId
-            ? { ...s, messages: [...s.messages, assistantMessage], updatedAt: new Date() }
+            ? { ...s, messageEntities: [...s.messageEntities, assistantMessageEntity], updatedAt: new Date() }
             : s
         )
       );
     } catch (error) {
-      console.error("Error sending message:", error);
+      console.error("Error sending messageEntity:", error);
       // 可以添加错误提示UI
     } finally {
       setIsLoading(false);
@@ -335,7 +335,7 @@ export default function ChatInterface() {
 
         {/* Chat window */}
         <div className="flex-1 flex flex-col min-h-0">
-          <ChatWindow messages={currentMessages} isLoading={isLoading} />
+          <ChatWindow messageEntities={currentMessages} isLoading={isLoading} />
 
           {/* Chat input */}
           <ChatInput isLoading={isLoading} onSendMessage={sendMessage} />

@@ -12,7 +12,7 @@ CREATE TABLE sessions (
 );
 
 -- 消息表，存储会话中的所有消息
-CREATE TABLE messages (
+CREATE TABLE messageEntities (
     id VARCHAR(36) PRIMARY KEY,
     session_id VARCHAR(36) NOT NULL,
     role VARCHAR(20) NOT NULL,
@@ -26,7 +26,7 @@ CREATE TABLE messages (
 );
 
 -- 上下文表，管理对话上下文
-CREATE TABLE context (
+CREATE TABLE contextEntity (
     id VARCHAR(36) PRIMARY KEY,
     session_id VARCHAR(36) NOT NULL,
     active_messages JSONB,
@@ -40,10 +40,10 @@ CREATE INDEX idx_sessions_user_id ON sessions(user_id);
 CREATE INDEX idx_sessions_created_at ON sessions(created_at);
 CREATE INDEX idx_sessions_updated_at ON sessions(updated_at);
 
-CREATE INDEX idx_messages_session_id ON messages(session_id);
-CREATE INDEX idx_messages_created_at ON messages(created_at);
+CREATE INDEX idx_messages_session_id ON messageEntities(session_id);
+CREATE INDEX idx_messages_created_at ON messageEntities(created_at);
 
-CREATE INDEX idx_context_session_id ON context(session_id);
+CREATE INDEX idx_context_session_id ON contextEntity(session_id);
 
 -- Agent 相关表结构
 CREATE TABLE agents (
@@ -127,15 +127,15 @@ COMMENT ON COLUMN sessions.agent_id IS '关联的Agent ID，指定该会话使�
 COMMENT ON COLUMN sessions.is_archived IS '会话是否被归档';
 COMMENT ON COLUMN sessions.metadata IS '会话的元数据，JSON格式';
 
-COMMENT ON TABLE messages IS '消息表，存储会话中的所有消息';
-COMMENT ON COLUMN messages.role IS '消息角色：user、assistant或system';
-COMMENT ON COLUMN messages.token_count IS '消息的token数量';
-COMMENT ON COLUMN messages.provider IS 'LLM提供商，如OpenAI、Anthropic等';
-COMMENT ON COLUMN messages.metadata IS '消息的元数据，JSON格式';
+COMMENT ON TABLE messageEntities IS '消息表，存储会话中的所有消息';
+COMMENT ON COLUMN messageEntities.role IS '消息角色：user、assistant或system';
+COMMENT ON COLUMN messageEntities.token_count IS '消息的token数量';
+COMMENT ON COLUMN messageEntities.provider IS 'LLM提供商，如OpenAI、Anthropic等';
+COMMENT ON COLUMN messageEntities.metadata IS '消息的元数据，JSON格式';
 
-COMMENT ON TABLE context IS '上下文表，管理对话上下文';
-COMMENT ON COLUMN context.active_messages IS '当前活跃的消息ID列表，JSON格式';
-COMMENT ON COLUMN context.summary IS '历史消息的摘要';
+COMMENT ON TABLE contextEntity IS '上下文表，管理对话上下文';
+COMMENT ON COLUMN contextEntity.active_messages IS '当前活跃的消息ID列表，JSON格式';
+COMMENT ON COLUMN contextEntity.summary IS '历史消息的摘要';
 
 COMMENT ON TABLE agents IS 'Agent表，存储AI助手的基本信息和配置';
 COMMENT ON COLUMN agents.published_version IS '当前发布的版本ID';

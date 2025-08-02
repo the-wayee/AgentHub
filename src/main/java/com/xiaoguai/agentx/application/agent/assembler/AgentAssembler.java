@@ -1,12 +1,12 @@
 package com.xiaoguai.agentx.application.agent.assembler;
 
 
-import com.xiaoguai.agentx.domain.agent.model.AgentDTO;
-import com.xiaoguai.agentx.domain.agent.model.AgentVersionDTO;
+import com.xiaoguai.agentx.domain.agent.dto.AgentDTO;
+import com.xiaoguai.agentx.domain.agent.dto.AgentVersionDTO;
 import com.xiaoguai.agentx.domain.agent.model.ModelConfig;
-import com.xiaoguai.agentx.domain.agent.model.entity.AgentEntity;
-import com.xiaoguai.agentx.domain.agent.model.entity.AgentVersionEntity;
-import com.xiaoguai.agentx.domain.agent.model.enums.AgentType;
+import com.xiaoguai.agentx.domain.agent.model.AgentEntity;
+import com.xiaoguai.agentx.domain.agent.model.AgentVersionEntity;
+import com.xiaoguai.agentx.domain.agent.constant.AgentType;
 import com.xiaoguai.agentx.interfaces.dto.agent.CreateAgentRequest;
 import com.xiaoguai.agentx.interfaces.dto.agent.PublishAgentVersionRequest;
 import com.xiaoguai.agentx.interfaces.dto.agent.UpdateAgentRequest;

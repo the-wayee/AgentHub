@@ -2,7 +2,7 @@ package com.xiaoguai.agentx.domain.conversation.repository;
 
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.xiaoguai.agentx.domain.conversation.model.Context;
+import com.xiaoguai.agentx.domain.conversation.model.ContextEntity;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
@@ -12,5 +12,5 @@ import org.apache.ibatis.annotations.Mapper;
  * @Description: 上下文领域
  */
 @Mapper
-public interface ContextRepository extends BaseMapper<Context> {
+public interface ContextRepository extends BaseMapper<ContextEntity> {
 }

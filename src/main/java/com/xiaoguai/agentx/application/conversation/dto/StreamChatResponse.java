@@ -16,10 +16,6 @@ public class StreamChatResponse {
     private String content;
 
     /**
-     * 深度思考回复
-     */
-    private String reasonContent;
-    /**
      * 会话ID
      */
     private String sessionId;
@@ -98,13 +94,6 @@ public class StreamChatResponse {
         isDone = done;
     }
 
-    public String getReasonContent() {
-        return reasonContent;
-    }
-
-    public void setReasonContent(String reasonContent) {
-        this.reasonContent = reasonContent;
-    }
 
     public boolean isReasoning() {
         return isReasoning;

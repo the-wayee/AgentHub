@@ -2,7 +2,7 @@ package com.xiaoguai.agentx.domain.agent.repository;
 
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.xiaoguai.agentx.domain.agent.model.entity.AgentEntity;
+import com.xiaoguai.agentx.domain.agent.model.AgentEntity;
 import org.apache.ibatis.annotations.Mapper;
 
 /**

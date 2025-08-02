@@ -1,8 +1,8 @@
 package com.xiaoguai.agentx.infrastrcture.typehandler;
 
 
-import com.xiaoguai.agentx.domain.common.exception.ParamValidationException;
-import com.xiaoguai.agentx.infrastrcture.util.JsonUtils;
+import com.xiaoguai.agentx.infrastrcture.exception.ParamValidationException;
+import com.xiaoguai.agentx.infrastrcture.utils.JsonUtils;
 import org.apache.ibatis.type.BaseTypeHandler;
 import org.apache.ibatis.type.JdbcType;
 import org.apache.ibatis.type.MappedJdbcTypes;

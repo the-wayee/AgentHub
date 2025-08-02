@@ -3,8 +3,8 @@ package com.xiaoguai.agentx.interfaces.dto.agent;
 
 import com.xiaoguai.agentx.domain.agent.model.AgentTool;
 import com.xiaoguai.agentx.domain.agent.model.ModelConfig;
-import com.xiaoguai.agentx.domain.agent.model.enums.AgentType;
-import com.xiaoguai.agentx.domain.common.utils.ValidationUtils;
+import com.xiaoguai.agentx.domain.agent.constant.AgentType;
+import com.xiaoguai.agentx.infrastrcture.utils.ValidationUtils;
 
 import java.util.List;
 

@@ -138,7 +138,7 @@ public class SiliconFlowLlmService extends AbstractLlmService {
     public LlmResponse parseResponse(String responseBody) {
         JSONObject responseJson = JSON.parseObject(responseBody);
         LlmResponse response = new LlmResponse();
-        response.setProvider(getProvideeName());
+        response.setProvider(getProviderName());
         response.setModel(getDefaultModel());
 
         try {

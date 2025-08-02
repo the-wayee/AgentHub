@@ -7,16 +7,16 @@ import { Input, Button } from 'antd'
 
 interface ChatInputProps {
   isLoading: boolean
-  onSendMessage: (message: string) => void
+  onSendMessage: (messageEntity: string) => void
 }
 
 export function ChatInput({ isLoading, onSendMessage }: ChatInputProps) {
-  const [message, setMessage] = useState("")
+  const [messageEntity, setMessage] = useState("")
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   const handleSend = () => {
-    if (message.trim() && !isLoading) {
-      onSendMessage(message)
+    if (messageEntity.trim() && !isLoading) {
+      onSendMessage(messageEntity)
       setMessage("")
     }
   }
@@ -34,10 +34,10 @@ export function ChatInput({ isLoading, onSendMessage }: ChatInputProps) {
         <div className="flex-1">
           <Input.TextArea
             ref={textareaRef as any}
-            value={message}
+            value={messageEntity}
             onChange={e => setMessage(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Type your message... (Enter to send, Shift+Enter for new line)"
+            placeholder="Type your messageEntity... (Enter to send, Shift+Enter for new line)"
             autoSize={{ minRows: 1, maxRows: 4 }}
             disabled={isLoading}
             style={{ borderRadius: 12, fontSize: 16, background: '#f4f8ff' }}
@@ -48,7 +48,7 @@ export function ChatInput({ isLoading, onSendMessage }: ChatInputProps) {
           shape="circle"
           size="large"
           onClick={handleSend}
-          disabled={!message.trim() || isLoading}
+          disabled={!messageEntity.trim() || isLoading}
           style={{ boxShadow: '0 2px 8px #91caff', background: 'linear-gradient(90deg, #4f8cff 0%, #6fd6ff 100%)' }}
           icon={isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
         />

@@ -117,7 +117,7 @@ public abstract class AbstractLlmService implements LlmService {
     }
 
     @Override
-    public String getProvideeName() {
+    public String getProviderName() {
         return providerName;
     }
 

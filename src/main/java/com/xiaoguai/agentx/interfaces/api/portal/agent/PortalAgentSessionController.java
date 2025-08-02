@@ -7,11 +7,12 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * @Author: the-way
  * @Verson: v1.0
- * @Date: 2025-07-30 15:22
- * @Description: Agent管理控制器
+ * @Date: 2025-08-02 15:32
+ * @Description: PortalAgentSessionController
  */
 @RestController
-@RequestMapping("/agent")
-public class PortalAgentController {
+@RequestMapping("/agent/session")
+public class PortalAgentSessionController {
+
 
 }

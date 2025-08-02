@@ -1,9 +1,9 @@
 package com.xiaoguai.agentx.infrastrcture.config;
 
 
-import com.xiaoguai.agentx.domain.common.exception.BusinessException;
-import com.xiaoguai.agentx.domain.common.exception.EntityNotFoundException;
-import com.xiaoguai.agentx.domain.common.exception.ParamValidationException;
+import com.xiaoguai.agentx.infrastrcture.exception.BusinessException;
+import com.xiaoguai.agentx.infrastrcture.exception.EntityNotFoundException;
+import com.xiaoguai.agentx.infrastrcture.exception.ParamValidationException;
 import com.xiaoguai.agentx.interfaces.api.common.Result;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;

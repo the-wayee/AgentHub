@@ -1,7 +1,7 @@
 package com.xiaoguai.agentx.interfaces.dto.agent;
 
 
-import com.xiaoguai.agentx.domain.common.exception.ParamValidationException;
+import com.xiaoguai.agentx.infrastrcture.exception.ParamValidationException;
 
 import java.util.regex.Pattern;
 
