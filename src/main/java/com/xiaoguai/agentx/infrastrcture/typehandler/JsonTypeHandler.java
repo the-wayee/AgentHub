@@ -1,6 +1,8 @@
 package com.xiaoguai.agentx.infrastrcture.typehandler;
 
 
+import com.xiaoguai.agentx.domain.agent.model.AgentTool;
+import com.xiaoguai.agentx.domain.agent.model.ModelConfig;
 import com.xiaoguai.agentx.infrastrcture.exception.ParamValidationException;
 import com.xiaoguai.agentx.infrastrcture.utils.JsonUtils;
 import org.apache.ibatis.type.BaseTypeHandler;
@@ -22,7 +24,7 @@ import java.util.List;
  * @param <T> 要处理的Java类型
  */
 @MappedJdbcTypes(JdbcType.OTHER)
-@MappedTypes({ Object.class, List.class})
+@MappedTypes({ Object.class, List.class, ModelConfig.class, AgentTool.class })
 public class JsonTypeHandler<T> extends BaseTypeHandler<T> {
 
     private final Class<T> clazz;
@@ -56,7 +58,7 @@ public class JsonTypeHandler<T> extends BaseTypeHandler<T> {
         // 创建PostgreSQL的JSON对象
         PGobject jsonObject = new PGobject();
         jsonObject.setType("json");
-        jsonObject.setValue(parameter.toString());
+        jsonObject.setValue(JsonUtils.toJsonString(parameter));
         ps.setObject(i, jsonObject);
     }
 

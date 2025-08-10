@@ -28,7 +28,7 @@ public interface AgentVersionRepository extends BaseMapper<AgentVersionEntity> {
             "</if>",
             "    group by agent_id " +
                     ") latest_version on v.agent_id = latest_version.agent_id and v.published_at = latest_version.latest_date ",
-            "where v.delete_at is null ",
+            "where v.deleted_at is null ",
             "<if test='name != null and name != \"\"'>",
             "and v.name like contact('%', #{name}, '%')",
             "</if>",

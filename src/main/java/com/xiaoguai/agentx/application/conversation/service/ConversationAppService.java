@@ -50,7 +50,7 @@ public class ConversationAppService {
      * 发送消息 - 保存用户消息并创建或更新上下文
      */
     public MessageEntity sendMessage(String sessionId, String userId, String message, String modelName) {
-        return conversationDomainService.sendMessage(userId, sessionId, message, modelName);
+        return conversationDomainService.sendMessage(sessionId, userId, message, modelName);
     }
 
     /**

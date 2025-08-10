@@ -113,19 +113,19 @@ public class AgentSessionAppService {
      */
     public void sendMessage(String id, String userId, ConversationRequest conversationRequest) {
 
-        // todo xhy 目前先普通的发送消息，后续还需要根据 agent 的记忆策略，对话助手/agent 策略进行处理
+        // todo 目前先普通的发送消息，后续还需要根据 agent 的记忆策略，对话助手/agent 策略进行处理
 
 //        // 查询会话是否存在,根据id和userid
 //        String agentId = conversationRequest.getAgentId();
 //        AgentDTO agent = agentServiceDomainService.getAgent(agentId, userId);
 //
-//        // todo xhy 目前是模型名称，后续需要换为模型 id
+//        // todo 目前是模型名称，后续需要换为模型 id
 //        ModelConfig modelConfig = agent.getModelConfig();
 //        if (StringUtils.isEmpty(modelConfig.getModelName())){
 //            throw new BusinessException("模型为空");
 //        }
 //
-//        // todo xhy 目前硬编码模型服务商，后续需要根据不同的服务商进行发送消息
+//        // todo 目前硬编码模型服务商，后续需要根据不同的服务商进行发送消息
 //        conversationDomainService.sendMessage(id, userId, conversationRequest.getMessage(),
 //                modelConfig.getModelName());
     }
