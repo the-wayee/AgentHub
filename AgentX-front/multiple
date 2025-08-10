@@ -1,0 +1,147 @@
+// components/top-nav.tsx
+import Link from "next/link"
+import { usePathname } from "next/navigation"
+import { Bot, Boxes, Home, Library, Settings2, ShoppingBag, Telescope, Menu } from 'lucide-react'
+import { cn } from "@/lib/utils"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { WorkspaceSwitcher } from "@/components/workspace-switcher"
+
+const links = [
+  { href: "/chat/demo", label: "主页", icon: Home },
+  { href: "/marketplace", label: "插件", icon: ShoppingBag },
+  { href: "/studio", label: "工作室", icon: Settings2 },
+  { href: "/knowledge", label: "知识库", icon: Library },
+  { href: "/explore", label: "探索", icon: Telescope },
+  { href: "/tools", label: "工具", icon: Boxes },
+]
+
+export function TopNav() {
+  const pathname = usePathname()
+  return (
+    <header className="h-14 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="max-w-7xl mx-auto h-full px-4 flex items-center justify-between gap-4">
+        <Link href="/chat/demo" className="flex items-center gap-2 font-semibold shrink-0">
+          <Bot className="w-5 h-5 text-primary" />
+          <span>AgentHub</span>
+        </Link>
+
+        {/* 桌面端：始终显示导航 */}
+        <nav className="flex items-center gap-1 overflow-x-auto">
+          {links.map(({ href, label, icon: Icon }) => (
+            <Link
+              key={href}
+              href={href}
+              className={cn(
+                "px-3 py-1.5 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-muted",
+                pathname.startsWith(href) && "bg-muted text-foreground"
+              )}
+            >
+              <span className="inline-flex items-center gap-2">
+                <Icon className="w-4 h-4" />
+                {label}
+              </span>
+            </Link>
+          ))}
+        </nav>
+
+        <div className="flex items-center gap-3">
+          {/* 桌面端的工作区切换器 */}
+          <div className="hidden md:block w-48">
+            <WorkspaceSwitcher />
+          </div>
+
+          {/* 移动端菜单（桌面端可忽略） */}
+          <div className="md:hidden">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  aria-label="打开菜单"
+                  className="inline-flex items-center justify-center w-9 h-9 rounded-md border bg-background hover:bg-muted"
+                >
+                  <Menu className="w-5 h-5" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-44">
+                {links.map((l) => (
+                  <DropdownMenuItem key={l.href} asChild>
+                    <Link href={l.href}>{l.label}</Link>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </div>
+      </div>
+    </header>
+  )
+}
+
+// components/agent/agent-builder.tsx
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
+import { Label } from "@/components/ui/label"
+import { Input } from "@/components/ui/input"
+import { useState } from "react"
+
+export function AgentBuilder() {
+  const [openPublish, setOpenPublish] = useState(false)
+  const [draft, setDraft] = useState({ version: "" })
+
+  const save = () => {
+    // 发布逻辑
+  }
+
+  return (
+    <div>
+      <Dialog open={openPublish} onOpenChange={setOpenPublish}>
+        <DialogTrigger asChild>
+          <Button>创建 / 发布</Button>
+        </DialogTrigger>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>发布版本</DialogTitle>
+            <DialogDescription>
+              确认将当前配置作为一个新版本发布到插件市场。
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <Label>版本号</Label>
+            <Input
+              value={draft.version}
+              onChange={(e) => setDraft({ ...draft, version: e.target.value })}
+              placeholder="例如 1.0.1"
+            />
+            <p className="text-xs text-muted-foreground">发布后，其他用户可在插件市场看到。</p>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setOpenPublish(false)}>
+              取消
+            </Button>
+            <Button onClick={save}>确认发布</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  )
+}
+
+// components/agent/agent-quick-settings.tsx
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
+
+export function AgentQuickSettings() {
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button>快速设置</Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>快速设置</DialogTitle>
+          <DialogDescription>快速调整 Agent 的名称、模型与工具配置。保存后立即生效。</DialogDescription>
+        </DialogHeader>
+        {/* 其他设置内容 */}
+      </DialogContent>
+    </Dialog>
+  )
+}
