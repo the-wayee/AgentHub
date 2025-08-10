@@ -57,7 +57,7 @@ public class AgentSessionAppService {
         List<SessionDTO> sessions = sessionDomainService.getSessionsByAgentId(agentId, userId);
         if (sessions.isEmpty()) {
             // 如果没有会话列表，创建一个
-            SessionDTO session = sessionDomainService.createSession(agentId, userId);
+            SessionDTO session = this.createSession(agentId, userId);
             return Collections.singletonList(session);
         }
         return sessions;
@@ -96,12 +96,12 @@ public class AgentSessionAppService {
      */
     @Transactional
     public void deleteSession(String id, String userId) {
+        // 删除会话下的消息
+        conversationDomainService.deleteConversationMessages(id);
         boolean deleteSession = sessionDomainService.deleteSession(id, userId);
         if (!deleteSession){
             throw new BusinessException("删除会话失败");
         }
-        // 删除会话下的消息
-        conversationDomainService.deleteConversationMessages(id);
     }
 
     /**

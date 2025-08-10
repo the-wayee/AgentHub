@@ -198,14 +198,20 @@ public class SiliconFlowLlmService extends AbstractLlmService {
                         JSONObject choice = data.getJSONArray("choices").getJSONObject(0);
                         if (choice.containsKey("delta")) {
                             JSONObject delta = choice.getJSONObject("delta");
-                            if (delta.containsKey("content") && delta.getString("content") != null) {
-                                String content = delta.getString("content");
-                                handler.onChunk(content, false, false);
-                            }
+                            boolean isReasoning = false;
                             if (delta.containsKey("reasoning_content") && delta.getString("reasoning_content") != null) {
                                 String reasoning = delta.getString("reasoning_content");
                                 handler.onChunk(reasoning, false, true);
+                                isReasoning = true;
                             }
+
+                            if (delta.containsKey("content") && delta.getString("content") != null && !isReasoning) {
+                                String content = delta.getString("content");
+                                if (!content.isBlank()) {
+                                    handler.onChunk(content, false, false);
+                                }
+                            }
+
                         }
                     }
                 }

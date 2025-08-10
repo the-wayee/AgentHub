@@ -7,7 +7,7 @@ import { Card } from "@/components/ui/card"
 import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
 import { useAgentCatalog, useConvoStore, useKnowledgeStore } from "@/lib/stores"
-import { Paperclip, Send, Gift, Grid2X2, Languages } from "lucide-react"
+import { Paperclip, Send, Gift, Grid2X2, Languages, Square } from "lucide-react"
 import { AgentQuickSettings } from "@/components/agent/agent-quick-settings"
 
 export function ChatShell({ agentId }: { agentId: string }) {
@@ -17,6 +17,10 @@ export function ChatShell({ agentId }: { agentId: string }) {
   const createConversation = useConvoStore((s) => s.createConversation)
   const setActive = useConvoStore((s) => s.setActive)
   const appendMessage = useConvoStore((s) => s.appendMessage)
+  const replaceMessages = useConvoStore((s) => s.replaceMessages)
+  const appendAssistantMessage = useConvoStore((s) => s.appendAssistantMessage)
+  const appendMessageDelta = useConvoStore((s) => s.appendMessageDelta)
+  const removeMessage = useConvoStore((s) => s.removeMessage)
 
   const { agents } = useAgentCatalog()
   const knowledge = useKnowledgeStore((s) => s.items)
@@ -44,11 +48,38 @@ export function ChatShell({ agentId }: { agentId: string }) {
   }, [agent, derivedActiveConvo, createConversation, setActive])
 
   const [input, setInput] = useState("")
+  const [isStreaming, setIsStreaming] = useState(false)
+  const abortRef = useRef<AbortController | null>(null)
   const [openSettings, setOpenSettings] = useState(false)
-  const endRef = useRef<HTMLDivElement | null>(null)
+  const scrollRef = useRef<HTMLDivElement | null>(null)
   useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: "smooth" })
+    const el = scrollRef.current
+    if (el) {
+      el.scrollTop = el.scrollHeight
+    }
   }, [derivedActiveConvo?.messages.length])
+
+  // Load messages for active conversation when it changes and has no messages
+  useEffect(() => {
+    if (!derivedActiveConvo) return
+    if (derivedActiveConvo.messages.length > 0) return
+    // fetch messages from backend
+    let cancelled = false
+    ;(async () => {
+      try {
+        const res = await fetch(`/api/messages/${derivedActiveConvo.id}`, { cache: "no-store" })
+        const list = await res.json()
+        if (!cancelled && Array.isArray(list)) {
+          // Map backend fields to local store format
+          const mapped = list.map((m: any) => ({ id: m.id, role: m.role, content: m.content, createdAt: m.createdAt }))
+          replaceMessages(derivedActiveConvo.id, mapped)
+        }
+      } catch {}
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [derivedActiveConvo?.id])
 
   if (!agent) {
     return (
@@ -72,30 +103,99 @@ export function ChatShell({ agentId }: { agentId: string }) {
   async function sendMessage() {
     const text = input.trim()
     if (!text) return
+    if (!derivedActiveConvo) return
     setInput("")
-    appendMessage(derivedActiveConvo.id, { role: "user", content: text })
+    const convoId = derivedActiveConvo.id
+    appendMessage(convoId, { role: "user", content: text })
     try {
-      const res = await fetch("/api/chat", {
+      const controller = new AbortController()
+      abortRef.current = controller
+      setIsStreaming(true)
+      const res = await fetch(`/api/sessions/${convoId}/message`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          agent,
-          knowledge,
-          messages: [
-            ...derivedActiveConvo.messages.map((m) => ({ role: m.role, content: m.content })),
-            { role: "user", content: text },
-          ],
-        }),
+        headers: { "Content-Type": "application/json", Accept: "text/event-stream" },
+        body: JSON.stringify({ message: text }),
+        signal: controller.signal,
       })
-      const data = await res.json()
-      appendMessage(derivedActiveConvo.id, { role: "assistant", content: data.reply || "（无响应）" })
+
+      if (!res.body) {
+        appendMessage(convoId, { role: "assistant", content: "（无响应）" })
+        return
+      }
+
+      const reader = res.body.getReader()
+      const decoder = new TextDecoder()
+      // Lazily create bubbles to avoid empty cards
+      let reasoningId: string | undefined
+      let finalId: string | undefined
+      let buffer = ""
+
+      const handlePayload = (payload: string, evtName?: string) => {
+        let obj: any
+        try {
+          obj = JSON.parse(payload)
+        } catch {
+          obj = { content: payload }
+        }
+        const content: string = obj?.content ?? ""
+        const done: boolean = obj?.done ?? obj?.isDone ?? (evtName === "done")
+        const reasoning: boolean = obj?.reasoning ?? obj?.isReasoning ?? (evtName === "reasoning")
+
+        if (reasoning) {
+          if (!reasoningId) reasoningId = appendAssistantMessage(convoId, "", "reasoning")
+          if (content) appendMessageDelta(convoId, reasoningId, content)
+        } else {
+          if (!finalId) finalId = appendAssistantMessage(convoId, "", "normal")
+          if (content) appendMessageDelta(convoId, finalId, content)
+        }
+
+        if (done && reasoningId) {
+          const toRemove = reasoningId
+          setTimeout(() => removeMessage(convoId, toRemove), 300)
+        }
+      }
+
+      while (true) {
+        const { value, done } = await reader.read()
+        if (done) break
+        buffer += decoder.decode(value, { stream: true })
+        // split SSE events by blank line
+        const events = buffer.split(/\r?\n\r?\n/)
+        buffer = events.pop() || ""
+        for (const raw of events) {
+          const lines = raw.split(/\r?\n/)
+          let evtName: string | undefined
+          const dataLines: string[] = []
+          for (const ln of lines) {
+            if (ln.startsWith(":")) continue
+            if (ln.startsWith("event:")) {
+              evtName = ln.slice(6).trim()
+            } else if (ln.startsWith("data:")) {
+              dataLines.push(ln.slice(5).trimStart())
+            }
+          }
+          const payload = dataLines.join("\n")
+          if (payload) handlePayload(payload, evtName)
+        }
+      }
+      // end of stream
     } catch {
-      appendMessage(derivedActiveConvo.id, { role: "assistant", content: "请求失败，请稍后再试。" })
+      // If aborted,清理推理气泡
+      const aborted = abortRef.current !== null
+      if (aborted) {
+        // attempt to remove reasoning bubble if存在
+        // Note: cannot access local reasoningId here once out of scope
+      } else {
+        appendMessage(convoId, { role: "assistant", content: "请求失败，请稍后再试。" })
+      }
+    } finally {
+      setIsStreaming(false)
+      abortRef.current = null
     }
   }
 
   return (
-    <div className="flex-1 flex flex-col">
+    <div className="flex-1 min-h-0 flex flex-col">
       <div className="h-12 border-b px-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-semibold">
@@ -118,7 +218,7 @@ export function ChatShell({ agentId }: { agentId: string }) {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-4 py-6">
+      <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto px-4 py-6">
         <div className="mx-auto max-w-3xl space-y-6">
           {derivedActiveConvo.messages.map((m, i) => (
             <div key={i} className={cn("flex gap-3", m.role === "user" ? "justify-end" : "justify-start")}>
@@ -130,10 +230,21 @@ export function ChatShell({ agentId }: { agentId: string }) {
               <Card
                 className={cn(
                   "px-3 py-2 rounded-2xl max-w-[75%] shadow-sm",
-                  m.role === "user" ? "bg-primary text-primary-foreground rounded-tr-none" : "bg-muted rounded-tl-none",
+                  m.role === "user"
+                    ? "bg-primary text-primary-foreground rounded-tr-none"
+                    : m.kind === "reasoning"
+                      ? "bg-muted text-muted-foreground rounded-tl-none animate-in fade-in duration-300"
+                      : "bg-muted rounded-tl-none",
                 )}
               >
-                <div className="whitespace-pre-wrap leading-relaxed text-sm">{m.content}</div>
+                <div
+                  className={cn(
+                    "whitespace-pre-wrap leading-relaxed text-sm",
+                    m.kind === "reasoning" && "text-[12px] italic",
+                  )}
+                >
+                  {m.content}
+                </div>
               </Card>
               {m.role === "user" && (
                 <Avatar className="w-7 h-7">
@@ -142,7 +253,7 @@ export function ChatShell({ agentId }: { agentId: string }) {
               )}
             </div>
           ))}
-          <div ref={endRef} />
+          <div />
         </div>
       </div>
 
@@ -163,12 +274,26 @@ export function ChatShell({ agentId }: { agentId: string }) {
               className="min-h-[48px] resize-none rounded-2xl pr-14"
             />
             <div className="absolute right-2 top-2 flex items-center gap-2">
-              <Button size="icon" variant="ghost">
+              <Button size="icon" variant="ghost" disabled={isStreaming}>
                 <Paperclip className="w-4 h-4" />
               </Button>
-              <Button size="icon" className="rounded-full" onClick={sendMessage}>
-                <Send className="w-4 h-4" />
-              </Button>
+              {isStreaming ? (
+                <Button
+                  size="icon"
+                  className="rounded-full"
+                  variant="destructive"
+                  onClick={() => {
+                    abortRef.current?.abort()
+                  }}
+                  title="停止生成"
+                >
+                  <Square className="w-4 h-4" />
+                </Button>
+              ) : (
+                <Button size="icon" className="rounded-full" onClick={sendMessage} title="发送">
+                  <Send className="w-4 h-4" />
+                </Button>
+              )}
             </div>
           </div>
         </div>
