@@ -7,6 +7,9 @@ import com.xiaoguai.agentx.domain.token.model.config.TokenOverflowConfig;
 import com.xiaoguai.agentx.domain.token.model.enums.TokenOverflowStrategyEnum;
 import com.xiaoguai.agentx.domain.token.service.TokenOverflowStrategy;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -38,7 +41,44 @@ public class SlidingWindowOverflowStrategy implements TokenOverflowStrategy {
 
     @Override
     public TokenProcessResult process(List<TokenMessage> messages) {
-        return null;
+        if (!needProcessing(messages)) {
+            TokenProcessResult result = new TokenProcessResult();
+            result.setStrategyName(TokenOverflowStrategyEnum.SLIDING_WINDOW.name());
+            result.setProcessed(false);
+            result.setTotalTokes(calculateTotalTokens(messages));
+            result.setRetainedMessages(messages);
+            return result;
+        }
+
+        // 按照时间排序，保留最新的消息
+        Collections.sort(messages, Comparator.comparing(TokenMessage::getCreatedAt).reversed());
+
+        // 最大Token数量
+        int maxTokens = config.getMaxTokens();
+        // 预留Token数量
+        int reservedTokens = (int) (maxTokens * config.getReserveRatio());
+        // 可用Token数量
+        int availableTokens = maxTokens - reservedTokens;
+
+        List<TokenMessage> retainedMessages = new ArrayList<>();
+        int totalTokens = 0;
+        for (TokenMessage message : messages) {
+            int messageToken = message.getTokenCount() == null ? 0 : message.getTokenCount();
+            if (totalTokens + messageToken< availableTokens) {
+                totalTokens += messageToken;
+                retainedMessages.add(message);
+            } else {
+                break;
+            }
+        }
+
+        // 返回Result
+        TokenProcessResult result = new TokenProcessResult();
+        result.setProcessed(true);
+        result.setStrategyName(getName());
+        result.setTotalTokes(totalTokens);
+        result.setRetainedMessages(retainedMessages);
+        return result;
     }
 
     @Override

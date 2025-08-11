@@ -3,6 +3,7 @@ package com.xiaoguai.agentx.application.conversation.service;
 
 import com.xiaoguai.agentx.application.conversation.dto.StreamChatRequest;
 import com.xiaoguai.agentx.application.conversation.dto.StreamChatResponse;
+import com.xiaoguai.agentx.domain.token.service.TokenDomainService;
 import com.xiaoguai.agentx.infrastrcture.exception.BusinessException;
 import com.xiaoguai.agentx.domain.conversation.dto.MessageDTO;
 import com.xiaoguai.agentx.domain.conversation.model.MessageEntity;
@@ -27,9 +28,14 @@ public class ConversationAppService {
 
     private final SessionDomainService sessionDomainService;
 
-    public ConversationAppService(ConversationDomainService conversationDomainService, SessionDomainService sessionDomainService) {
+    private final TokenDomainService tokenDomainService;
+
+    public ConversationAppService(ConversationDomainService conversationDomainService,
+                                  SessionDomainService sessionDomainService,
+                                  TokenDomainService tokenDomainService) {
         this.conversationDomainService = conversationDomainService;
         this.sessionDomainService = sessionDomainService;
+        this.tokenDomainService = tokenDomainService;
     }
 
     /**
@@ -60,7 +66,7 @@ public class ConversationAppService {
         // 查询对应会话是否存在
         SessionEntity sessionEntity = sessionDomainService.find(sessionId, userId);
 
-        if (sessionEntity == null){
+        if (sessionEntity == null) {
             throw new BusinessException("会话不存在");
         }
 

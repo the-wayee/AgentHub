@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
  * @Author: the-way
  * @Verson: v1.0
  * @Date: 2025-08-11 15:14
- * @Description: TokenMessage
+ * @Description: Token领域的消息模型
  */
 public class TokenMessage {
 
