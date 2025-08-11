@@ -11,6 +11,8 @@ public class SearchAgentsRequest {
 
     private String name;
 
+    private Boolean enable;
+
     public SearchAgentsRequest() {
     }
 
@@ -24,5 +26,13 @@ public class SearchAgentsRequest {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public Boolean getEnable() {
+        return enable;
+    }
+
+    public void setEnable(Boolean enable) {
+        this.enable = enable;
     }
 }

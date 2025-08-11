@@ -12,9 +12,10 @@ type MessageDTO = {
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
 
-export async function GET(_: Request, { params }: { params: { sessionId: string } }) {
+export async function GET(_: Request, { params }: { params: Promise<{ sessionId: string }> }) {
+  const { sessionId } = await params
   const base = (process.env.MESSAGES_ENDPOINT_BASE || "http://localhost:8080/api/agent/session").replace(/\/$/, "")
-  const url = `${base}/${encodeURIComponent(params.sessionId)}/messages`
+  const url = `${base}/${encodeURIComponent(sessionId)}/messages`
   try {
     const r = await fetch(url, { cache: "no-store" })
     const j = await r.json()

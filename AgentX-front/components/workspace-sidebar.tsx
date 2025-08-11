@@ -21,7 +21,7 @@ import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
 import { WorkspaceSwitcher } from "./workspace-switcher"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useState, useRef } from "react"
 
 export function WorkspaceSidebar({
   defaultAgentId = "demo",
@@ -36,6 +36,7 @@ export function WorkspaceSidebar({
   const [editingTitle, setEditingTitle] = useState<string>("")
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
   const { agents } = useAgentCatalog()
+  const { setCurrentAgentId } = useWorkspaceStore()
   const { selectedId, setSelected } = useWorkspaceStore()
   const { toast } = useToast()
 
@@ -45,7 +46,9 @@ export function WorkspaceSidebar({
 
   // Current agent
   const agent = useMemo(() => {
-    return agents.find((a) => a.id === (currentAgentId || defaultAgentId)) || agentsInWs[0] || agents[0]
+    const wantedId = currentAgentId || defaultAgentId
+    const found = agents.find((a) => a.id === wantedId)
+    return found || agentsInWs[0] || agents[0]
   }, [agents, agentsInWs, currentAgentId, defaultAgentId])
 
   const filteredConvos = useMemo(() => conversations.filter((c) => c.agentId === agent?.id), [conversations, agent?.id])
@@ -67,9 +70,16 @@ export function WorkspaceSidebar({
   }
 
   // Fetch sessions when agent changes
+  // 避免重复调用：仅当 agentId 实际变化时拉取
+  const lastFetchedRef = useRef<string | null>(null)
   useEffect(() => {
     if (!agent?.id) return
     if (agent.id === "demo") return
+    // 仅当不存在“后端会话”时才拉取。后端会话 id 通常为 32 位 hex
+    const HEX_32 = /^[a-f0-9]{32}$/i
+    const hasRemote = filteredConvos.some((c) => HEX_32.test(c.id))
+    if (lastFetchedRef.current === agent.id || hasRemote) return
+    lastFetchedRef.current = agent.id
     let cancelled = false
     ;(async () => {
       try {
@@ -90,7 +100,7 @@ export function WorkspaceSidebar({
     <div className="h-full flex flex-col overflow-hidden">
       {/* Header with workspace picker */}
       <div className="p-3 border-b space-y-3">
-        <WorkspaceSwitcher />
+          <WorkspaceSwitcher />
         <div className="flex items-center gap-2">
           <Search className="w-4 h-4 text-muted-foreground" />
           <input className="bg-transparent outline-none text-sm w-full" placeholder="搜索会话…" />
@@ -125,10 +135,29 @@ export function WorkspaceSidebar({
           </Button>
         </div>
         {/* Agent selector inside current workspace */}
-        <Select
+            <Select
           value={agent?.id}
           onValueChange={(v) => {
-            router.push(`/chat/${v}`)
+            setCurrentAgentId(v)
+            // 仅切换列表状态，不跳转 URL
+            const convos = conversations.filter((c)=>c.agentId===v)
+            if (convos.length>0) {
+              setActive(convos[0].id)
+            } else {
+              // 先本地创建会话并选中
+              const c = createConversation({ agentId: v })
+              setActive(c.id)
+              // 异步尝试从后端拉一个会话（如果有）并替换本地
+              fetch(`/api/sessions/${v}`, { cache: 'no-store' })
+                .then(r=>r.json())
+                .then(list=>{
+                  if (Array.isArray(list) && list.length>0) {
+                    const mapped = list.map((s: any) => ({ id: s.id, title: s.title, createdAt: s.createdAt }))
+                    replaceConversationsForAgent(v, mapped)
+                    setActive(mapped[0].id)
+                  }
+                }).catch(()=>{})
+            }
           }}
         >
           <SelectTrigger className="h-8">
@@ -188,16 +217,15 @@ export function WorkspaceSidebar({
                     />
                   </div>
                 ) : (
-                  <Link
-                    href={`/chat/${agent?.id || defaultAgentId}`}
+                  <button
                     onClick={() => setActive(c.id)}
-                    className="flex-1 min-w-0"
+                    className="flex-1 min-w-0 text-left"
                   >
                     <div className="text-sm font-medium truncate">{c.title || agent?.name || "新会话"}</div>
                     <div className="text-xs text-muted-foreground" suppressHydrationWarning>
                       {mounted ? new Date(c.createdAt).toLocaleString() : ""}
                     </div>
-                  </Link>
+                  </button>
                 )}
                 <button
                   title="重命名"
@@ -256,9 +284,9 @@ export function WorkspaceSidebar({
 
       <div className="p-3 border-t">
         <Button variant="secondary" className="w-full" asChild>
-          <Link href="/marketplace">
+          <Link href="/explore">
             <Sparkles className="w-4 h-4 mr-2" />
-            浏览插件
+            浏览探索
           </Link>
         </Button>
       </div>

@@ -6,8 +6,9 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Card } from "@/components/ui/card"
 import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
-import { useAgentCatalog, useConvoStore, useKnowledgeStore } from "@/lib/stores"
+import { useAgentCatalog, useConvoStore, useKnowledgeStore, useWorkspaceStore } from "@/lib/stores"
 import { Paperclip, Send, Gift, Grid2X2, Languages, Square } from "lucide-react"
+import { Skeleton } from "@/components/ui/skeleton"
 import { AgentQuickSettings } from "@/components/agent/agent-quick-settings"
 
 export function ChatShell({ agentId }: { agentId: string }) {
@@ -24,11 +25,42 @@ export function ChatShell({ agentId }: { agentId: string }) {
 
   const { agents } = useAgentCatalog()
   const knowledge = useKnowledgeStore((s) => s.items)
+  const { currentAgentId } = useWorkspaceStore()
+
+  // Use currentAgentId from global state if available, fallback to prop
+  const effectiveAgentId = currentAgentId || agentId
 
   const agent = useMemo(
-    () => (agents.length ? agents.find((a) => a.id === agentId) || agents[0] : undefined),
-    [agents, agentId],
+    () => (agents.length ? agents.find((a) => a.id === effectiveAgentId) || agents[0] : undefined),
+    [agents, effectiveAgentId],
   )
+
+  // Latest published/version info for header
+  const [latest, setLatest] = useState<any | null>(null)
+  const [latestLoading, setLatestLoading] = useState<boolean>(false)
+  // 为避免双请求/闪烁：仅在进入页面或切换不同 agentId 时请求一次 latest
+  const lastAgentIdRef = useRef<string | null>(null)
+  useEffect(() => {
+    if (!agent?.id) return
+    if (lastAgentIdRef.current === agent.id) return
+    lastAgentIdRef.current = agent.id
+    let cancelled = false
+    setLatestLoading(true)
+    ;(async () => {
+      try {
+        const r = await fetch(`/api/agents/${encodeURIComponent(agent.id)}/versions/latest`, { cache: "no-store" })
+        const j = await r.json().catch(() => ({}))
+        if (!cancelled) setLatest(j?.data ?? j ?? null)
+      } catch {
+        if (!cancelled) setLatest(null)
+      } finally {
+        if (!cancelled) setLatestLoading(false)
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [agent?.id])
 
   // Derive the active conversation for this agent without mutating state.
   const convosForAgent = useMemo(() => conversations.filter((c) => c.agentId === agent?.id), [conversations, agent?.id])
@@ -59,18 +91,16 @@ export function ChatShell({ agentId }: { agentId: string }) {
     }
   }, [derivedActiveConvo?.messages.length])
 
-  // Load messages for active conversation when it changes and has no messages
+  // Load messages when conversation changes OR when its messages become empty
   useEffect(() => {
     if (!derivedActiveConvo) return
     if (derivedActiveConvo.messages.length > 0) return
-    // fetch messages from backend
     let cancelled = false
     ;(async () => {
       try {
         const res = await fetch(`/api/messages/${derivedActiveConvo.id}`, { cache: "no-store" })
         const list = await res.json()
         if (!cancelled && Array.isArray(list)) {
-          // Map backend fields to local store format
           const mapped = list.map((m: any) => ({ id: m.id, role: m.role, content: m.content, createdAt: m.createdAt }))
           replaceMessages(derivedActiveConvo.id, mapped)
         }
@@ -79,15 +109,13 @@ export function ChatShell({ agentId }: { agentId: string }) {
     return () => {
       cancelled = true
     }
-  }, [derivedActiveConvo?.id])
+  }, [derivedActiveConvo?.id, derivedActiveConvo?.messages.length])
 
   if (!agent) {
     return (
-      <div className="flex-1 flex items-center justify-center">
-        <div className="text-sm text-muted-foreground">
-          暂无可用 Agent，请先在「工作室」创建或在「插件」中安装一个 Agent。
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-sm text-muted-foreground">暂无可用 Agent，请先在「工作室」创建或在「探索」中挑选一个 Agent。</div>
         </div>
-      </div>
     )
   }
 
@@ -203,9 +231,20 @@ export function ChatShell({ agentId }: { agentId: string }) {
           </div>
           <div>
             <div className="font-medium">{agent.name}</div>
-            <div className="text-xs text-muted-foreground">
-              版本 {agent.version} · {agent.visibility === "public" ? "公开" : "私有"}
-            </div>
+            {latestLoading ? (
+              <div className="flex items-center gap-2">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-4 w-10" />
+              </div>
+            ) : (
+              <div className="text-xs text-muted-foreground">
+                {(() => {
+                  const v = latest?.versionNumber ? `v${latest.versionNumber}` : "v-Beta"
+                  const vis = latest?.publishStatus === 2 ? "公开" : "私有"
+                  return `版本 ${v} · ${vis}`
+                })()}
+              </div>
+            )}
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -213,7 +252,7 @@ export function ChatShell({ agentId }: { agentId: string }) {
             设置
           </Button>
           <Button size="sm" asChild>
-            <a href="/marketplace">市场</a>
+            <a href="/explore">探索</a>
           </Button>
         </div>
       </div>

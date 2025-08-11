@@ -14,7 +14,6 @@ export type ModelConfig = {
 
 export type Agent = {
   id: string
-  workspaceId: string
   name: string
   description?: string
   version: string
@@ -24,4 +23,9 @@ export type Agent = {
   model?: ModelConfig
   tools?: { webSearch?: boolean; calculator?: boolean; http?: boolean }
   systemPrompt?: string
+  welcomeMessage?: string
+  enabled?: boolean
+  publishStatus?: 1 | 2 | 3 | 4
+  publishStatusLabel?: string
+  updatedAt?: string
 }

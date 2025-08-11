@@ -79,6 +79,14 @@ public class PortalAgentController {
     }
 
     /**
+     * 切换Agent状态
+     */
+    @GetMapping("/{agentId}/toggle-status")
+    public Result<AgentDTO> toggleAgentStatus(@PathVariable String agentId) {
+        return Result.success(agentAppService.toggleAgentStatus(agentId));
+    }
+
+    /**
      * 获取已上架的Agent列表，支持名称搜索
      */
     @GetMapping("/published")
@@ -122,4 +130,6 @@ public class PortalAgentController {
     public Result<AgentVersionDTO> getLatestAgentVersion(@PathVariable String agentId) {
         return Result.success(agentAppService.getLatestAgentVersion(agentId));
     }
+
+
 }

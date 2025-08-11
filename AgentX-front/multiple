@@ -8,7 +8,7 @@ import { WorkspaceSwitcher } from "@/components/workspace-switcher"
 
 const links = [
   { href: "/chat/demo", label: "主页", icon: Home },
-  { href: "/marketplace", label: "插件", icon: ShoppingBag },
+  { href: "/explore", label: "探索", icon: Telescope },
   { href: "/studio", label: "工作室", icon: Settings2 },
   { href: "/knowledge", label: "知识库", icon: Library },
   { href: "/explore", label: "探索", icon: Telescope },
@@ -101,7 +101,7 @@ export function AgentBuilder() {
           <DialogHeader>
             <DialogTitle>发布版本</DialogTitle>
             <DialogDescription>
-              确认将当前配置作为一个新版本发布到插件市场。
+              确认将当前配置作为一个新版本发布到探索页。
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
@@ -111,7 +111,7 @@ export function AgentBuilder() {
               onChange={(e) => setDraft({ ...draft, version: e.target.value })}
               placeholder="例如 1.0.1"
             />
-            <p className="text-xs text-muted-foreground">发布后，其他用户可在插件市场看到。</p>
+            <p className="text-xs text-muted-foreground">发布后，其他用户可在探索页看到。</p>
           </div>
           <DialogFooter>
             <Button variant="ghost" onClick={() => setOpenPublish(false)}>

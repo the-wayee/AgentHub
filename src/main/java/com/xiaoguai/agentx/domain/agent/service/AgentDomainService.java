@@ -90,6 +90,7 @@ public class AgentDomainService {
         // 创建基础查询条件
         LambdaQueryWrapper<AgentEntity> queryWrapper = Wrappers.<AgentEntity>lambdaQuery()
                 .eq(AgentEntity::getUserId, userId)
+                .eq(Objects.nonNull(searchAgentsRequest.getEnable()), AgentEntity::getEnabled, searchAgentsRequest.getEnable())
                 .like(!StringUtils.isEmpty(searchAgentsRequest.getName()), AgentEntity::getName,
                         searchAgentsRequest.getName())
                 .orderByDesc(AgentEntity::getUpdatedAt);
@@ -232,7 +233,7 @@ public class AgentDomainService {
             }
         }
 
-        return AgentAssembler.toDTO(agentVersion);
+        return AgentVersionAssembler.toDTO(agentVersion);
     }
 
     /**

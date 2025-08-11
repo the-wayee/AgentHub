@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -24,43 +24,106 @@ const defaultModel = {
   maxTokens: 1024,
 }
 
-export function AgentBuilder() {
+export function AgentBuilder({ agent, onSave, showTitle = true, onCancel }: { agent?: Agent; onSave?: (a: Agent) => void; showTitle?: boolean; onCancel?: () => void }) {
   const { upsertAgent } = useAgentCatalog()
   const knowledge = useKnowledgeStore((s) => s.items)
   const [activeTab, setActiveTab] = useState("base")
   const router = useRouter()
-  const [openPublish, setOpenPublish] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
 
-  const [draft, setDraft] = useState<Agent>({
-    id: "custom",
-    name: "我的 Agent",
-    description: "个性化的智能助手",
-    version: "1.0.0",
-    visibility: "private",
-    type: "chat",
-    tags: ["assistant"],
-    model: defaultModel,
-    tools: { webSearch: false, calculator: true, http: false },
-    systemPrompt: "你是一个专业且友好的助手。",
-  })
+  const [draft, setDraft] = useState<Agent>(
+    agent || {
+      id: "custom",
+      name: "我的 Agent",
+      description: "个性化的智能助手",
+      version: "1.0.0",
+      visibility: "public",
+      enabled: true,
+      type: "chat",
+      tags: ["assistant"],
+      model: defaultModel,
+      tools: { webSearch: false, calculator: true, http: false },
+      systemPrompt: "你是一个专业且友好的助手。",
+      welcomeMessage: "你好！我是你的 AI 助手，有什么可以帮你的吗？",
+    },
+  )
+
+  useEffect(() => {
+    if (agent) setDraft(agent)
+  }, [agent])
 
   const toolCount = (draft.tools?.webSearch ? 1 : 0) + (draft.tools?.calculator ? 1 : 0) + (draft.tools?.http ? 1 : 0)
 
-  function save() {
-    upsertAgent({ ...draft })
-    setOpenPublish(false)
+  async function save() {
+    try {
+      setIsSaving(true)
+      const payload = {
+        name: draft.name,
+        avatar: undefined,
+        description: draft.description,
+        agentType: draft.type === "function" ? 2 : 1,
+        systemPrompt: draft.systemPrompt,
+        welcomeMessage: draft.welcomeMessage,
+        modelConfig: {
+          provider: draft.model?.provider,
+          modelName: draft.model?.model,
+          temperature: draft.model?.temperature,
+          maxTokens: draft.model?.maxTokens,
+        },
+        tools: [],
+        knowledgeBaseIds: [],
+      } as any
+
+      // if it has an id other than "custom", treat as update, else create
+      if (draft.id && draft.id !== "custom") {
+        await fetch(`/api/agents/${encodeURIComponent(draft.id)}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: payload.name,
+            avatar: payload.avatar,
+            description: payload.description,
+            enabled: draft.enabled ?? (draft.visibility === "public"),
+            systemPrompt: payload.systemPrompt,
+            welcomeMessage: payload.welcomeMessage,
+            modelConfig: payload.modelConfig,
+            tools: payload.tools,
+            knowledgeBaseIds: payload.knowledgeBaseIds,
+          }),
+        })
+      } else {
+        const res = await fetch(`/api/agents`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        })
+        const created = await res.json().catch(() => ({}))
+        if (created?.id) {
+          // assign returned id for local store
+          draft.id = created.id
+        }
+      }
+
+      const next = { ...draft }
+      upsertAgent(next)
+      onSave?.(next)
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex items-end justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold">创建 / 编辑助理</h1>
-          <p className="text-sm text-muted-foreground">选择类型，配置模型、知识库和工具。右侧提供实时预览。</p>
+      {showTitle && (
+        <div className="flex items-end justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold">创建 / 编辑助理</h1>
+            <p className="text-sm text-muted-foreground">选择类型，配置模型、知识库和工具。右侧提供实时预览。</p>
+          </div>
         </div>
-      </div>
+      )}
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
+      <div className="grid gap-6 md:grid-cols-[1fr_420px]">
         {/* Left: editor */}
         <div className="space-y-6">
           <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -104,45 +167,20 @@ export function AgentBuilder() {
                   </div>
                   <div className="flex items-center gap-3">
                     <Switch
-                      checked={draft.visibility === "public"}
-                      onCheckedChange={(v) => setDraft({ ...draft, visibility: v ? "public" : "private" })}
-                      id="visibility"
+                      checked={!!draft.enabled}
+                      onCheckedChange={(v) => setDraft({ ...draft, enabled: v })}
+                      id="enabled"
                     />
-                    <Label htmlFor="visibility">公开到市场</Label>
+                    <Label htmlFor="enabled">启用</Label>
                   </div>
                 </CardContent>
-                <CardFooter className="justify-end gap-2">
-                  <Button variant="ghost" onClick={() => router.back()}>
+                 <CardFooter className="justify-end gap-2">
+                  <Button variant="ghost" onClick={() => (onCancel ? onCancel() : router.back())}>
                     取消
                   </Button>
-                  <Dialog open={openPublish} onOpenChange={setOpenPublish}>
-                    <DialogTrigger asChild>
-                      <Button onClick={() => setOpenPublish(true)}>创建 / 发布</Button>
-                    </DialogTrigger>
-                    <DialogContent aria-describedby="publish-desc">
-                      <DialogHeader>
-                        <DialogTitle>发布版本</DialogTitle>
-                        <p className="text-sm text-muted-foreground" id="publish-desc">
-                          确认将当前配置作为一个新版本发布到插件市场。
-                        </p>
-                      </DialogHeader>
-                      <div className="space-y-3">
-                        <Label>版本号</Label>
-                        <Input
-                          value={draft.version}
-                          onChange={(e) => setDraft({ ...draft, version: e.target.value })}
-                          placeholder="例如 1.0.1"
-                        />
-                        <p className="text-xs text-muted-foreground">发布后，其他用户可在插件市场看到。</p>
-                      </div>
-                      <DialogFooter>
-                        <Button variant="ghost" onClick={() => setOpenPublish(false)}>
-                          取消
-                        </Button>
-                        <Button onClick={save}>确认发布</Button>
-                      </DialogFooter>
-                    </DialogContent>
-                  </Dialog>
+                  <Button onClick={save} disabled={isSaving}>
+                    {isSaving ? "保存中…" : "保存"}
+                  </Button>
                 </CardFooter>
               </Card>
             </TabsContent>
@@ -159,6 +197,15 @@ export function AgentBuilder() {
                     placeholder="为你的助理设置系统行为与语气…"
                     rows={10}
                   />
+                  <div className="grid gap-1.5">
+                    <Label>欢迎词</Label>
+                    <Textarea
+                      value={draft.welcomeMessage || ""}
+                      onChange={(e) => setDraft({ ...draft, welcomeMessage: e.target.value })}
+                      placeholder="用户进入对话时展示的一句话/多句欢迎文案…"
+                      rows={3}
+                    />
+                  </div>
                   <div className="text-xs text-muted-foreground">
                     提示词用于引导模型的行为。不同类型助理可设置不同风格。
                   </div>
@@ -280,8 +327,8 @@ export function AgentBuilder() {
         </div>
 
         {/* Right: live preview */}
-        <div className="hidden lg:block">
-          <AgentPreview agent={draft} knowledgeCount={knowledge.length} toolCount={toolCount} />
+        <div className="hidden md:block">
+          <AgentPreview agent={draft} knowledgeCount={knowledge.length} toolCount={toolCount} disableSticky />
         </div>
       </div>
     </div>

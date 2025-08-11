@@ -87,6 +87,7 @@ public class AgentAppService {
         AgentEntity updateEntity = AgentAssembler.toEntity(request,userId);
 
         updateEntity.setUserId(userId);
+        updateEntity.setId(agentId);
         // 调用领域服务更新Agent
         return agentServiceDomainService.updateAgent(agentId, updateEntity);
     }

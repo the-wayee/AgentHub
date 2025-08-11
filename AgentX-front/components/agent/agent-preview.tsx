@@ -11,14 +11,16 @@ export function AgentPreview({
   agent,
   knowledgeCount,
   toolCount,
+  disableSticky,
 }: {
   agent: Agent
   knowledgeCount: number
   toolCount: number
+  disableSticky?: boolean
 }) {
   return (
     <div className="space-y-4">
-      <div className="sticky top-4 space-y-4">
+      <div className={disableSticky ? "space-y-4" : "sticky top-4 space-y-4"}>
         <Card>
           <CardHeader className="py-3">
             <CardTitle className="flex items-center gap-2 text-base">
@@ -31,7 +33,9 @@ export function AgentPreview({
               </Badge>
             </CardTitle>
           </CardHeader>
-          <CardContent>{agent.type === "function" ? <FunctionPreview /> : <ChatPreview />}</CardContent>
+          <CardContent className="max-w-full overflow-hidden">
+            {agent.type === "function" ? <FunctionPreview /> : <ChatPreview />}
+          </CardContent>
         </Card>
 
         <Card>

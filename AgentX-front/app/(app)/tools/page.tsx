@@ -6,41 +6,34 @@ import { Label } from "@/components/ui/label"
 import { useAgentCatalog } from "@/lib/stores"
 
 export default function ToolsPage() {
-  const { agents, upsertAgent } = useAgentCatalog()
-  const a = agents[0]
-  if (!a) {
-    return (
-      <div className="max-w-4xl mx-auto p-6">
-        <div className="text-sm text-muted-foreground">暂无 Agent，请先到「工作室」创建一个。</div>
-      </div>
-    )
-  }
+  const presets = [
+    { name: "Web 搜索", desc: "接入实时搜索引擎以获取最新信息", enabled: true },
+    { name: "天气预报", desc: "查询指定城市的实时/未来天气", enabled: false },
+    { name: "Wiki 百科", desc: "检索维基百科词条并返回摘要", enabled: true },
+    { name: "汇率换算", desc: "支持多币种实时汇率换算", enabled: false },
+  ]
+
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-6">
+    <div className="max-w-5xl mx-auto p-6 space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold">全局工具开关（示例）</h1>
-        <p className="text-muted-foreground text-sm">为演示目的，我们对第一个 Agent 的工具进行配置。</p>
+        <h1 className="text-2xl font-semibold">工具库（示例）</h1>
+        <p className="text-muted-foreground text-sm">以下为演示用的内置工具集合，后续可接入真实后端。</p>
       </div>
-      <Card>
-        <CardHeader>
-          <CardTitle>{a.name}</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {[
-            { key: "webSearch", label: "Web 搜索" },
-            { key: "calculator", label: "计算器" },
-            { key: "http", label: "HTTP GET" },
-          ].map((t) => (
-            <div key={t.key} className="flex items-center justify-between">
-              <Label>{t.label}</Label>
-              <Switch
-                checked={(a.tools as any)?.[t.key]}
-                onCheckedChange={(v) => upsertAgent({ ...a, tools: { ...a.tools, [t.key]: v } as any })}
-              />
-            </div>
-          ))}
-        </CardContent>
-      </Card>
+      <div className="grid gap-4 sm:grid-cols-2">
+        {presets.map((t) => (
+          <Card key={t.name}>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <span>{t.name}</span>
+                <span className="text-xs text-muted-foreground">{t.enabled ? "已启用" : "未启用"}</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-sm text-muted-foreground">{t.desc}</div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
     </div>
   )
 }

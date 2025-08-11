@@ -2,6 +2,7 @@ import type { ReactNode } from "react"
 import { TopNav } from "@/components/top-nav"
 import { AgentsLoader } from "@/components/agents-loader"
 import { Toaster } from "@/components/ui/toaster"
+import { AppLoadingOverlay } from "@/components/app-loading-overlay"
 
 export default function AppLayout({ children }: { children: ReactNode }) {
   return (
@@ -9,6 +10,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       <TopNav />
       {/* Load real agents from backend on app load */}
       <AgentsLoader />
+      <AppLoadingOverlay />
       <main className="flex-1">{children}</main>
       <Toaster />
     </div>

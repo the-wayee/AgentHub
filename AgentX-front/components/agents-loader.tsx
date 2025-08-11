@@ -3,6 +3,7 @@
 import { useEffect } from "react"
 import { useAgentCatalog } from "@/lib/stores"
 import type { Agent } from "@/lib/types"
+import { usePathname } from "next/navigation"
 
 type AgentDTO = {
   id: string
@@ -30,33 +31,37 @@ type AgentDTO = {
 function mapDtoToAgent(dto: AgentDTO): Agent {
   return {
     id: dto.id,
-    workspaceId: "personal",
     name: dto.name,
     description: dto.description,
-    version: dto.publishedVersion || "1.0.0",
-    visibility: "public",
+    version: dto.publishedVersion || "-Beta",
+    visibility: dto.publishedVersion ? "public" : "private",
     type: dto.agentType === 2 ? "function" : "chat",
     tags: [],
     model: {
       provider: dto.modelConfig?.provider || "openai",
-      model: dto.modelConfig?.model || "gpt-4o-mini",
+      model: (dto.modelConfig as any)?.model || dto.modelConfig?.model || "gpt-4o",
       temperature: dto.modelConfig?.temperature,
       maxTokens: dto.modelConfig?.maxTokens,
     },
     tools: undefined,
     systemPrompt: dto.systemPrompt,
+    welcomeMessage: dto.welcomeMessage,
+    enabled: dto.enabled ?? true,
+    updatedAt: dto.updatedAt,
   }
 }
 
 export function AgentsLoader() {
-  const { setAll } = useAgentCatalog()
+  const { setAll, setLoading } = useAgentCatalog()
+  const pathname = usePathname()
 
   useEffect(() => {
     let cancelled = false
     ;(async () => {
       try {
-        // Call our local API route, which proxies/massages backend response
-        const res = await fetch("/api/agents", { cache: "no-store" })
+        setLoading(true)
+        // always refetch on mount to restore home data
+        const res = await fetch("/api/agents?enable=true", { cache: "no-store" })
         const json = await res.json()
         const list: AgentDTO[] = Array.isArray(json) ? json : json?.data ?? []
         if (!cancelled && Array.isArray(list)) {
@@ -65,12 +70,12 @@ export function AgentsLoader() {
         }
       } catch {
         // swallow errors; fallback to seeded data
-      }
+      } finally { setLoading(false) }
     })()
     return () => {
       cancelled = true
     }
-  }, [setAll])
+  }, [setAll, pathname])
 
   return null
 }

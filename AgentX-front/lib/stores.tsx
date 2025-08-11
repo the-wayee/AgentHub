@@ -18,6 +18,7 @@ type Conversation = { id: string; agentId: string; title: string; createdAt: num
 type ConvoState = {
   conversations: Conversation[]
   activeId?: string
+  rehydrated?: boolean
   createConversation: (opts: { agentId: string }) => Conversation
   addConversation: (c: { id: string; agentId: string; title?: string; createdAt?: string | number }) => Conversation
   setActive: (id: string) => void
@@ -41,6 +42,7 @@ export const useConvoStore = create<ConvoState>()(
     (set, get) => ({
       conversations: [],
       activeId: undefined,
+      rehydrated: false,
       createConversation: ({ agentId }) => {
         const c: Conversation = {
           id: nanoid(),
@@ -176,22 +178,32 @@ export const useConvoStore = create<ConvoState>()(
           ),
         })),
     }),
-    { name: "agenthub_conversations_v2" },
+    {
+      name: "agenthub_conversations_v2",
+      onRehydrateStorage: () => () => {
+        set({ rehydrated: true })
+      },
+    },
   ),
 )
 
 /* Agent Catalog */
 type CatalogState = {
   agents: Agent[]
+  rehydrated?: boolean
+  loading: boolean
   upsertAgent: (a: Agent) => void
   find: (id: string) => Agent | undefined
   setAll: (list: Agent[]) => void
+  setLoading: (v: boolean) => void
 }
 
 export const useAgentCatalog = create<CatalogState>()(
   persist(
     (set, get) => ({
       agents: [],
+      rehydrated: false,
+      loading: true,
       upsertAgent: (a: Agent) =>
         set((s) => {
           const exists = s.agents.some((x) => x.id === a.id)
@@ -199,8 +211,14 @@ export const useAgentCatalog = create<CatalogState>()(
         }),
       find: (id) => get().agents.find((a) => a.id === id),
       setAll: (list) => set({ agents: list }),
+      setLoading: (v) => set({ loading: v }),
     }),
-    { name: "agenthub_catalog_v2" },
+    {
+      name: "agenthub_catalog_v2",
+      onRehydrateStorage: () => () => {
+        set({ rehydrated: true })
+      },
+    },
   ),
 )
 
@@ -228,6 +246,8 @@ type WorkspaceState = {
   workspaces: Workspace[]
   selectedId: string
   setSelected: (id: string) => void
+  currentAgentId?: string
+  setCurrentAgentId: (id?: string) => void
 }
 
 export const useWorkspaceStore = create<WorkspaceState>()(
@@ -236,6 +256,8 @@ export const useWorkspaceStore = create<WorkspaceState>()(
       workspaces: [],
       selectedId: "personal",
       setSelected: (id) => set({ selectedId: id }),
+      currentAgentId: undefined,
+      setCurrentAgentId: (id) => set({ currentAgentId: id }),
     }),
     { name: "agenthub_workspace_v2" },
   ),

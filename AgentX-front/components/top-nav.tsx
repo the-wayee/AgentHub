@@ -2,17 +2,17 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Bot, Boxes, Home, Library, Settings2, ShoppingBag, Telescope, Menu } from "lucide-react"
+import { Bot, Boxes, Home, Library, Settings2, Telescope, Menu, Shield } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 
 const links = [
   { href: "/chat/demo", label: "主页", icon: Home },
-  { href: "/marketplace", label: "插件", icon: ShoppingBag },
+  { href: "/explore", label: "探索", icon: Telescope },
   { href: "/studio", label: "工作室", icon: Settings2 },
   { href: "/knowledge", label: "知识库", icon: Library },
-  { href: "/explore", label: "探索", icon: Telescope },
   { href: "/tools", label: "工具", icon: Boxes },
+  { href: "/admin", label: "后台", icon: Shield },
 ]
 
 export function TopNav() {
@@ -59,7 +59,7 @@ export function TopNav() {
                   <Link href="/chat/demo">主页</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link href="/marketplace">插件</Link>
+                  <Link href="/explore">探索</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link href="/studio">工作室</Link>

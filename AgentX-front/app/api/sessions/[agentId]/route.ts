@@ -13,9 +13,10 @@ type SessionDTO = {
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
 
-export async function GET(_: Request, { params }: { params: { agentId: string } }) {
+export async function GET(_: Request, { params }: { params: Promise<{ agentId: string }> }) {
+  const { agentId } = await params
   const base = (process.env.SESSIONS_ENDPOINT_BASE || "http://localhost:8080/api/agent/session").replace(/\/$/, "")
-  const url = `${base}/${encodeURIComponent(params.agentId)}`
+  const url = `${base}/${encodeURIComponent(agentId)}`
   try {
     const r = await fetch(url, { cache: "no-store" })
     const j = await r.json()

@@ -3,9 +3,10 @@ import { NextResponse } from "next/server"
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
 
-export async function POST(req: Request, { params }: { params: { agentId: string } }) {
+export async function POST(req: Request, { params }: { params: Promise<{ agentId: string }> }) {
+  const { agentId } = await params
   const base = (process.env.MESSAGES_ENDPOINT_BASE || "http://localhost:8080/api/agent/session").replace(/\/$/, "")
-  const url = `${base}/${encodeURIComponent(params.agentId)}/message`
+  const url = `${base}/${encodeURIComponent(agentId)}/message`
   const body = await req.json().catch(() => ({}))
   try {
     const r = await fetch(url, {

@@ -3,8 +3,12 @@ package com.xiaoguai.agentx.domain.agent.repository;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiaoguai.agentx.domain.agent.model.AgentVersionEntity;
+import com.xiaoguai.agentx.infrastrcture.typehandler.JsonTypeHandler;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Result;
+import org.apache.ibatis.annotations.Results;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.type.JdbcType;
 
 import java.util.List;
 
@@ -20,17 +24,23 @@ public interface AgentVersionRepository extends BaseMapper<AgentVersionEntity> {
     /**
      * 根据name和status模糊查询最新版的agents version
      */
+    @Results(id = "AgentVersionMap", value = {
+            @Result(column = "model_config", property = "modelConfig",
+                    typeHandler = JsonTypeHandler.class, jdbcType = JdbcType.OTHER)
+    })
     @Select({"<script> ",
-            "select v.* from agent_versions v inner join (",
+            "select ",
+            "v.* ",
+            "from agent_versions v inner join (",
             "    select agent_id, MAX(published_at) as latest_date from agent_versions where deleted_at is null ",
             "<if test='status != null'>",
-            "      and publish_status = #{name} ",
+            "      and publish_status = #{status} ",
             "</if>",
             "    group by agent_id " +
                     ") latest_version on v.agent_id = latest_version.agent_id and v.published_at = latest_version.latest_date ",
             "where v.deleted_at is null ",
             "<if test='name != null and name != \"\"'>",
-            "and v.name like contact('%', #{name}, '%')",
+            "and v.name like concat('%', #{name}, '%')",
             "</if>",
             "<if test='status != null'>",
             "    AND v.publish_status = #{status}",
