@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.extension.activerecord.Model;
 import com.xiaoguai.agentx.domain.conversation.dto.MessageDTO;
+import com.xiaoguai.agentx.infrastrcture.entity.BaseEntity;
 
 import java.time.LocalDateTime;
 
@@ -13,7 +14,7 @@ import java.time.LocalDateTime;
  * 消息实体类，代表对话中的一条消息
  */
 @TableName("messages")
-public class MessageEntity extends Model<MessageEntity> {
+public class MessageEntity extends BaseEntity {
 
     /**
      * 消息唯一ID
@@ -38,12 +39,6 @@ public class MessageEntity extends Model<MessageEntity> {
      */
     @TableField("content")
     private String content;
-
-    /**
-     * 创建时间
-     */
-    @TableField("created_at")
-    private LocalDateTime createdAt;
 
     /**
      * Token数量
@@ -123,14 +118,6 @@ public class MessageEntity extends Model<MessageEntity> {
 
     public void setContent(String content) {
         this.content = content;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
     }
 
     public Integer getTokenCount() {

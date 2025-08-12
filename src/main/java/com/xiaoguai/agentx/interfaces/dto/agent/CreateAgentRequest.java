@@ -2,7 +2,7 @@ package com.xiaoguai.agentx.interfaces.dto.agent;
 
 
 import com.xiaoguai.agentx.domain.agent.model.AgentTool;
-import com.xiaoguai.agentx.domain.agent.model.ModelConfig;
+import com.xiaoguai.agentx.domain.agent.model.AgentModelConfig;
 import com.xiaoguai.agentx.domain.agent.constant.AgentType;
 import com.xiaoguai.agentx.infrastrcture.utils.ValidationUtils;
 
@@ -49,7 +49,7 @@ public class CreateAgentRequest {
     /**
      * 模型配置
      */
-    private ModelConfig modelConfig;
+    private AgentModelConfig agentModelConfig;
 
     /**
      * 工具列表
@@ -75,14 +75,14 @@ public class CreateAgentRequest {
     public CreateAgentRequest() {
     }
 
-    public CreateAgentRequest(String name, String avatar, String description, AgentType agentType, String systemPrompt, String welcomeMessage, ModelConfig modelConfig, List<AgentTool> tools, List<String> knowledgeBaseIds) {
+    public CreateAgentRequest(String name, String avatar, String description, AgentType agentType, String systemPrompt, String welcomeMessage, AgentModelConfig agentModelConfig, List<AgentTool> tools, List<String> knowledgeBaseIds) {
         this.name = name;
         this.avatar = avatar;
         this.description = description;
         this.agentType = agentType;
         this.systemPrompt = systemPrompt;
         this.welcomeMessage = welcomeMessage;
-        this.modelConfig = modelConfig;
+        this.agentModelConfig = agentModelConfig;
         this.tools = tools;
         this.knowledgeBaseIds = knowledgeBaseIds;
     }
@@ -135,12 +135,12 @@ public class CreateAgentRequest {
         this.welcomeMessage = welcomeMessage;
     }
 
-    public ModelConfig getModelConfig() {
-        return modelConfig;
+    public AgentModelConfig getModelConfig() {
+        return agentModelConfig;
     }
 
-    public void setModelConfig(ModelConfig modelConfig) {
-        this.modelConfig = modelConfig;
+    public void setModelConfig(AgentModelConfig agentModelConfig) {
+        this.agentModelConfig = agentModelConfig;
     }
 
     public List<AgentTool> getTools() {

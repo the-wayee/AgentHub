@@ -5,6 +5,9 @@ import com.baomidou.mybatisplus.annotation.*;
 import com.baomidou.mybatisplus.extension.activerecord.Model;
 import com.xiaoguai.agentx.domain.agent.dto.AgentDTO;
 import com.xiaoguai.agentx.domain.agent.constant.AgentType;
+import com.xiaoguai.agentx.infrastrcture.converter.AgentModelConfigConverter;
+import com.xiaoguai.agentx.infrastrcture.converter.ListConverter;
+import com.xiaoguai.agentx.infrastrcture.entity.BaseEntity;
 import com.xiaoguai.agentx.infrastrcture.typehandler.JsonTypeHandler;
 import org.apache.ibatis.type.JdbcType;
 
@@ -18,7 +21,7 @@ import java.util.List;
  * @Description: AgentEntity
  */
 @TableName(value = "agents", autoResultMap = true)
-public class AgentEntity extends Model<AgentEntity> {
+public class AgentEntity extends BaseEntity {
 
 
     /**
@@ -60,19 +63,19 @@ public class AgentEntity extends Model<AgentEntity> {
     /**
      * 模型配置，包含模型类型、温度等参数
      */
-    @TableField(value = "model_config", typeHandler = JsonTypeHandler.class, jdbcType = JdbcType.OTHER)
-    private ModelConfig modelConfig;
+    @TableField(value = "model_config", typeHandler = AgentModelConfigConverter.class, jdbcType = JdbcType.OTHER)
+    private AgentModelConfig agentModelConfig;
 
     /**
      * Agent可使用的工具列表
      */
-    @TableField(value = "tools", typeHandler = JsonTypeHandler.class, jdbcType = JdbcType.OTHER)
+    @TableField(value = "tools", typeHandler = ListConverter.class, jdbcType = JdbcType.OTHER)
     private List<AgentTool> tools;
 
     /**
      * 关联的知识库ID列表
      */
-    @TableField(value = "knowledge_base_ids", typeHandler = JsonTypeHandler.class, jdbcType = JdbcType.OTHER)
+    @TableField(value = "knowledge_base_ids", typeHandler = ListConverter.class, jdbcType = JdbcType.OTHER)
     private List<String> knowledgeBaseIds;
 
     /**
@@ -98,25 +101,6 @@ public class AgentEntity extends Model<AgentEntity> {
      */
     @TableField("user_id")
     private String userId;
-
-    /**
-     * 创建时间
-     */
-    @TableField("created_at")
-    private LocalDateTime createdAt;
-
-    /**
-     * 最后更新时间
-     */
-    @TableField("updated_at")
-    private LocalDateTime updatedAt;
-
-    /**
-     * 删除时间（软删除）
-     */
-    @TableField("deleted_at")
-    @TableLogic
-    private LocalDateTime deletedAt;
 
     public AgentEntity() {
     }
@@ -169,12 +153,12 @@ public class AgentEntity extends Model<AgentEntity> {
         this.welcomeMessage = welcomeMessage;
     }
 
-    public ModelConfig getModelConfig() {
-        return modelConfig;
+    public AgentModelConfig getModelConfig() {
+        return agentModelConfig;
     }
 
-    public void setModelConfig(ModelConfig modelConfig) {
-        this.modelConfig = modelConfig;
+    public void setModelConfig(AgentModelConfig agentModelConfig) {
+        this.agentModelConfig = agentModelConfig;
     }
 
     public List<AgentTool> getTools() {
@@ -225,38 +209,16 @@ public class AgentEntity extends Model<AgentEntity> {
         this.userId = userId;
     }
 
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
 
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
-    public LocalDateTime getDeletedAt() {
-        return deletedAt;
-    }
-
-    public void setDeletedAt(LocalDateTime deletedAt) {
-        this.deletedAt = deletedAt;
-    }
-
-    public AgentEntity(String id, String name, String avatar, String description, String systemPrompt, String welcomeMessage, ModelConfig modelConfig, List<AgentTool> tools, List<String> knowledgeBaseIds, String publishedVersion, Boolean enabled, Integer agentType, String userId, LocalDateTime createdAt, LocalDateTime updatedAt, LocalDateTime deletedAt) {
+    public AgentEntity(String id, String name, String avatar, String description, String systemPrompt, String welcomeMessage, AgentModelConfig agentModelConfig, List<AgentTool> tools, List<String> knowledgeBaseIds, String publishedVersion, Boolean enabled, Integer agentType, String userId, LocalDateTime createdAt, LocalDateTime updatedAt, LocalDateTime deletedAt) {
         this.id = id;
         this.name = name;
         this.avatar = avatar;
         this.description = description;
         this.systemPrompt = systemPrompt;
         this.welcomeMessage = welcomeMessage;
-        this.modelConfig = modelConfig;
+        this.agentModelConfig = agentModelConfig;
         this.tools = tools;
         this.knowledgeBaseIds = knowledgeBaseIds;
         this.publishedVersion = publishedVersion;
@@ -281,11 +243,11 @@ public class AgentEntity extends Model<AgentEntity> {
     /**
      * 更新Agent配置
      */
-    public void updateConfig(String systemPrompt, String welcomeMessage, ModelConfig modelConfig,
+    public void updateConfig(String systemPrompt, String welcomeMessage, AgentModelConfig agentModelConfig,
                              List<AgentTool> tools, List<String> knowledgeBaseIds) {
         this.systemPrompt = systemPrompt;
         this.welcomeMessage = welcomeMessage;
-        this.modelConfig = modelConfig;
+        this.agentModelConfig = agentModelConfig;
         this.tools = tools;
         this.knowledgeBaseIds = knowledgeBaseIds;
         this.updatedAt = LocalDateTime.now();
@@ -332,7 +294,7 @@ public class AgentEntity extends Model<AgentEntity> {
         dto.setDescription(this.description);
         dto.setSystemPrompt(this.systemPrompt);
         dto.setWelcomeMessage(this.welcomeMessage);
-        dto.setModelConfig(this.modelConfig);
+        dto.setModelConfig(this.agentModelConfig);
         dto.setTools(this.tools);
         dto.setKnowledgeBaseIds(this.knowledgeBaseIds);
         dto.setPublishedVersion(this.publishedVersion);

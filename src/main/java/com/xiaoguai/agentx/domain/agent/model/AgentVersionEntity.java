@@ -7,6 +7,8 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.xiaoguai.agentx.domain.agent.dto.AgentVersionDTO;
 import com.xiaoguai.agentx.domain.agent.constant.PublishStatus;
+import com.xiaoguai.agentx.infrastrcture.converter.AgentModelConfigConverter;
+import com.xiaoguai.agentx.infrastrcture.converter.ListConverter;
 import com.xiaoguai.agentx.infrastrcture.typehandler.JsonTypeHandler;
 import org.apache.ibatis.type.JdbcType;
 
@@ -73,19 +75,19 @@ public class AgentVersionEntity {
     /**
      * 模型配置，包含模型类型、温度等参数
      */
-    @TableField(value = "model_config", typeHandler = JsonTypeHandler.class, jdbcType = JdbcType.OTHER)
-    private ModelConfig modelConfig;
+    @TableField(value = "model_config", typeHandler = AgentModelConfigConverter.class, jdbcType = JdbcType.OTHER)
+    private AgentModelConfig agentModelConfig;
 
     /**
      * Agent可使用的工具列表
      */
-    @TableField(value = "tools", typeHandler = JsonTypeHandler.class, jdbcType = JdbcType.OTHER)
+    @TableField(value = "tools", typeHandler = ListConverter.class, jdbcType = JdbcType.OTHER)
     private List<AgentTool> tools;
 
     /**
      * 关联的知识库ID列表
      */
-    @TableField(value = "knowledge_base_ids", typeHandler = JsonTypeHandler.class, jdbcType = JdbcType.OTHER)
+    @TableField(value = "knowledge_base_ids", typeHandler = ListConverter.class, jdbcType = JdbcType.OTHER)
     private List<String> knowledgeBaseIds;
 
     /**
@@ -131,64 +133,14 @@ public class AgentVersionEntity {
     private String userId;
 
     /**
-     * 创建时间
-     */
-    @TableField("created_at")
-    private LocalDateTime createdAt;
-
-    /**
-     * 最后更新时间
-     */
-    @TableField("updated_at")
-    private LocalDateTime updatedAt;
-
-    /**
-     * 删除时间（软删除）
-     */
-    @TableField("deleted_at")
-    private LocalDateTime deletedAt;
-
-    /**
      * 无参构造函数
      */
     public AgentVersionEntity() {
-        this.modelConfig = ModelConfig.createDefault();
+        this.agentModelConfig = AgentModelConfig.createDefault();
         this.tools = new ArrayList<>();
         this.knowledgeBaseIds = new ArrayList<>();
     }
 
-    /**
-     * 全参构造函数
-     */
-    public AgentVersionEntity(String id, String agentId, String name, String avatar, String description,
-                              String versionNumber, String systemPrompt, String welcomeMessage,
-                              ModelConfig modelConfig, List<AgentTool> tools, List<String> knowledgeBaseIds,
-                              String changeLog, Integer agentType, String userId,
-                              LocalDateTime createdAt, LocalDateTime updatedAt, LocalDateTime deletedAt,
-                              Integer publishStatus, String rejectReason, LocalDateTime reviewTime,
-                              LocalDateTime publishedAt) {
-        this.id = id;
-        this.agentId = agentId;
-        this.name = name;
-        this.avatar = avatar;
-        this.description = description;
-        this.versionNumber = versionNumber;
-        this.systemPrompt = systemPrompt;
-        this.welcomeMessage = welcomeMessage;
-        this.modelConfig = modelConfig;
-        this.tools = tools;
-        this.knowledgeBaseIds = knowledgeBaseIds;
-        this.changeLog = changeLog;
-        this.agentType = agentType;
-        this.userId = userId;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-        this.deletedAt = deletedAt;
-        this.publishStatus = publishStatus;
-        this.rejectReason = rejectReason;
-        this.reviewTime = reviewTime;
-        this.publishedAt = publishedAt;
-    }
 
     // Getter和Setter方法
     public String getId() {
@@ -231,12 +183,12 @@ public class AgentVersionEntity {
         this.welcomeMessage = welcomeMessage;
     }
 
-    public ModelConfig getModelConfig() {
-        return modelConfig != null ? modelConfig : ModelConfig.createDefault();
+    public AgentModelConfig getModelConfig() {
+        return agentModelConfig != null ? agentModelConfig : AgentModelConfig.createDefault();
     }
 
-    public void setModelConfig(ModelConfig modelConfig) {
-        this.modelConfig = modelConfig;
+    public void setModelConfig(AgentModelConfig agentModelConfig) {
+        this.agentModelConfig = agentModelConfig;
     }
 
     public List<AgentTool> getTools() {
@@ -335,29 +287,6 @@ public class AgentVersionEntity {
         this.userId = userId;
     }
 
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
-    public LocalDateTime getDeletedAt() {
-        return deletedAt;
-    }
-
-    public void setDeletedAt(LocalDateTime deletedAt) {
-        this.deletedAt = deletedAt;
-    }
 
     /**
      * 获取发布状态枚举
@@ -404,8 +333,6 @@ public class AgentVersionEntity {
 
         // 创建时间和发布时间应该相同
         LocalDateTime now = LocalDateTime.now();
-        version.setCreatedAt(now);
-        version.setUpdatedAt(now);
         version.setPublishedAt(now);
 
         // 设置初始状态为审核中
@@ -427,7 +354,7 @@ public class AgentVersionEntity {
         dto.setVersionNumber(this.versionNumber);
         dto.setSystemPrompt(this.systemPrompt);
         dto.setWelcomeMessage(this.welcomeMessage);
-        dto.setModelConfig(this.modelConfig);
+        dto.setModelConfig(this.agentModelConfig);
         dto.setTools(this.tools);
         dto.setKnowledgeBaseIds(this.knowledgeBaseIds);
         dto.setChangeLog(this.changeLog);
@@ -437,9 +364,6 @@ public class AgentVersionEntity {
         dto.setReviewTime(this.reviewTime);
         dto.setPublishedAt(this.publishedAt);
         dto.setUserId(this.userId);
-        dto.setCreatedAt(this.createdAt);
-        dto.setUpdatedAt(this.updatedAt);
-        dto.setDeletedAt(this.deletedAt);
         return dto;
     }
 }

@@ -1,13 +1,16 @@
 package com.xiaoguai.agentx.domain.agent.model;
 
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 /**
  * @Author: the-way
  * @Verson: v1.0
  * @Date: 2025-07-28 16:11
  * @Description: Agent模型配置类，用于表示大语言模型的相关配置参数
  */
-public class ModelConfig {
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class AgentModelConfig {
     /**
      * 模型名称，如：gpt-4-0125-preview, claude-3-opus-20240229等
      */
@@ -38,10 +41,10 @@ public class ModelConfig {
      */
     private String systemMessage;
 
-    public ModelConfig() {
+    public AgentModelConfig() {
     }
 
-    public ModelConfig(String modelName, Double temperature, Double topP, Integer maxTokens, Boolean loadMemory, String systemMessage) {
+    public AgentModelConfig(String modelName, Double temperature, Double topP, Integer maxTokens, Boolean loadMemory, String systemMessage) {
         this.modelName = modelName;
         this.temperature = temperature;
         this.topP = topP;
@@ -101,9 +104,9 @@ public class ModelConfig {
     /**
      * 创建默认配置
      */
-    public static ModelConfig createDefault() {
-        ModelConfig config = new ModelConfig();
-        config.setModelName("THUDM/GLM-4-9B-0414");
+    public static AgentModelConfig createDefault() {
+        AgentModelConfig config = new AgentModelConfig();
+        config.setModelName("Qwen/Qwen3-32B");
         config.setTemperature(0.7);
         config.setTopP(1.0);
         config.setMaxTokens(2000);

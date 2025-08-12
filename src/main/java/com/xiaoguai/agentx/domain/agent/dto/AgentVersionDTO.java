@@ -4,7 +4,7 @@ package com.xiaoguai.agentx.domain.agent.dto;
 import com.xiaoguai.agentx.domain.agent.constant.AgentType;
 import com.xiaoguai.agentx.domain.agent.constant.PublishStatus;
 import com.xiaoguai.agentx.domain.agent.model.AgentTool;
-import com.xiaoguai.agentx.domain.agent.model.ModelConfig;
+import com.xiaoguai.agentx.domain.agent.model.AgentModelConfig;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -62,7 +62,7 @@ public class AgentVersionDTO {
     /**
      * 模型配置，包含模型类型、温度等参数
      */
-    private ModelConfig modelConfig;
+    private AgentModelConfig agentModelConfig;
 
     /**
      * Agent可使用的工具列表
@@ -128,7 +128,7 @@ public class AgentVersionDTO {
      * 无参构造函数
      */
     public AgentVersionDTO() {
-        this.modelConfig = ModelConfig.createDefault();
+        this.agentModelConfig = AgentModelConfig.createDefault();
         this.tools = new ArrayList<>();
         this.knowledgeBaseIds = new ArrayList<>();
     }
@@ -138,7 +138,7 @@ public class AgentVersionDTO {
      */
     public AgentVersionDTO(String id, String agentId, String name, String avatar, String description,
                            String versionNumber, String systemPrompt, String welcomeMessage,
-                           ModelConfig modelConfig, List<AgentTool> tools, List<String> knowledgeBaseIds,
+                           AgentModelConfig agentModelConfig, List<AgentTool> tools, List<String> knowledgeBaseIds,
                            String changeLog, Integer agentType, Integer publishStatus,
                            String rejectReason, LocalDateTime reviewTime, LocalDateTime publishedAt,
                            String userId, LocalDateTime createdAt, LocalDateTime updatedAt, LocalDateTime deletedAt) {
@@ -150,7 +150,7 @@ public class AgentVersionDTO {
         this.versionNumber = versionNumber;
         this.systemPrompt = systemPrompt;
         this.welcomeMessage = welcomeMessage;
-        this.modelConfig = modelConfig;
+        this.agentModelConfig = agentModelConfig;
         this.tools = tools;
         this.knowledgeBaseIds = knowledgeBaseIds;
         this.changeLog = changeLog;
@@ -230,12 +230,12 @@ public class AgentVersionDTO {
         this.welcomeMessage = welcomeMessage;
     }
 
-    public ModelConfig getModelConfig() {
-        return modelConfig;
+    public AgentModelConfig getModelConfig() {
+        return agentModelConfig;
     }
 
-    public void setModelConfig(ModelConfig modelConfig) {
-        this.modelConfig = modelConfig;
+    public void setModelConfig(AgentModelConfig agentModelConfig) {
+        this.agentModelConfig = agentModelConfig;
     }
 
     public List<AgentTool> getTools() {

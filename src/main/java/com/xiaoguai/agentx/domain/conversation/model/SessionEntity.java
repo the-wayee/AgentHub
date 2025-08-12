@@ -3,6 +3,7 @@ package com.xiaoguai.agentx.domain.conversation.model;
 import com.baomidou.mybatisplus.annotation.*;
 import com.baomidou.mybatisplus.extension.activerecord.Model;
 import com.xiaoguai.agentx.domain.conversation.dto.SessionDTO;
+import com.xiaoguai.agentx.infrastrcture.entity.BaseEntity;
 
 import java.time.LocalDateTime;
 
@@ -10,7 +11,7 @@ import java.time.LocalDateTime;
  * 会话实体类，代表一个独立的对话会话/主题
  */
 @TableName("sessions")
-public class SessionEntity extends Model<SessionEntity> {
+public class SessionEntity extends BaseEntity {
 
     /**
      * 会话唯一ID
@@ -42,17 +43,6 @@ public class SessionEntity extends Model<SessionEntity> {
     @TableField("description")
     private String description;
 
-    /**
-     * 创建时间
-     */
-    @TableField(value = "created_at", fill = FieldFill.INSERT)
-    private LocalDateTime createdAt;
-
-    /**
-     * 最后更新时间
-     */
-    @TableField(value = "updated_at", fill = FieldFill.INSERT_UPDATE)
-    private LocalDateTime updatedAt;
 
     /**
      * 是否归档
@@ -128,22 +118,6 @@ public class SessionEntity extends Model<SessionEntity> {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
     }
 
     public boolean isArchived() {
