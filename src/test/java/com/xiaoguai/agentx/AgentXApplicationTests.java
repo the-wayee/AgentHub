@@ -3,11 +3,11 @@ package com.xiaoguai.agentx;
 import dev.langchain4j.community.model.dashscope.QwenChatModel;
 import dev.langchain4j.community.model.dashscope.QwenChatRequestParameters;
 import dev.langchain4j.community.model.dashscope.QwenStreamingChatModel;
-import dev.langchain4j.community.model.qianfan.QianfanChatModel;
 import dev.langchain4j.community.model.zhipu.ZhipuAiStreamingChatModel;
 import dev.langchain4j.data.message.UserMessage;
 import dev.langchain4j.model.chat.StreamingChatModel;
 import dev.langchain4j.model.chat.request.ChatRequest;
+import dev.langchain4j.model.chat.request.ChatRequestParameters;
 import dev.langchain4j.model.chat.response.ChatResponse;
 import dev.langchain4j.model.chat.response.PartialThinking;
 import dev.langchain4j.model.chat.response.StreamingChatResponseHandler;
@@ -32,11 +32,11 @@ class AgentXApplicationTests {
 //                .modelName("Qwen/Qwen3-32B")
                 .modelName("qwen-plus")
                 .build();
-        String message = "你好，你叫什么";
+        String message = "写100字作文";
 
 
         UserMessage userMessage = UserMessage.from(message);
-        QwenChatRequestParameters parameters = QwenChatRequestParameters.builder()
+        ChatRequestParameters parameters = QwenChatRequestParameters.builder()
                 .enableThinking(true)
                 .build();
 

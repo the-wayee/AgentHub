@@ -5,11 +5,11 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.xiaoguai.agentx.domain.agent.dto.AgentVersionDTO;
+import com.xiaoguai.agentx.application.agent.dto.AgentVersionDTO;
 import com.xiaoguai.agentx.domain.agent.constant.PublishStatus;
 import com.xiaoguai.agentx.infrastrcture.converter.AgentModelConfigConverter;
 import com.xiaoguai.agentx.infrastrcture.converter.ListConverter;
-import com.xiaoguai.agentx.infrastrcture.typehandler.JsonTypeHandler;
+import com.xiaoguai.agentx.infrastrcture.entity.BaseEntity;
 import org.apache.ibatis.type.JdbcType;
 
 import java.time.LocalDateTime;
@@ -23,7 +23,7 @@ import java.util.List;
  * @Description: Agent版本实体类，代表一个Agent的发布版本
  */
 @TableName(value = "agent_versions", autoResultMap = true)
-public class AgentVersionEntity {
+public class AgentVersionEntity extends BaseEntity {
     /**
      * 版本唯一ID
      */

@@ -1,4 +1,4 @@
-package com.xiaoguai.agentx.domain.agent.dto;
+package com.xiaoguai.agentx.application.agent.dto;
 
 
 /**
@@ -12,6 +12,16 @@ public class AgentWorkspaceDTO {
     private String agentId;
 
     private String userId;
+
+    private String modelId;
+
+    public String getModelId() {
+        return modelId;
+    }
+
+    public void setModelId(String modelId) {
+        this.modelId = modelId;
+    }
 
     public AgentWorkspaceDTO(String agentId, String userId) {
         this.agentId = agentId;

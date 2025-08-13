@@ -2,7 +2,7 @@ package com.xiaoguai.agentx.interfaces.api.admin;
 
 import com.xiaoguai.agentx.application.agent.service.AgentAppService;
 import com.xiaoguai.agentx.domain.agent.constant.PublishStatus;
-import com.xiaoguai.agentx.domain.agent.dto.AgentVersionDTO;
+import com.xiaoguai.agentx.application.agent.dto.AgentVersionDTO;
 import com.xiaoguai.agentx.interfaces.api.common.Result;
 import com.xiaoguai.agentx.interfaces.dto.agent.ReviewAgentVersionRequest;
 import org.springframework.web.bind.annotation.*;

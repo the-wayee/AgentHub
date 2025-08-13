@@ -2,8 +2,8 @@ package com.xiaoguai.agentx.interfaces.api.portal.agent;
 
 
 import com.xiaoguai.agentx.application.agent.service.AgentAppService;
-import com.xiaoguai.agentx.domain.agent.dto.AgentDTO;
-import com.xiaoguai.agentx.domain.agent.dto.AgentVersionDTO;
+import com.xiaoguai.agentx.application.agent.dto.AgentDTO;
+import com.xiaoguai.agentx.application.agent.dto.AgentVersionDTO;
 import com.xiaoguai.agentx.infrastrcture.auth.UserContext;
 import com.xiaoguai.agentx.interfaces.api.common.Result;
 import com.xiaoguai.agentx.interfaces.dto.agent.CreateAgentRequest;

@@ -1,6 +1,8 @@
 package com.xiaoguai.agentx.domain.llm.model.enums;
 
 
+import com.xiaoguai.agentx.infrastrcture.exception.BusinessException;
+
 /**
  * @Author: the-way
  * @Verson: v1.0

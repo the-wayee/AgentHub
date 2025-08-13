@@ -1,18 +1,21 @@
 package com.xiaoguai.agentx.application.agent.service;
 
 
-import com.xiaoguai.agentx.domain.agent.dto.AgentDTO;
+import com.xiaoguai.agentx.application.conversation.assembler.SessionAssembler;
+import com.xiaoguai.agentx.application.conversation.dto.StreamChatRequest;
+import com.xiaoguai.agentx.application.agent.dto.AgentDTO;
 import com.xiaoguai.agentx.domain.agent.service.AgentDomainService;
 import com.xiaoguai.agentx.domain.agent.service.AgentWorkspaceDomainService;
-import com.xiaoguai.agentx.domain.conversation.dto.SessionDTO;
+import com.xiaoguai.agentx.application.conversation.dto.SessionDTO;
+import com.xiaoguai.agentx.domain.conversation.contants.Role;
+import com.xiaoguai.agentx.domain.conversation.model.MessageEntity;
+import com.xiaoguai.agentx.domain.conversation.model.SessionEntity;
 import com.xiaoguai.agentx.domain.conversation.service.ConversationDomainService;
 import com.xiaoguai.agentx.domain.conversation.service.SessionDomainService;
 import com.xiaoguai.agentx.infrastrcture.exception.BusinessException;
-import com.xiaoguai.agentx.interfaces.dto.conversation.ConversationRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -54,13 +57,13 @@ public class AgentSessionAppService {
             throw new BusinessException("助理不存在");
         }
         // 获取会话列表
-        List<SessionDTO> sessions = sessionDomainService.getSessionsByAgentId(agentId, userId);
+        List<SessionEntity> sessions = sessionDomainService.getSessionsByAgentId(agentId, userId);
         if (sessions.isEmpty()) {
             // 如果没有会话列表，创建一个
-            SessionDTO session = this.createSession(agentId, userId);
-            return Collections.singletonList(session);
+            SessionEntity session = sessionDomainService.createSession(agentId, userId);
+            sessions.add(session);
         }
-        return sessions;
+        return SessionAssembler.toDTOs(sessions);
     }
 
     /**
@@ -69,12 +72,17 @@ public class AgentSessionAppService {
     @Transactional
     public SessionDTO createSession(String agentId, String userId) {
         // 创建会话
-        SessionDTO session = sessionDomainService.createSession(agentId, userId);
+        SessionEntity session = sessionDomainService.createSession(agentId, userId);
         // 获取Agent
         AgentDTO agent = agentServiceDomainService.getAgentWithPermissionCheck(agentId, userId);
         String welcomeMessage = agent.getWelcomeMessage();
-        conversationDomainService.saveAssistantMessage(session.getId(), welcomeMessage, "", "", 0);
-        return session;
+
+        MessageEntity messageEntity = new MessageEntity();
+        messageEntity.setRole(Role.SYSTEM);
+        messageEntity.setContent(welcomeMessage);
+        messageEntity.setSessionId(session.getId());
+        conversationDomainService.saveMessage(messageEntity);
+        return SessionAssembler.toDTO(session);
     }
 
     /**
@@ -109,9 +117,9 @@ public class AgentSessionAppService {
      *
      * @param id 会话id
      * @param userId 用户id
-     * @param conversationRequest 会话请求
+     * @param request 会话请求
      */
-    public void sendMessage(String id, String userId, ConversationRequest conversationRequest) {
+    public void sendMessage(String id, String userId, StreamChatRequest request) {
 
         // todo 目前先普通的发送消息，后续还需要根据 agent 的记忆策略，对话助手/agent 策略进行处理
 

@@ -1,8 +1,6 @@
 package com.xiaoguai.agentx.domain.conversation.model;
 
 import com.baomidou.mybatisplus.annotation.*;
-import com.baomidou.mybatisplus.extension.activerecord.Model;
-import com.xiaoguai.agentx.domain.conversation.dto.SessionDTO;
 import com.xiaoguai.agentx.infrastrcture.entity.BaseEntity;
 
 import java.time.LocalDateTime;

@@ -4,18 +4,15 @@ package com.xiaoguai.agentx.interfaces.api.portal.agent;
 import com.xiaoguai.agentx.application.agent.service.AgentSessionAppService;
 import com.xiaoguai.agentx.application.conversation.dto.StreamChatRequest;
 import com.xiaoguai.agentx.application.conversation.service.ConversationAppService;
-import com.xiaoguai.agentx.domain.conversation.dto.MessageDTO;
-import com.xiaoguai.agentx.domain.conversation.dto.SessionDTO;
+import com.xiaoguai.agentx.application.conversation.dto.MessageDTO;
+import com.xiaoguai.agentx.application.conversation.dto.SessionDTO;
 import com.xiaoguai.agentx.infrastrcture.auth.UserContext;
 import com.xiaoguai.agentx.interfaces.api.common.Result;
-import com.xiaoguai.agentx.interfaces.dto.conversation.ConversationRequest;
-import org.apache.ibatis.annotations.Delete;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
@@ -91,74 +88,10 @@ public class PortalAgentSessionController {
     /**
      * 发送消息
      *
-     * @param id 会话id
      */
-    @PostMapping("/{id}/message")
-    public SseEmitter sendMessage(@PathVariable String id, @RequestBody ConversationRequest request) {
+    @PostMapping("/chat")
+    public SseEmitter sendMessage(@RequestBody StreamChatRequest request) {
         String userId = UserContext.getUserId();
-
-        // 设置sse发射器，超时时间5min
-        SseEmitter emitter = new SseEmitter(300000L);
-
-        // 存储用户信息到数据库
-        conversationAppService.sendMessage(id, userId, request.getMessage(), null);
-
-        // 异步发送消息
-        contextExecutorService.execute(() -> {
-
-            try {
-                StreamChatRequest chatRequest = new StreamChatRequest();
-                chatRequest.setMessage(request.getMessage());
-                chatRequest.setSessionId(id);
-                chatRequest.setStream(true);
-
-                // 收集LLM完整回复
-                StringBuilder fullAssistantResponse = new StringBuilder();
-                String[] provider = {null};
-                String[] model = {null};
-
-
-                conversationAppService.chatStream(chatRequest, (response, isLast, isReasoning) -> {
-                    try {
-                        // 收集供应商
-                        if (provider[0] == null) {
-                            provider[0] = response.getProvider();
-                        }
-
-                        // 收集模型
-                        if (model[0] == null) {
-                            model[0] = response.getModel();
-                        }
-
-                        // 非推理模式，收集回复内容
-                        if (!isReasoning) {
-                            fullAssistantResponse.append(response.getContent());
-                        }
-
-                        // 发送响应块给客户端
-                        emitter.send(response);
-
-                        if (isLast) {
-                            // 这里模拟token计数为内容长度，实际应使用真实的token计数
-                            int tokenCount = fullAssistantResponse.length() / 4; // 简单估算
-                            conversationAppService.saveAssistantMessage(id,
-                                    fullAssistantResponse.toString(),
-                                    provider[0],
-                                    model[0],
-                                    tokenCount);
-                            emitter.complete();
-                        }
-                    } catch (IOException e) {
-                        logger.error("====> 发送流式响应块错误",e);
-                        emitter.completeWithError(e);
-                    }
-                });
-            } catch (Exception e) {
-                logger.error("处理Agent会话消息请求发生异常",e);
-                emitter.completeWithError(e);
-            }
-        });
-
-        return emitter;
+        return conversationAppService.chatStream(request, userId);
     }
 }

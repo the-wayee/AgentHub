@@ -43,8 +43,7 @@ mybatis-plus:
   configuration:
     map-underscore-to-camel-case: true
     cache-enabled: false
-    default-enum-type-handler: org.apache.ibatis.type.EnumOrdinalTypeHandler
-    type-handlers-package: com.xiaoguai.agentx.infrastrcture.typehandler
+    type-handlers-package: com.xiaoguai.agentx.infrastrcture.converter
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
   global-config:
     db-config:

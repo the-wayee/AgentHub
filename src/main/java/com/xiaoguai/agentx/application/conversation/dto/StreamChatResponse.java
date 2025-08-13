@@ -7,8 +7,8 @@ package com.xiaoguai.agentx.application.conversation.dto;
  * @Date: 2025-07-24 13:47
  * @Description: 聊天服务响应
  */
-public class StreamChatResponse {
 
+public class StreamChatResponse {
 
     /**
      * 响应内容
@@ -30,10 +30,8 @@ public class StreamChatResponse {
      */
     private String model;
 
-
-
     /**
-     * 是否深度思考中
+     * 是否推理
      */
     private boolean isReasoning;
     /**
@@ -49,10 +47,6 @@ public class StreamChatResponse {
     public StreamChatResponse() {
     }
 
-    public StreamChatResponse(String content, boolean isDone) {
-        this.content = content;
-        this.isDone = isDone;
-    }
 
     public String getContent() {
         return content;

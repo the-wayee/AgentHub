@@ -5,6 +5,7 @@ import com.xiaoguai.agentx.domain.agent.model.AgentTool;
 import com.xiaoguai.agentx.domain.agent.model.AgentModelConfig;
 import com.xiaoguai.agentx.domain.agent.constant.AgentType;
 import com.xiaoguai.agentx.infrastrcture.utils.ValidationUtils;
+import jakarta.validation.constraints.NotBlank;
 
 import java.util.List;
 
@@ -19,6 +20,7 @@ public class CreateAgentRequest {
     /**
      * Agent 名称
      */
+    @NotBlank(message = "助理名称不能为空")
     private String name;
 
     /**

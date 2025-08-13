@@ -11,6 +11,7 @@ import com.xiaoguai.agentx.infrastrcture.entity.BaseEntity;
 import com.xiaoguai.agentx.infrastrcture.exception.BusinessException;
 import com.xiaoguai.agentx.infrastrcture.llm.config.ProviderConfig;
 import com.xiaoguai.agentx.infrastrcture.llm.protocol.enums.ProviderProtocol;
+import org.apache.ibatis.type.JdbcType;
 
 /**
  * @Author: the-way
@@ -21,21 +22,41 @@ import com.xiaoguai.agentx.infrastrcture.llm.protocol.enums.ProviderProtocol;
 @TableName("providers")
 public class ProviderEntity extends BaseEntity {
 
-
     @TableId(type = IdType.ASSIGN_UUID)
     private String id;
-
+    /**
+     * 用户id
+     */
     private String userId;
 
+    /**
+     * 提供商协议
+     */
     @TableField(typeHandler = ProviderProtocolConverter.class)
     private ProviderProtocol protocol;
+    /**
+     * 提供商名称
+     */
     private String name;
+    /**
+     * 描述
+     */
     private String description;
 
+    /**
+     * 提供商配置：apiKey, baseUrl
+     */
     @TableField(typeHandler = ProviderConfigConverter.class)
     private ProviderConfig config;
 
+    /**
+     * 是否官方配置
+     */
     private Boolean isOfficial;
+
+    /**
+     * 状态: 启用/禁用
+     */
     private Boolean status;
 
     public void setConfig(ProviderConfig config) {
@@ -86,11 +107,11 @@ public class ProviderEntity extends BaseEntity {
         this.description = description;
     }
 
-    public Boolean getIsOfficial() {
+    public Boolean getOfficial() {
         return isOfficial;
     }
 
-    public void setIsOfficial(Boolean official) {
+    public void setOfficial(Boolean official) {
         isOfficial = official;
     }
 

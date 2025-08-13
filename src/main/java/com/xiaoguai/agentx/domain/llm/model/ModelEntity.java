@@ -25,13 +25,29 @@ public class ModelEntity extends BaseEntity {
 
     @TableId(type = IdType.ASSIGN_UUID)
     private String id;
-
+    /**
+     * 用户id
+     */
     private String userId;
+    /**
+     * 供应商id
+     */
     private String providerId;
+    /**
+     * 模型id
+     */
     private String modelId;
+    /**
+     * 模型名称
+     */
     private String name;
+    /**
+     * 描述
+     */
     private String description;
-
+    /**
+     * 是否官方
+     */
     private Boolean isOfficial;
 
     @TableField(typeHandler = ModelTypeConverter.class, jdbcType = JdbcType.VARCHAR)

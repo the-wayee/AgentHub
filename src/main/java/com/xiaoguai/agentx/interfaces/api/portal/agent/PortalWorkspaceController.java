@@ -2,7 +2,7 @@ package com.xiaoguai.agentx.interfaces.api.portal.agent;
 
 
 import com.xiaoguai.agentx.application.agent.service.AgentWorkspaceAppService;
-import com.xiaoguai.agentx.domain.agent.dto.AgentDTO;
+import com.xiaoguai.agentx.application.agent.dto.AgentDTO;
 import com.xiaoguai.agentx.infrastrcture.auth.UserContext;
 import com.xiaoguai.agentx.interfaces.api.common.Result;
 import org.springframework.web.bind.annotation.*;

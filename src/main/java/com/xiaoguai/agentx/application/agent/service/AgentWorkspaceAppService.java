@@ -1,10 +1,12 @@
 package com.xiaoguai.agentx.application.agent.service;
 
 
-import com.xiaoguai.agentx.domain.agent.dto.AgentDTO;
+import com.xiaoguai.agentx.application.agent.dto.AgentDTO;
+import com.xiaoguai.agentx.domain.agent.model.AgentEntity;
 import com.xiaoguai.agentx.domain.agent.service.AgentDomainService;
 import com.xiaoguai.agentx.domain.agent.service.AgentWorkspaceDomainService;
-import com.xiaoguai.agentx.domain.conversation.dto.SessionDTO;
+import com.xiaoguai.agentx.application.conversation.dto.SessionDTO;
+import com.xiaoguai.agentx.domain.conversation.model.SessionEntity;
 import com.xiaoguai.agentx.domain.conversation.service.ConversationDomainService;
 import com.xiaoguai.agentx.domain.conversation.service.SessionDomainService;
 import com.xiaoguai.agentx.infrastrcture.exception.BusinessException;
@@ -59,19 +61,24 @@ public class AgentWorkspaceAppService {
      */
     @Transactional
     public void deleteAgent(String agentId, String usrId) {
+        AgentEntity agent = agentDomainService.getAgent(agentId, usrId);
+        if (agent != null) {
+            throw new BusinessException("不允许删除自己的助理");
+        }
+
         boolean isDelete = agentWorkspaceDomainService.deleteAgent(agentId, usrId);
         if (!isDelete) {
             throw new BusinessException("删除Agent失败：", agentId);
         }
 
         // 查找出agent下的会话
-        List<String> sessionIds = sessionDomainService.getSessionsByAgentId(agentId, usrId).stream().map(SessionDTO::getId).toList();
-
-        // 删除会话
-        sessionDomainService.deleteSessions(sessionIds);
+        List<String> sessionIds = sessionDomainService.getSessionsByAgentId(agentId, usrId).stream().map(SessionEntity::getId).toList();
 
         // 删除会话所有消息
         conversationDomainService.deleteConversationMessages(sessionIds);
+
+        // 删除会话
+        sessionDomainService.deleteSessions(sessionIds);
     }
 
 }

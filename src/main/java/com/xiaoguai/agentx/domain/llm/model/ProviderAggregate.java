@@ -19,6 +19,7 @@ public class ProviderAggregate {
     private ProviderEntity provider;
     private List<ModelEntity> models = new ArrayList<>();
 
+
     public ProviderAggregate(ProviderEntity provider, List<ModelEntity> models) {
         this.provider = provider;
         this.models = models;
@@ -84,12 +85,12 @@ public class ProviderAggregate {
         provider.setDescription(description);
     }
 
-    public Boolean getIsOfficial() {
-        return provider.getIsOfficial();
+    public Boolean getOfficial() {
+        return provider.getOfficial();
     }
 
-    public void setIsOfficial(Boolean isOfficial) {
-        provider.setIsOfficial(isOfficial);
+    public void setOfficial(Boolean official) {
+        provider.setOfficial(official);
     }
 
     public Boolean getStatus() {
@@ -112,10 +113,11 @@ public class ProviderAggregate {
         return provider.getDeletedAt();
     }
 
-    /**
-     * 获取原始实体
-     */
-    public ProviderEntity getEntity() {
+    public ProviderEntity getProvider() {
         return provider;
+    }
+
+    public void setProvider(ProviderEntity provider) {
+        this.provider = provider;
     }
 }

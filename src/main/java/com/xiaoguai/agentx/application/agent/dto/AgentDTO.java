@@ -1,4 +1,4 @@
-package com.xiaoguai.agentx.domain.agent.dto;
+package com.xiaoguai.agentx.application.agent.dto;
 
 
 import com.xiaoguai.agentx.domain.agent.model.AgentTool;

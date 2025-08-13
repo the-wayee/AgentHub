@@ -1,7 +1,7 @@
 package com.xiaoguai.agentx.application.agent.assembler;
 
 
-import com.xiaoguai.agentx.domain.agent.dto.AgentVersionDTO;
+import com.xiaoguai.agentx.application.agent.dto.AgentVersionDTO;
 import com.xiaoguai.agentx.domain.agent.model.AgentEntity;
 import com.xiaoguai.agentx.domain.agent.model.AgentVersionEntity;
 import com.xiaoguai.agentx.interfaces.dto.agent.PublishAgentVersionRequest;

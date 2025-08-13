@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.xiaoguai.agentx.infrastrcture.entity.BaseEntity;
 
 import java.time.LocalDateTime;
 
@@ -15,12 +16,12 @@ import java.time.LocalDateTime;
  * @Description: Agent工作区实体类
  */
 @TableName("agent_workspace")
-public class AgentWorkspaceEntity {
+public class AgentWorkspaceEntity extends BaseEntity {
 
     /**
      * 主键ID
      */
-    @TableId(value = "id", type = IdType.INPUT)
+    @TableId(value = "id", type = IdType.ASSIGN_UUID)
     private String id;
 
     /**

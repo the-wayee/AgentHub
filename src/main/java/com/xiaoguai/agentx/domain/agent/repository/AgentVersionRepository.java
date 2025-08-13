@@ -1,8 +1,8 @@
 package com.xiaoguai.agentx.domain.agent.repository;
 
 
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiaoguai.agentx.domain.agent.model.AgentVersionEntity;
+import com.xiaoguai.agentx.infrastrcture.domain.ExtraMapper;
 import com.xiaoguai.agentx.infrastrcture.typehandler.JsonTypeHandler;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Result;
@@ -19,7 +19,7 @@ import java.util.List;
  * @Description: Agent版本仓库
  */
 @Mapper
-public interface AgentVersionRepository extends BaseMapper<AgentVersionEntity> {
+public interface AgentVersionRepository extends ExtraMapper<AgentVersionEntity> {
 
     /**
      * 根据name和status模糊查询最新版的agents version

@@ -1,5 +1,6 @@
-package com.xiaoguai.agentx.domain.conversation.dto;
+package com.xiaoguai.agentx.application.conversation.dto;
 
+import com.xiaoguai.agentx.domain.conversation.contants.Role;
 import com.xiaoguai.agentx.domain.conversation.model.MessageEntity;
 
 import java.time.LocalDateTime;
@@ -9,7 +10,7 @@ import java.time.LocalDateTime;
  */
 public class MessageDTO {
     private String id;
-    private String role;
+    private Role role;
     private String content;
     private LocalDateTime createdAt;
     private String provider;
@@ -21,19 +22,6 @@ public class MessageDTO {
     public MessageDTO() {
     }
 
-    /**
-     * 全参构造函数
-     */
-    public MessageDTO(String id, String role, String content, LocalDateTime createdAt,
-                      String provider, String model) {
-        this.id = id;
-        this.role = role;
-        this.content = content;
-        this.createdAt = createdAt;
-        this.provider = provider;
-        this.model = model;
-    }
-
     // Getter和Setter方法
     public String getId() {
         return id;
@@ -43,11 +31,11 @@ public class MessageDTO {
         this.id = id;
     }
 
-    public String getRole() {
+    public Role getRole() {
         return role;
     }
 
-    public void setRole(String role) {
+    public void setRole(Role role) {
         this.role = role;
     }
 
@@ -81,19 +69,5 @@ public class MessageDTO {
 
     public void setModel(String model) {
         this.model = model;
-    }
-
-    /**
-     * 将消息实体转换为DTO
-     */
-    public static MessageDTO fromEntity(MessageEntity messageEntity) {
-        MessageDTO dto = new MessageDTO();
-        dto.setId(messageEntity.getId());
-        dto.setRole(messageEntity.getRole());
-        dto.setContent(messageEntity.getContent());
-        dto.setCreatedAt(messageEntity.getCreatedAt());
-        dto.setProvider(messageEntity.getProvider());
-        dto.setModel(messageEntity.getModel());
-        return dto;
     }
 }

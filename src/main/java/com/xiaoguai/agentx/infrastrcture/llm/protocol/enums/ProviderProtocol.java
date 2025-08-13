@@ -14,22 +14,22 @@ public enum ProviderProtocol {
     OPENAI("OpenAI"),
     DASHSCOPE("阿里百炼"),
     ZHIPU("清华智谱");
-    private final String name;
+    private final String desc;
 
-    ProviderProtocol(String name) {
-        this.name = name;
+    ProviderProtocol(String desc) {
+        this.desc = desc;
     }
 
     public static ProviderProtocol getByName(String name) {
         for (ProviderProtocol value : values()) {
-            if (value.name.equals(name)) {
+            if (value.name().equals(name)) {
                 return value;
             }
         }
         throw new BusinessException("Unknown model type name: " + name);
     }
 
-    public String getName() {
-        return name;
+    public String getDesc() {
+        return desc;
     }
 }

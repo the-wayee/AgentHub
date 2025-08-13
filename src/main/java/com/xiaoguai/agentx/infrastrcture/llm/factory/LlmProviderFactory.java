@@ -41,7 +41,7 @@ public class LlmProviderFactory {
                         .build();
             }
             default -> {
-                throw new BusinessException("获取服务商协议失败: " + protocol.getName());
+                throw new BusinessException("获取服务商协议失败: " + protocol.getDesc());
             }
         }
         return model;

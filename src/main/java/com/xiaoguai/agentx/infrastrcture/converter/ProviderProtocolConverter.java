@@ -21,7 +21,7 @@ public class ProviderProtocolConverter extends BaseTypeHandler<ProviderProtocol>
     @Override
     public void setNonNullParameter(PreparedStatement ps, int i, ProviderProtocol parameter, JdbcType jdbcType)
             throws SQLException {
-        ps.setString(i, parameter.getName());
+        ps.setString(i, parameter.name());
     }
     
     @Override

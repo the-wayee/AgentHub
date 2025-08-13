@@ -2,13 +2,11 @@ package com.xiaoguai.agentx.domain.agent.model;
 
 
 import com.baomidou.mybatisplus.annotation.*;
-import com.baomidou.mybatisplus.extension.activerecord.Model;
-import com.xiaoguai.agentx.domain.agent.dto.AgentDTO;
+import com.xiaoguai.agentx.application.agent.dto.AgentDTO;
 import com.xiaoguai.agentx.domain.agent.constant.AgentType;
 import com.xiaoguai.agentx.infrastrcture.converter.AgentModelConfigConverter;
 import com.xiaoguai.agentx.infrastrcture.converter.ListConverter;
 import com.xiaoguai.agentx.infrastrcture.entity.BaseEntity;
-import com.xiaoguai.agentx.infrastrcture.typehandler.JsonTypeHandler;
 import org.apache.ibatis.type.JdbcType;
 
 import java.time.LocalDateTime;

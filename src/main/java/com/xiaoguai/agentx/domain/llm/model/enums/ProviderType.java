@@ -24,14 +24,14 @@ public enum ProviderType {
     CUSTOM("custom");
 
 
-    private final String code;
+    private final String type;
 
-    ProviderType(String code) {
-        this.code = code;
+    ProviderType(String type) {
+        this.type = type;
     }
 
-    public String getCode() {
-        return code;
+    public String getType() {
+        return type;
     }
 
     /**
@@ -41,7 +41,7 @@ public enum ProviderType {
      */
     public static ProviderType fromCode(String code) {
         for (ProviderType type : ProviderType.values()) {
-            if (type.getCode().equals(code)) {
+            if (type.getType().equals(code)) {
                 return type;
             }
         }

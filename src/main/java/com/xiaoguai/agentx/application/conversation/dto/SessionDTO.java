@@ -1,6 +1,4 @@
-package com.xiaoguai.agentx.domain.conversation.dto;
-
-import com.xiaoguai.agentx.domain.conversation.model.SessionEntity;
+package com.xiaoguai.agentx.application.conversation.dto;
 
 import java.time.LocalDateTime;
 
