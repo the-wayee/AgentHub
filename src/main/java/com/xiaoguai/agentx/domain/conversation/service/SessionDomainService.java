@@ -1,12 +1,13 @@
 package com.xiaoguai.agentx.domain.conversation.service;
 
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.xiaoguai.agentx.application.conversation.assembler.SessionAssembler;
-import com.xiaoguai.agentx.infrastrcture.exception.BusinessException;
-import com.xiaoguai.agentx.domain.conversation.dto.SessionDTO;
+import com.xiaoguai.agentx.application.conversation.dto.SessionDTO;
 import com.xiaoguai.agentx.domain.conversation.model.SessionEntity;
 import com.xiaoguai.agentx.domain.conversation.repository.SessionRepository;
+import com.xiaoguai.agentx.infrastrcture.exception.BusinessException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -30,13 +31,13 @@ public class SessionDomainService {
     /**
      * 创建会话
      */
-    public SessionDTO createSession(String agentId, String userId) {
+    public SessionEntity createSession(String agentId, String userId) {
         SessionEntity session = new SessionEntity();
         session.setAgentId(agentId);
         session.setUserId(userId);
         session.setTitle("新会话");
         sessionRepository.insert(session);
-        return SessionAssembler.toDTO(session);
+        return session;
     }
 
     /**
@@ -52,6 +53,18 @@ public class SessionDomainService {
                 .eq(SessionEntity::getId, sessionId).eq(SessionEntity::getUserId, userId));
     }
 
+    public SessionEntity getSession(String sessionId, String userId) {
+        LambdaQueryWrapper<SessionEntity> wrapper = Wrappers.<SessionEntity>lambdaQuery()
+                .eq(SessionEntity::getId, sessionId)
+                .eq(SessionEntity::getUserId, userId);
+        SessionEntity session = sessionRepository.selectOne(wrapper);
+        if (session == null) {
+            throw new BusinessException("会话不存在: " + sessionId);
+        }
+        return session;
+
+    }
+
     /**
      * 删除会话
      */
@@ -64,12 +77,11 @@ public class SessionDomainService {
     /**
      * 根据agentId 获取会话列表
      */
-    public List<SessionDTO> getSessionsByAgentId(String agentId, String userId) {
-        List<SessionEntity> sessions = sessionRepository.selectList(Wrappers.<SessionEntity>lambdaQuery()
+    public List<SessionEntity> getSessionsByAgentId(String agentId, String userId) {
+        return sessionRepository.selectList(Wrappers.<SessionEntity>lambdaQuery()
                 .eq(SessionEntity::getAgentId, agentId)
                 .eq(SessionEntity::getUserId, userId)
                 .orderByDesc(SessionEntity::getCreatedAt));
-        return sessions.stream().map(SessionAssembler::toDTO).collect(Collectors.toList());
     }
 
     /**

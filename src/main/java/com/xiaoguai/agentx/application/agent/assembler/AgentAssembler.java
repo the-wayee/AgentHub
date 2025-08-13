@@ -1,9 +1,9 @@
 package com.xiaoguai.agentx.application.agent.assembler;
 
 
-import com.xiaoguai.agentx.domain.agent.dto.AgentDTO;
-import com.xiaoguai.agentx.domain.agent.dto.AgentVersionDTO;
-import com.xiaoguai.agentx.domain.agent.model.ModelConfig;
+import com.xiaoguai.agentx.application.agent.dto.AgentDTO;
+import com.xiaoguai.agentx.application.agent.dto.AgentVersionDTO;
+import com.xiaoguai.agentx.domain.agent.model.AgentModelConfig;
 import com.xiaoguai.agentx.domain.agent.model.AgentEntity;
 import com.xiaoguai.agentx.domain.agent.model.AgentVersionEntity;
 import com.xiaoguai.agentx.domain.agent.constant.AgentType;
@@ -47,8 +47,8 @@ public class AgentAssembler {
         // 模型配置
         if (request.getModelConfig() == null) {
             // 默认配置
-            ModelConfig modelConfig = ModelConfig.createDefault();
-            agentEntity.setModelConfig(modelConfig);
+            AgentModelConfig agentModelConfig = AgentModelConfig.createDefault();
+            agentEntity.setModelConfig(agentModelConfig);
         } else {
             agentEntity.setModelConfig(request.getModelConfig());
         }

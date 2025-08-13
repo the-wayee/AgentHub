@@ -2,7 +2,7 @@ package com.xiaoguai.agentx.interfaces.dto.agent;
 
 
 import com.xiaoguai.agentx.domain.agent.model.AgentTool;
-import com.xiaoguai.agentx.domain.agent.model.ModelConfig;
+import com.xiaoguai.agentx.domain.agent.model.AgentModelConfig;
 import com.xiaoguai.agentx.infrastrcture.utils.ValidationUtils;
 
 import java.util.List;
@@ -24,7 +24,7 @@ public class UpdateAgentRequest {
     // 配置信息字段
     private String systemPrompt;
     private String welcomeMessage;
-    private ModelConfig modelConfig;
+    private AgentModelConfig agentModelConfig;
     private List<AgentTool> tools;
     private List<String> knowledgeBaseIds;
 
@@ -37,14 +37,14 @@ public class UpdateAgentRequest {
      */
     public UpdateAgentRequest(String name, String avatar, String description,
                               String systemPrompt, String welcomeMessage,
-                              ModelConfig modelConfig, List<AgentTool> tools,
+                              AgentModelConfig agentModelConfig, List<AgentTool> tools,
                               List<String> knowledgeBaseIds) {
         this.name = name;
         this.avatar = avatar;
         this.description = description;
         this.systemPrompt = systemPrompt;
         this.welcomeMessage = welcomeMessage;
-        this.modelConfig = modelConfig;
+        this.agentModelConfig = agentModelConfig;
         this.tools = tools;
         this.knowledgeBaseIds = knowledgeBaseIds;
     }
@@ -107,12 +107,12 @@ public class UpdateAgentRequest {
         this.welcomeMessage = welcomeMessage;
     }
 
-    public ModelConfig getModelConfig() {
-        return modelConfig;
+    public AgentModelConfig getModelConfig() {
+        return agentModelConfig;
     }
 
-    public void setModelConfig(ModelConfig modelConfig) {
-        this.modelConfig = modelConfig;
+    public void setModelConfig(AgentModelConfig agentModelConfig) {
+        this.agentModelConfig = agentModelConfig;
     }
 
     public List<AgentTool> getTools() {

@@ -4,8 +4,9 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.baomidou.mybatisplus.extension.activerecord.Model;
-import com.xiaoguai.agentx.domain.conversation.dto.MessageDTO;
+import com.xiaoguai.agentx.application.conversation.dto.MessageDTO;
+import com.xiaoguai.agentx.domain.conversation.contants.Role;
+import com.xiaoguai.agentx.infrastrcture.entity.BaseEntity;
 
 import java.time.LocalDateTime;
 
@@ -13,7 +14,7 @@ import java.time.LocalDateTime;
  * 消息实体类，代表对话中的一条消息
  */
 @TableName("messages")
-public class MessageEntity extends Model<MessageEntity> {
+public class MessageEntity extends BaseEntity {
 
     /**
      * 消息唯一ID
@@ -31,19 +32,13 @@ public class MessageEntity extends Model<MessageEntity> {
      * 消息角色 (user, assistant, system)
      */
     @TableField("role")
-    private String role;
+    private Role role;
 
     /**
      * 消息内容
      */
     @TableField("content")
     private String content;
-
-    /**
-     * 创建时间
-     */
-    @TableField("created_at")
-    private LocalDateTime createdAt;
 
     /**
      * Token数量
@@ -75,23 +70,6 @@ public class MessageEntity extends Model<MessageEntity> {
     public MessageEntity() {
     }
 
-    /**
-     * 全参构造函数
-     */
-    public MessageEntity(String id, String sessionId, String role, String content,
-                         LocalDateTime createdAt, Integer tokenCount, String provider,
-                         String model, String metadata) {
-        this.id = id;
-        this.sessionId = sessionId;
-        this.role = role;
-        this.content = content;
-        this.createdAt = createdAt;
-        this.tokenCount = tokenCount;
-        this.provider = provider;
-        this.model = model;
-        this.metadata = metadata;
-    }
-
     // Getter和Setter方法
     public String getId() {
         return id;
@@ -109,11 +87,11 @@ public class MessageEntity extends Model<MessageEntity> {
         this.sessionId = sessionId;
     }
 
-    public String getRole() {
+    public Role getRole() {
         return role;
     }
 
-    public void setRole(String role) {
+    public void setRole(Role role) {
         this.role = role;
     }
 
@@ -123,14 +101,6 @@ public class MessageEntity extends Model<MessageEntity> {
 
     public void setContent(String content) {
         this.content = content;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
     }
 
     public Integer getTokenCount() {
@@ -165,55 +135,4 @@ public class MessageEntity extends Model<MessageEntity> {
         this.metadata = metadata;
     }
 
-    /**
-     * 创建用户消息
-     */
-    public static MessageEntity createUserMessage(String sessionId, String content) {
-        MessageEntity messageEntity = new MessageEntity();
-        messageEntity.setSessionId(sessionId);
-        messageEntity.setRole("user");
-        messageEntity.setContent(content);
-        messageEntity.setCreatedAt(LocalDateTime.now());
-        return messageEntity;
-    }
-
-    /**
-     * 创建系统消息
-     */
-    public static MessageEntity createSystemMessage(String sessionId, String content) {
-        MessageEntity messageEntity = new MessageEntity();
-        messageEntity.setSessionId(sessionId);
-        messageEntity.setRole("system");
-        messageEntity.setContent(content);
-        messageEntity.setCreatedAt(LocalDateTime.now());
-        return messageEntity;
-    }
-
-    /**
-     * 创建助手消息
-     */
-    public static MessageEntity createAssistantMessage(String sessionId, String content,
-                                                       String provider, String model, Integer tokenCount) {
-        MessageEntity messageEntity = new MessageEntity();
-        messageEntity.setSessionId(sessionId);
-        messageEntity.setRole("assistant");
-        messageEntity.setContent(content);
-        messageEntity.setCreatedAt(LocalDateTime.now());
-        messageEntity.setProvider(provider);
-        messageEntity.setModel(model);
-        messageEntity.setTokenCount(tokenCount);
-        return messageEntity;
-    }
-
-    /**
-     * 转换为API响应格式
-     */
-    public MessageDTO toDTO() {
-        MessageDTO dto = new MessageDTO();
-        dto.setId(this.id);
-        dto.setRole(this.role);
-        dto.setContent(this.content);
-        dto.setCreatedAt(this.createdAt);
-        return dto;
-    }
 }

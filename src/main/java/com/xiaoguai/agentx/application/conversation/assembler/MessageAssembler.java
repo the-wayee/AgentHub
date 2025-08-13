@@ -1,7 +1,7 @@
 package com.xiaoguai.agentx.application.conversation.assembler;
 
 
-import com.xiaoguai.agentx.domain.conversation.dto.MessageDTO;
+import com.xiaoguai.agentx.application.conversation.dto.MessageDTO;
 import com.xiaoguai.agentx.domain.conversation.model.MessageEntity;
 
 import java.util.Collections;

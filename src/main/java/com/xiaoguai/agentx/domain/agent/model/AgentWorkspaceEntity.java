@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.xiaoguai.agentx.infrastrcture.entity.BaseEntity;
 
 import java.time.LocalDateTime;
 
@@ -15,12 +16,12 @@ import java.time.LocalDateTime;
  * @Description: Agent工作区实体类
  */
 @TableName("agent_workspace")
-public class AgentWorkspaceEntity {
+public class AgentWorkspaceEntity extends BaseEntity {
 
     /**
      * 主键ID
      */
-    @TableId(value = "id", type = IdType.INPUT)
+    @TableId(value = "id", type = IdType.ASSIGN_UUID)
     private String id;
 
     /**
@@ -36,10 +37,11 @@ public class AgentWorkspaceEntity {
     private String userId;
 
     /**
-     * 创建时间
+     * 模型id
      */
-    @TableField("created_at")
-    private LocalDateTime createdAt;
+    @TableField("model_id")
+    private String modelId;
+
     /**
      * 默认构造函数
      */
@@ -52,13 +54,11 @@ public class AgentWorkspaceEntity {
      * @param id        主键ID
      * @param agentId   Agent ID
      * @param userId    用户ID
-     * @param createdAt 创建时间
      */
-    public AgentWorkspaceEntity(String id, String agentId, String userId, LocalDateTime createdAt) {
+    public AgentWorkspaceEntity(String id, String agentId, String userId) {
         this.id = id;
         this.agentId = agentId;
         this.userId = userId;
-        this.createdAt = createdAt;
     }
 
     // Getter 和 Setter 方法
@@ -87,11 +87,11 @@ public class AgentWorkspaceEntity {
         this.userId = userId;
     }
 
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
+    public String getModelId() {
+        return modelId;
     }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
+    public void setModelId(String modelId) {
+        this.modelId = modelId;
     }
 }

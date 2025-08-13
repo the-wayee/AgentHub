@@ -3,11 +3,12 @@ package com.xiaoguai.agentx.domain.agent.service;
 
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.xiaoguai.agentx.application.agent.assembler.AgentAssembler;
-import com.xiaoguai.agentx.domain.agent.dto.AgentDTO;
+import com.xiaoguai.agentx.application.agent.dto.AgentDTO;
 import com.xiaoguai.agentx.domain.agent.model.AgentEntity;
 import com.xiaoguai.agentx.domain.agent.model.AgentWorkspaceEntity;
 import com.xiaoguai.agentx.domain.agent.repository.AgentRepository;
 import com.xiaoguai.agentx.domain.agent.repository.AgentWorkspaceRepository;
+import com.xiaoguai.agentx.infrastrcture.exception.BusinessException;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
@@ -49,6 +50,31 @@ public class AgentWorkspaceDomainService {
 
         List<AgentEntity> agents = agentRepository.selectBatchIds(agentIds);
         return agents.stream().map(AgentAssembler::toDTO).toList();
+    }
+
+    /**
+     * 获取工作区信息
+     */
+    public AgentWorkspaceEntity getWorkspace(String agentId, String userId) {
+        AgentWorkspaceEntity agentWorkspace = agentWorkspaceRepository.selectOne(Wrappers.<AgentWorkspaceEntity>lambdaQuery()
+                .eq(AgentWorkspaceEntity::getAgentId, agentId)
+                .eq(AgentWorkspaceEntity::getUserId, userId));
+        if (agentWorkspace == null) {
+            throw new BusinessException("助理不存在");
+        }
+        return agentWorkspace;
+    }
+
+    /**
+     * 保存Agent到工作区
+     */
+    public AgentWorkspaceEntity saveWorkspaceAgent(AgentWorkspaceEntity agentWorkspace) {
+        int insert = agentWorkspaceRepository.insert(agentWorkspace);
+        if (insert == 0) {
+            throw new BusinessException("保存助理到工作区失败");
+        }
+        return agentWorkspace;
+
     }
 
     /**

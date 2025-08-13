@@ -4,12 +4,11 @@ package com.xiaoguai.agentx.domain.agent.service;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.baomidou.mybatisplus.extension.toolkit.SimpleQuery;
 import com.xiaoguai.agentx.application.agent.assembler.AgentAssembler;
 import com.xiaoguai.agentx.application.agent.assembler.AgentVersionAssembler;
 import com.xiaoguai.agentx.domain.agent.constant.PublishStatus;
-import com.xiaoguai.agentx.domain.agent.dto.AgentDTO;
-import com.xiaoguai.agentx.domain.agent.dto.AgentVersionDTO;
+import com.xiaoguai.agentx.application.agent.dto.AgentDTO;
+import com.xiaoguai.agentx.application.agent.dto.AgentVersionDTO;
 import com.xiaoguai.agentx.domain.agent.model.AgentEntity;
 import com.xiaoguai.agentx.domain.agent.model.AgentVersionEntity;
 import com.xiaoguai.agentx.domain.agent.model.AgentWorkspaceEntity;
@@ -51,7 +50,7 @@ public class AgentDomainService {
     /**
      * 创建Agent
      */
-    public AgentDTO createAgent(AgentEntity agent) {
+    public AgentEntity createAgent(AgentEntity agent) {
         // 参数校验
         ValidationUtils.notNull(agent, "agent");
         ValidationUtils.notEmpty(agent.getName(), "name");
@@ -59,13 +58,13 @@ public class AgentDomainService {
 
         // 保存到数据库
         agentRepository.insert(agent);
-        return agent.toDTO();
+        return agent;
     }
 
     /**
      * 获取单个Agent
      */
-    public AgentDTO getAgent(String agentId, String userId) {
+    public AgentEntity getAgent(String agentId, String userId) {
         ValidationUtils.notEmpty(agentId, "agentId");
         ValidationUtils.notEmpty(userId, "userId");
 
@@ -77,7 +76,7 @@ public class AgentDomainService {
         if (agentEntity == null) {
             throw new BusinessException("Agent不存在: " + agentId);
         }
-        return agentEntity.toDTO();
+        return agentEntity;
     }
 
     /**
@@ -110,8 +109,8 @@ public class AgentDomainService {
         ValidationUtils.notEmpty(agent.getName(), "name");
 
         // 查询是否存在
-        AgentDTO dto = this.getAgent(agentId, agent.getUserId());
-        if (dto == null) {
+        AgentEntity entity = this.getAgent(agentId, agent.getUserId());
+        if (entity == null) {
             throw new BusinessException("Agent不存在: " + agentId);
         }
 
@@ -171,8 +170,8 @@ public class AgentDomainService {
         ValidationUtils.notEmpty(agentVersionEntity.getVersionNumber(), "versionNumber");
         ValidationUtils.notEmpty(agentVersionEntity.getUserId(), "userId");
 
-        AgentDTO dto = this.getAgent(agentId, agentVersionEntity.getUserId());
-        if (dto == null) {
+        AgentEntity agent = this.getAgent(agentId, agentVersionEntity.getUserId());
+        if (agent == null) {
             throw new BusinessException("Agent不存在: " + agentId);
         }
 
@@ -381,16 +380,16 @@ public class AgentDomainService {
         if (!b1 && !b2) {
             throw new BusinessException("助理不存在");
         }
-        AgentDTO agentDTO = getAgent(agentId, userId);
+        AgentEntity agent = getAgent(agentId, userId);
 
         // 如果有版本则使用版本
-        String publishedVersion = agentDTO.getPublishedVersion();
+        String publishedVersion = agent.getPublishedVersion();
         if (!StringUtils.isEmpty(publishedVersion)) {
             AgentVersionDTO agentVersion =  getAgentVersionById(publishedVersion);
-            BeanUtils.copyProperties(agentVersion, agentDTO);
+            BeanUtils.copyProperties(agentVersion, agent);
         }
 
-        return agentDTO;
+        return AgentAssembler.toDTO(agent);
     }
 
     /**

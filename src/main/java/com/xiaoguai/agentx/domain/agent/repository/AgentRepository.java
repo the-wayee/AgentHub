@@ -1,8 +1,8 @@
 package com.xiaoguai.agentx.domain.agent.repository;
 
 
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiaoguai.agentx.domain.agent.model.AgentEntity;
+import com.xiaoguai.agentx.infrastrcture.domain.ExtraMapper;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
@@ -12,5 +12,5 @@ import org.apache.ibatis.annotations.Mapper;
  * @Description: Agent仓库
  */
 @Mapper
-public interface AgentRepository extends BaseMapper<AgentEntity> {
+public interface AgentRepository extends ExtraMapper<AgentEntity> {
 }

@@ -1,8 +1,12 @@
 package com.xiaoguai.agentx.application.conversation.assembler;
 
 
-import com.xiaoguai.agentx.domain.conversation.dto.SessionDTO;
+import com.xiaoguai.agentx.application.conversation.dto.SessionDTO;
 import com.xiaoguai.agentx.domain.conversation.model.SessionEntity;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @Author: the-way
@@ -34,5 +38,12 @@ public class SessionAssembler {
         session.setDescription(sessionDTO.getDescription());
         session.setArchived(sessionDTO.isArchived());
         return session;
+    }
+
+    public static List<SessionDTO> toDTOs(List<SessionEntity> sessions) {
+        if (sessions == null || sessions.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return sessions.stream().map(SessionAssembler::toDTO).collect(Collectors.toList());
     }
 }

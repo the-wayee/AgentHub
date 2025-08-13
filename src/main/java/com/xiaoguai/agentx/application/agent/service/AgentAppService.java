@@ -3,18 +3,19 @@ package com.xiaoguai.agentx.application.agent.service;
 
 import com.xiaoguai.agentx.application.agent.assembler.AgentAssembler;
 import com.xiaoguai.agentx.application.agent.assembler.AgentVersionAssembler;
+import com.xiaoguai.agentx.application.agent.dto.AgentDTO;
+import com.xiaoguai.agentx.application.agent.dto.AgentVersionDTO;
 import com.xiaoguai.agentx.domain.agent.constant.PublishStatus;
-import com.xiaoguai.agentx.domain.agent.dto.AgentDTO;
-import com.xiaoguai.agentx.domain.agent.dto.AgentVersionDTO;
 import com.xiaoguai.agentx.domain.agent.model.AgentEntity;
 import com.xiaoguai.agentx.domain.agent.model.AgentVersionEntity;
+import com.xiaoguai.agentx.domain.agent.model.AgentWorkspaceEntity;
 import com.xiaoguai.agentx.domain.agent.service.AgentDomainService;
+import com.xiaoguai.agentx.domain.agent.service.AgentWorkspaceDomainService;
 import com.xiaoguai.agentx.infrastrcture.exception.ParamValidationException;
 import com.xiaoguai.agentx.interfaces.dto.agent.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -27,32 +28,38 @@ import java.util.List;
 public class AgentAppService {
 
     private final AgentDomainService agentServiceDomainService;
+    private final AgentWorkspaceDomainService agentWorkspaceDomainService;
 
-    public AgentAppService(AgentDomainService agentServiceDomainService) {
+    public AgentAppService(AgentDomainService agentServiceDomainService, AgentWorkspaceDomainService agentWorkspaceDomainService) {
         this.agentServiceDomainService = agentServiceDomainService;
+        this.agentWorkspaceDomainService = agentWorkspaceDomainService;
     }
 
     /**
      * 创建新Agent
      */
+    @Transactional
     public AgentDTO createAgent(CreateAgentRequest request, String userId) {
         // 在应用层验证请求
         request.validate();
 
         // 使用组装器创建领域实体
         AgentEntity entity = AgentAssembler.toEntity(request,userId);
+        AgentEntity agent = agentServiceDomainService.createAgent(entity);
+        AgentWorkspaceEntity agentWorkspace = new AgentWorkspaceEntity();
+        agentWorkspace.setAgentId(agent.getId());
+        agentWorkspace.setUserId(userId);
+        agentWorkspaceDomainService.saveWorkspaceAgent(agentWorkspace);
 
-        entity.setUserId(userId);
-
-        // 调用领域服务
-        return agentServiceDomainService.createAgent(entity);
+        return AgentAssembler.toDTO(agent);
     }
 
     /**
      * 获取Agent信息
      */
     public AgentDTO getAgent(String agentId, String userId) {
-        return agentServiceDomainService.getAgent(agentId, userId);
+        AgentEntity agent = agentServiceDomainService.getAgent(agentId, userId);
+        return AgentAssembler.toDTO(agent);
     }
 
     /**
@@ -114,7 +121,7 @@ public class AgentAppService {
         request.validate();
 
         // 获取当前Agent
-        AgentDTO currentAgentDTO = agentServiceDomainService.getAgent(agentId,userId);
+        AgentEntity currentAgentDTO = agentServiceDomainService.getAgent(agentId,userId);
 
         // 获取最新版本，检查版本号大小
         AgentVersionDTO latestVersion = agentServiceDomainService.getLatestAgentVersion(agentId);
@@ -128,7 +135,7 @@ public class AgentAppService {
         }
 
         // 使用组装器创建版本实体
-        AgentVersionEntity versionEntity = AgentVersionAssembler.createVersionEntity(currentAgentDTO.toEntity(), request);
+        AgentVersionEntity versionEntity = AgentVersionAssembler.createVersionEntity(currentAgentDTO, request);
 
         versionEntity.setUserId(userId);
         // 调用领域服务发布版本
