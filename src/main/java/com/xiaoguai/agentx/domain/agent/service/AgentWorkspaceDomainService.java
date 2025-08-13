@@ -35,7 +35,7 @@ public class AgentWorkspaceDomainService {
     /**
      * 获取工作区Agents
      */
-    public List<AgentDTO> getWorkspaceAgents(String userId) {
+    public List<AgentEntity> getWorkspaceAgents(String userId) {
         List<String> agentIds = agentWorkspaceRepository
                 .selectList(Wrappers.<AgentWorkspaceEntity>
                                 lambdaQuery().eq(AgentWorkspaceEntity::getUserId, userId)
@@ -48,8 +48,7 @@ public class AgentWorkspaceDomainService {
             return Collections.emptyList();
         }
 
-        List<AgentEntity> agents = agentRepository.selectBatchIds(agentIds);
-        return agents.stream().map(AgentAssembler::toDTO).toList();
+        return agentRepository.selectBatchIds(agentIds);
     }
 
     /**
@@ -95,5 +94,14 @@ public class AgentWorkspaceDomainService {
         return agentWorkspaceRepository.delete(Wrappers.<AgentWorkspaceEntity>lambdaQuery()
                 .eq(AgentWorkspaceEntity::getAgentId, agentId)
                 .eq(AgentWorkspaceEntity::getUserId, userId)) > 0;
+    }
+
+    /**
+     * 判断Agent是否存在工作区
+     */
+    public boolean checkAgentExistWorkspace(String agentId, String userId) {
+        return agentWorkspaceRepository.exists(Wrappers.<AgentWorkspaceEntity>lambdaQuery()
+                .eq(AgentWorkspaceEntity::getAgentId, agentId)
+                .eq(AgentWorkspaceEntity::getUserId, userId));
     }
 }

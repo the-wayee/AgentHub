@@ -6,6 +6,10 @@ import com.xiaoguai.agentx.domain.llm.model.ProviderEntity;
 import com.xiaoguai.agentx.interfaces.dto.llm.ProviderCreateRequest;
 import com.xiaoguai.agentx.interfaces.dto.llm.ProviderUpdateRequest;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 /**
  * @Author: the-way
  * @Verson: v1.0
@@ -36,6 +40,17 @@ public class ProviderAssembler {
         dto.maskSensitiveInfo();
 
         return dto;
+    }
+
+    public static List<ProviderDTO> toDTOs(List<ProviderEntity> providers) {
+        if (providers == null || providers.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<ProviderDTO> dtoList = new ArrayList<>();
+        for (ProviderEntity provider : providers) {
+            dtoList.add(toDTO(provider));
+        }
+        return dtoList;
     }
 
 

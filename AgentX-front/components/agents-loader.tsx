@@ -61,7 +61,7 @@ export function AgentsLoader() {
       try {
         setLoading(true)
         // always refetch on mount to restore home data
-        const res = await fetch("/api/agents?enable=true", { cache: "no-store" })
+        const res = await fetch("/api/agents", { cache: "no-store" })
         const json = await res.json()
         const list: AgentDTO[] = Array.isArray(json) ? json : json?.data ?? []
         if (!cancelled && Array.isArray(list)) {

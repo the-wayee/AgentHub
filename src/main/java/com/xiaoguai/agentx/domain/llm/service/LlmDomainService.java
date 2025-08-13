@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.xiaoguai.agentx.application.llm.dto.ProviderDTO;
 import com.xiaoguai.agentx.domain.llm.model.ModelEntity;
 import com.xiaoguai.agentx.domain.llm.model.ProviderAggregate;
 import com.xiaoguai.agentx.domain.llm.model.ProviderEntity;
@@ -15,10 +16,7 @@ import com.xiaoguai.agentx.infrastrcture.entity.Operator;
 import com.xiaoguai.agentx.infrastrcture.exception.BusinessException;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -112,7 +110,7 @@ public class LlmDomainService {
                 wrapper.eq(ProviderEntity::getUserId, userId);
             }
             default -> {
-                wrapper.eq(ProviderEntity::getUserId, userId)
+                wrapper.eq(ProviderEntity::getOfficial, true)
                         .or()
                         .eq(ProviderEntity::getUserId, userId);
             }
@@ -120,6 +118,42 @@ public class LlmDomainService {
         List<ProviderEntity> providers = providerRepository.selectList(wrapper);
         return buildProviderAggregate(providers);
     }
+
+    /**
+     * 获取激活状态的Provider和Model列表
+     */
+    public List<ProviderAggregate> getProviderAggregatesActive(String userId) {
+        LambdaQueryWrapper<ProviderEntity> wrapper = Wrappers.<ProviderEntity>lambdaQuery()
+                .eq(ProviderEntity::getOfficial, true)
+                .or()
+                .eq(ProviderEntity::getUserId, userId);
+        List<ProviderEntity> providers = providerRepository.selectList(wrapper);
+        return buildProviderAggregate(providers);
+    }
+
+
+    /**
+     * 切换服务商Id
+     */
+    public void toggleProviderStatus(String providerId, String userId) {
+        LambdaUpdateWrapper<ProviderEntity> wrapper = Wrappers.<ProviderEntity>lambdaUpdate()
+                .eq(ProviderEntity::getId, providerId)
+                .eq(ProviderEntity::getUserId, userId)
+                .setSql("status = not staus");
+        providerRepository.checkUpdate(wrapper);
+    }
+
+
+    /**
+     * 获取用户的提供商列表
+     */
+    public List<ProviderEntity> getUserProviders(String userId) {
+        LambdaQueryWrapper<ProviderEntity> wrapper = Wrappers.<ProviderEntity>lambdaQuery()
+                .eq(ProviderEntity::getUserId, userId)
+                .eq(ProviderEntity::getStatus, true);
+        return providerRepository.selectList(wrapper);
+    }
+
 
     /**
      * 创建模型
@@ -156,7 +190,7 @@ public class LlmDomainService {
 
         // 获取响应的model
         List<ModelEntity> models = modelRepository.selectList(Wrappers.<ModelEntity>lambdaQuery()
-                .in(ModelEntity::getId, providerIds));
+                .in(ModelEntity::getProviderId, providerIds));
 
         // 分组 Map
         // key -> providerId
@@ -165,7 +199,9 @@ public class LlmDomainService {
                 .collect(Collectors.groupingBy(ModelEntity::getProviderId));
 
         // 映射提供商
-        Map<String, ProviderEntity> providerMap = providers.stream().collect(Collectors.toMap(ProviderEntity::getId, Function.identity()));
+        Map<String, ProviderEntity> providerMap = providers.stream()
+                .sorted(Comparator.comparing(ProviderEntity::getOfficial).reversed())
+                .collect(Collectors.toMap(ProviderEntity::getId, Function.identity(), (e1, e2) -> e1, LinkedHashMap::new));
 
         List<ProviderAggregate> aggregates = new ArrayList<>();
         providerMap.forEach((providerId, provider) -> {
@@ -176,4 +212,5 @@ public class LlmDomainService {
 
         return aggregates;
     }
+
 }

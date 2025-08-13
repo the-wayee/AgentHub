@@ -47,19 +47,14 @@ type AgentDTO = {
       }
   }
 
-export async function GET(req: Request) {
-  const url = new URL(req.url)
-  const name = url.searchParams.get("name")
-  const enable = url.searchParams.get("enable")
-  const backendBase = process.env.AGENTS_ENDPOINT || "http://localhost:8080/api/agent/user"
+export async function GET() {
+  const backendBase = process.env.AGENTS_ENDPOINT || "http://localhost:8080/api/agent/workspace/agents"
   const backendUrl = new URL(backendBase)
-  if (name) backendUrl.searchParams.set("name", name)
-  if (enable != null) backendUrl.searchParams.set("enable", enable)
   try {
     const r = await fetch(backendUrl.toString(), { cache: "no-store" })
       const j = await r.json()
       const list: AgentDTO[] = Array.isArray(j) ? j : j?.data ?? []
-      return NextResponse.json(list.map(mapDto))
+    return NextResponse.json(list.map(mapDto), { headers: { "x-backend-url": backendUrl.toString() } })
       } catch {
         return NextResponse.json([])
       }

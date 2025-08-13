@@ -53,7 +53,7 @@ public class ModelDTO {
     /**
      * 是否官方
      */
-    private Boolean isOfficial;
+    private Boolean official;
     /**
      * 模型状态
      */
@@ -140,11 +140,11 @@ public class ModelDTO {
     }
 
     public Boolean getOfficial() {
-        return isOfficial;
+        return official;
     }
 
     public void setOfficial(Boolean official) {
-        isOfficial = official;
+        this.official = official;
     }
 
     public Boolean getStatus() {

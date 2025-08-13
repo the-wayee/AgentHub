@@ -1,7 +1,7 @@
 package com.xiaoguai.agentx.infrastrcture.llm;
 
 
-import com.xiaoguai.agentx.infrastrcture.llm.config.ProviderConfig;
+import com.xiaoguai.agentx.infrastrcture.llm.config.BaseProviderConfig;
 import com.xiaoguai.agentx.infrastrcture.llm.factory.LlmProviderFactory;
 import com.xiaoguai.agentx.infrastrcture.llm.protocol.enums.ProviderProtocol;
 import dev.langchain4j.model.chat.StreamingChatModel;
@@ -21,7 +21,7 @@ public class LlmProviderService {
      * @param protocol 服务商协议
      * @param config 服务商配置
      */
-    public StreamingChatModel getStreamModel(ProviderProtocol protocol, ProviderConfig config) {
+    public StreamingChatModel getStreamModel(ProviderProtocol protocol, BaseProviderConfig config) {
         return LlmProviderFactory.createChatModel(protocol, config);
     }
 }

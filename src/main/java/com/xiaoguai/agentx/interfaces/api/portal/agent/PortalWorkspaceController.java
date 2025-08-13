@@ -1,10 +1,11 @@
 package com.xiaoguai.agentx.interfaces.api.portal.agent;
 
 
-import com.xiaoguai.agentx.application.agent.service.AgentWorkspaceAppService;
 import com.xiaoguai.agentx.application.agent.dto.AgentDTO;
+import com.xiaoguai.agentx.application.agent.service.AgentWorkspaceAppService;
 import com.xiaoguai.agentx.infrastrcture.auth.UserContext;
 import com.xiaoguai.agentx.interfaces.api.common.Result;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,6 +16,7 @@ import java.util.List;
  * @Date: 2025-08-10 00:23
  * @Description: PortalWorkspaceController
  */
+@Validated
 @RestController
 @RequestMapping("/agent/workspace")
 public class PortalWorkspaceController {
@@ -35,6 +37,15 @@ public class PortalWorkspaceController {
     }
 
     /**
+     * 添加Agent到工作区
+     */
+    @PostMapping("/{agentId}")
+    public Result<AgentDTO> addToWorkspace(@PathVariable String agentId) {
+        String userId = UserContext.getUserId();
+        return Result.success(agentWorkspaceAppService.addAgentToWorkspace(agentId, userId));
+    }
+
+    /**
      * 删除工作区Agent
      */
     @DeleteMapping("/agents/{id}")
@@ -43,4 +54,5 @@ public class PortalWorkspaceController {
         agentWorkspaceAppService.deleteAgent(id, userId);
         return Result.success();
     }
+
 }

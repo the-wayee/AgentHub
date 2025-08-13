@@ -75,7 +75,7 @@ export default function StudioPage() {
     const params = new URLSearchParams()
     if (q.trim()) params.set("name", q.trim())
     if (enabled !== "all") params.set("enable", enabled)
-    const url = `/api/agents${params.toString() ? `?${params.toString()}` : ""}`
+    const url = `/api/agents/user${params.toString() ? `?${params.toString()}` : ""}`
     const r = await fetch(url, { cache: "no-store" })
     const list = await r.json()
     if (Array.isArray(list)) setMyAgents(list)

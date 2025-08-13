@@ -14,10 +14,10 @@ public enum ProviderProtocol {
     OPENAI("OpenAI"),
     DASHSCOPE("阿里百炼"),
     ZHIPU("清华智谱");
-    private final String desc;
+    private final String name;
 
-    ProviderProtocol(String desc) {
-        this.desc = desc;
+    ProviderProtocol(String name) {
+        this.name = name;
     }
 
     public static ProviderProtocol getByName(String name) {
@@ -29,7 +29,7 @@ public enum ProviderProtocol {
         throw new BusinessException("Unknown model type name: " + name);
     }
 
-    public String getDesc() {
-        return desc;
+    public String getName() {
+        return name;
     }
 }

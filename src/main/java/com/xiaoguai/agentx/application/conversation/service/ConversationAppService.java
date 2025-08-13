@@ -18,8 +18,7 @@ import com.xiaoguai.agentx.domain.conversation.model.SessionEntity;
 import com.xiaoguai.agentx.domain.conversation.service.ConversationDomainService;
 import com.xiaoguai.agentx.domain.conversation.service.SessionDomainService;
 import com.xiaoguai.agentx.infrastrcture.llm.LlmProviderService;
-import com.xiaoguai.agentx.infrastrcture.llm.config.ProviderConfig;
-import com.xiaoguai.agentx.infrastrcture.llm.factory.LlmProviderFactory;
+import com.xiaoguai.agentx.infrastrcture.llm.config.BaseProviderConfig;
 import com.xiaoguai.agentx.infrastrcture.llm.protocol.enums.ProviderProtocol;
 import dev.langchain4j.community.model.dashscope.QwenChatRequestParameters;
 import dev.langchain4j.data.message.UserMessage;
@@ -99,7 +98,7 @@ public class ConversationAppService {
         // 协议
         ProviderProtocol protocol = provider.getProtocol();
         // 服务商配置
-        ProviderConfig config = new ProviderConfig();
+        BaseProviderConfig config = new BaseProviderConfig();
         config.setApiKey(provider.getConfig().getApiKey());
         config.setBaseUrl(provider.getConfig().getBaseUrl());
         config.setModel(model.getModelId());

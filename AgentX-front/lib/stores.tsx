@@ -178,12 +178,7 @@ export const useConvoStore = create<ConvoState>()(
           ),
         })),
     }),
-    {
-      name: "agenthub_conversations_v2",
-      onRehydrateStorage: () => () => {
-        set({ rehydrated: true })
-      },
-    },
+    { name: "agenthub_conversations_v2" },
   ),
 )
 
@@ -213,12 +208,7 @@ export const useAgentCatalog = create<CatalogState>()(
       setAll: (list) => set({ agents: list }),
       setLoading: (v) => set({ loading: v }),
     }),
-    {
-      name: "agenthub_catalog_v2",
-      onRehydrateStorage: () => () => {
-        set({ rehydrated: true })
-      },
-    },
+    { name: "agenthub_catalog_v2" },
   ),
 )
 
@@ -262,3 +252,58 @@ export const useWorkspaceStore = create<WorkspaceState>()(
     { name: "agenthub_workspace_v2" },
   ),
 )
+
+/* Provider Configurations */
+export type ProviderKind = "openai" | "qwen" | "zhipu" | "groq" | "xai" | "azure-openai" | "custom"
+export type ProviderModel = { id: string; modelName: string; displayName?: string; enabled: boolean }
+export type ProviderConfig = {
+  id: string
+  name: string
+  kind: ProviderKind
+  apiKey?: string
+  baseUrl?: string
+  enabled: boolean
+  models: ProviderModel[]
+}
+
+type ProviderState = {
+  providers: ProviderConfig[]
+  selectedProviderId?: string
+  upsertProvider: (p: ProviderConfig) => void
+  removeProvider: (id: string) => void
+  setSelectedProvider: (id: string) => void
+  addModel: (providerId: string, m: { modelName: string; displayName?: string }) => void
+  toggleModel: (providerId: string, modelId: string, enabled: boolean) => void
+  setAllProviders: (list: ProviderConfig[]) => void
+}
+
+const defaultProviders: ProviderConfig[] = []
+
+export const useProviderStore = create<ProviderState>()((set, get) => ({
+  providers: defaultProviders,
+  selectedProviderId: undefined,
+  upsertProvider: (p) =>
+    set((s) => {
+      const exists = s.providers.some((x) => x.id === p.id)
+      return { providers: exists ? s.providers.map((x) => (x.id === p.id ? p : x)) : [p, ...s.providers] }
+    }),
+  removeProvider: (id) => set((s) => ({ providers: s.providers.filter((p) => p.id !== id) })),
+  setSelectedProvider: (id) => set({ selectedProviderId: id }),
+  addModel: (providerId, m) =>
+    set((s) => ({
+      providers: s.providers.map((p) =>
+        p.id === providerId
+          ? { ...p, models: [{ id: nanoid(), modelName: m.modelName, displayName: m.displayName, enabled: true }, ...p.models] }
+          : p,
+      ),
+    })),
+  toggleModel: (providerId, modelId, enabled) =>
+    set((s) => ({
+      providers: s.providers.map((p) =>
+        p.id === providerId
+          ? { ...p, models: p.models.map((mm) => (mm.id === modelId ? { ...mm, enabled } : mm)) }
+          : p,
+      ),
+    })),
+  setAllProviders: (list) => set({ providers: list }),
+}))

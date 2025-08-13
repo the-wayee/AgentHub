@@ -1,7 +1,7 @@
 package com.xiaoguai.agentx.interfaces.dto.llm;
 
 
-import com.xiaoguai.agentx.infrastrcture.llm.config.ProviderConfig;
+import com.xiaoguai.agentx.domain.llm.model.config.ProviderConfig;
 import com.xiaoguai.agentx.infrastrcture.llm.protocol.enums.ProviderProtocol;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

@@ -5,13 +5,12 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.xiaoguai.agentx.domain.llm.model.config.ProviderConfig;
 import com.xiaoguai.agentx.infrastrcture.converter.ProviderConfigConverter;
 import com.xiaoguai.agentx.infrastrcture.converter.ProviderProtocolConverter;
 import com.xiaoguai.agentx.infrastrcture.entity.BaseEntity;
 import com.xiaoguai.agentx.infrastrcture.exception.BusinessException;
-import com.xiaoguai.agentx.infrastrcture.llm.config.ProviderConfig;
 import com.xiaoguai.agentx.infrastrcture.llm.protocol.enums.ProviderProtocol;
-import org.apache.ibatis.type.JdbcType;
 
 /**
  * @Author: the-way
@@ -52,7 +51,7 @@ public class ProviderEntity extends BaseEntity {
     /**
      * 是否官方配置
      */
-    private Boolean isOfficial;
+    private Boolean official;
 
     /**
      * 状态: 启用/禁用
@@ -108,11 +107,11 @@ public class ProviderEntity extends BaseEntity {
     }
 
     public Boolean getOfficial() {
-        return isOfficial;
+        return official;
     }
 
     public void setOfficial(Boolean official) {
-        isOfficial = official;
+        this.official = official;
     }
 
     public Boolean getStatus() {
@@ -124,7 +123,7 @@ public class ProviderEntity extends BaseEntity {
     }
 
     public void isActive() {
-        if (!status){
+        if (Boolean.FALSE.equals(status)) {
             throw new BusinessException("服务商未激活");
         }
     }

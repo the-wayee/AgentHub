@@ -8,6 +8,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
 import { useAgentCatalog, useConvoStore, useKnowledgeStore, useWorkspaceStore } from "@/lib/stores"
 import { Paperclip, Send, Gift, Grid2X2, Languages, Square } from "lucide-react"
+import { Switch } from "@/components/ui/switch"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Skeleton } from "@/components/ui/skeleton"
 import { AgentQuickSettings } from "@/components/agent/agent-quick-settings"
 
@@ -81,6 +83,7 @@ export function ChatShell({ agentId }: { agentId: string }) {
 
   const [input, setInput] = useState("")
   const [isStreaming, setIsStreaming] = useState(false)
+  const [enableThink, setEnableThink] = useState(false)
   const abortRef = useRef<AbortController | null>(null)
   const [openSettings, setOpenSettings] = useState(false)
   const scrollRef = useRef<HTMLDivElement | null>(null)
@@ -139,10 +142,10 @@ export function ChatShell({ agentId }: { agentId: string }) {
       const controller = new AbortController()
       abortRef.current = controller
       setIsStreaming(true)
-      const res = await fetch(`/api/sessions/${convoId}/message`, {
+      const res = await fetch(`/api/agent/session/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "text/event-stream" },
-        body: JSON.stringify({ message: text }),
+        body: JSON.stringify({ message: text, sessionId: convoId, enableThink }),
         signal: controller.signal,
       })
 
@@ -313,6 +316,19 @@ export function ChatShell({ agentId }: { agentId: string }) {
               className="min-h-[48px] resize-none rounded-2xl pr-14"
             />
             <div className="absolute right-2 top-2 flex items-center gap-2">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center gap-1 px-2 py-1 rounded-md border bg-background">
+                      <span className="text-xs text-muted-foreground select-none">推理</span>
+                      <Switch checked={enableThink} onCheckedChange={setEnableThink} disabled={isStreaming} />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" align="end" className="max-w-[220px] text-xs">
+                    目前仅 Qwen 模型支持推理。
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
               <Button size="icon" variant="ghost" disabled={isStreaming}>
                 <Paperclip className="w-4 h-4" />
               </Button>

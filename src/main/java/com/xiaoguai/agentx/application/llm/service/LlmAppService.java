@@ -15,7 +15,6 @@ import com.xiaoguai.agentx.infrastrcture.llm.protocol.enums.ProviderProtocol;
 import com.xiaoguai.agentx.interfaces.dto.llm.ModelCreateRequest;
 import com.xiaoguai.agentx.interfaces.dto.llm.ProviderCreateRequest;
 import com.xiaoguai.agentx.interfaces.dto.llm.ProviderUpdateRequest;
-import okhttp3.Protocol;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -82,6 +81,27 @@ public class LlmAppService {
         return llmDomainService.getProvidersByType(providerType, userId);
     }
 
+    /**
+     * 获取激活状态的Provider和Model列表
+     */
+    public List<ProviderAggregate> getProviderAggregatesActive(String userId) {
+        return llmDomainService.getProviderAggregatesActive(userId);
+    }
+
+    /**
+     * 切换服务商状态
+     */
+    public void toggleProviderStatus(String providerId, String userId) {
+        llmDomainService.toggleProviderStatus(providerId, userId);
+    }
+
+    /**
+     * 获取用户的提供商列表
+     */
+    public List<ProviderDTO> getUserProviders(String userId) {
+        List<ProviderEntity> userProviders = llmDomainService.getUserProviders(userId);
+        return ProviderAssembler.toDTOs(userProviders);
+    }
 
     /**
      * 创建模型
@@ -93,6 +113,7 @@ public class LlmAppService {
 
         return ModelAssembler.toDTO(model);
     }
+
 
 
 }

@@ -4,7 +4,10 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Bot, Boxes, Home, Library, Settings2, Telescope, Menu, Shield } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuLabel } from "@/components/ui/dropdown-menu"
+import { User, SlidersHorizontal } from "lucide-react"
+import { ProviderSettings } from "./user/provider-settings"
+import * as React from "react"
 
 const links = [
   { href: "/chat/demo", label: "主页", icon: Home },
@@ -76,8 +79,31 @@ export function TopNav() {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
+          {/* User menu */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="inline-flex items-center gap-2 px-2 h-9 rounded-md border bg-background hover:bg-muted">
+                <User className="w-4 h-4" />
+                <span className="text-sm">个人</span>
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuLabel>账户</DropdownMenuLabel>
+              <DropdownMenuItem asChild>
+                <a href="#">个人设置</a>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuLabel>平台</DropdownMenuLabel>
+              <DropdownMenuItem asChild>
+                <button onClick={() => (window as any).dispatchEvent(new CustomEvent('open-provider-settings'))} className="w-full text-left">
+                  <SlidersHorizontal className="w-4 h-4 mr-2" /> 设置服务商
+                </button>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
+      <ProviderSettings />
     </header>
   )
 }

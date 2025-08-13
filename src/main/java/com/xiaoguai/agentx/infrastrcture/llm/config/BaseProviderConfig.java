@@ -1,16 +1,13 @@
 package com.xiaoguai.agentx.infrastrcture.llm.config;
 
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * @Author: the-way
  * @Verson: v1.0
  * @Date: 2025-08-12 17:19
  * @Description: 供应商配置
  */
-public class ProviderConfig {
+public class BaseProviderConfig {
 
     /**
      * apiKey: sk-xxxx
@@ -23,22 +20,15 @@ public class ProviderConfig {
     private String baseUrl;
 
     /**
-     * 模型名称
+     * 模型Id
      */
     private String model;
-
-    /**
-     * 自定义请求头
-     */
-    private final Map<String, String> customHeaders = new HashMap<>();
-
-    public ProviderConfig() {
+    public BaseProviderConfig() {
     }
 
-    public ProviderConfig(String apiKey, String baseUrl, String model) {
+    public BaseProviderConfig(String apiKey, String baseUrl) {
         this.apiKey = apiKey;
         this.baseUrl = baseUrl;
-        this.model = model;
     }
 
     public String getApiKey() {
@@ -63,13 +53,5 @@ public class ProviderConfig {
 
     public void setModel(String model) {
         this.model = model;
-    }
-
-    public void addCustomHeader(String name, String value) {
-        customHeaders.put(name, value);
-    }
-
-    public Map<String, String> getCustomHeaders() {
-        return customHeaders;
     }
 }

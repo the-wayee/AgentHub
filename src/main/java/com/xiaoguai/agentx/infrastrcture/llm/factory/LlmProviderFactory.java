@@ -2,7 +2,7 @@ package com.xiaoguai.agentx.infrastrcture.llm.factory;
 
 
 import com.xiaoguai.agentx.infrastrcture.exception.BusinessException;
-import com.xiaoguai.agentx.infrastrcture.llm.config.ProviderConfig;
+import com.xiaoguai.agentx.infrastrcture.llm.config.BaseProviderConfig;
 import com.xiaoguai.agentx.infrastrcture.llm.protocol.enums.ProviderProtocol;
 import dev.langchain4j.community.model.dashscope.QwenStreamingChatModel;
 import dev.langchain4j.community.model.zhipu.ZhipuAiStreamingChatModel;
@@ -17,7 +17,7 @@ import dev.langchain4j.model.openai.OpenAiStreamingChatModel;
  */
 public class LlmProviderFactory {
 
-    public static StreamingChatModel createChatModel(ProviderProtocol protocol, ProviderConfig config) {
+    public static StreamingChatModel createChatModel(ProviderProtocol protocol, BaseProviderConfig config) {
         StreamingChatModel model = null;
         switch (protocol) {
             case OPENAI -> {
@@ -25,7 +25,6 @@ public class LlmProviderFactory {
                         .baseUrl(config.getBaseUrl())
                         .modelName(config.getModel())
                         .apiKey(config.getApiKey())
-                        .customHeaders(config.getCustomHeaders())
                         .build();
             }
             case DASHSCOPE -> {
@@ -41,7 +40,7 @@ public class LlmProviderFactory {
                         .build();
             }
             default -> {
-                throw new BusinessException("获取服务商协议失败: " + protocol.getDesc());
+                throw new BusinessException("获取服务商协议失败: " + protocol.getName());
             }
         }
         return model;

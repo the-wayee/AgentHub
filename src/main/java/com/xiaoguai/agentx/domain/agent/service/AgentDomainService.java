@@ -80,6 +80,17 @@ public class AgentDomainService {
     }
 
     /**
+     * 根据id获取Agent
+     */
+    public AgentEntity getAgentById(String agentId) {
+        AgentEntity agent = agentRepository.selectById(agentId);
+        if (agent == null) {
+            throw new BusinessException("Agent不存在: " + agentId);
+        }
+        return agent;
+    }
+
+    /**
      * 获取用户的Agent列表，支持状态和名称过滤
      */
     public List<AgentDTO> getUserAgents(String userId, SearchAgentsRequest searchAgentsRequest) {

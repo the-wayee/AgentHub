@@ -1,6 +1,6 @@
 package com.xiaoguai.agentx.infrastrcture.converter;
 
-import com.xiaoguai.agentx.infrastrcture.llm.config.ProviderConfig;
+import com.xiaoguai.agentx.domain.llm.model.config.ProviderConfig;
 import com.xiaoguai.agentx.infrastrcture.utils.EncryptUtils;
 import com.xiaoguai.agentx.infrastrcture.utils.JsonUtils;
 import org.apache.ibatis.type.BaseTypeHandler;

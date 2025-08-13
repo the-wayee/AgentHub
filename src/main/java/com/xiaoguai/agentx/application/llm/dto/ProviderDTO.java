@@ -1,7 +1,7 @@
 package com.xiaoguai.agentx.application.llm.dto;
 
 
-import com.xiaoguai.agentx.infrastrcture.llm.config.ProviderConfig;
+import com.xiaoguai.agentx.domain.llm.model.config.ProviderConfig;
 import com.xiaoguai.agentx.infrastrcture.llm.protocol.enums.ProviderProtocol;
 
 import java.time.LocalDateTime;
@@ -41,7 +41,7 @@ public class ProviderDTO {
     /**
      * 是否官方配置
      */
-    private Boolean isOfficial;
+    private Boolean official;
 
     /**
      * 状态: 启用/禁用
@@ -117,11 +117,11 @@ public class ProviderDTO {
     }
 
     public Boolean getOfficial() {
-        return isOfficial;
+        return official;
     }
 
     public void setOfficial(Boolean official) {
-        isOfficial = official;
+        this.official = official;
     }
 
     public Boolean getStatus() {

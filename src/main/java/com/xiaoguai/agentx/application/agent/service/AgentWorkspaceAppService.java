@@ -1,8 +1,10 @@
 package com.xiaoguai.agentx.application.agent.service;
 
 
+import com.xiaoguai.agentx.application.agent.assembler.AgentAssembler;
 import com.xiaoguai.agentx.application.agent.dto.AgentDTO;
 import com.xiaoguai.agentx.domain.agent.model.AgentEntity;
+import com.xiaoguai.agentx.domain.agent.model.AgentWorkspaceEntity;
 import com.xiaoguai.agentx.domain.agent.service.AgentDomainService;
 import com.xiaoguai.agentx.domain.agent.service.AgentWorkspaceDomainService;
 import com.xiaoguai.agentx.application.conversation.dto.SessionDTO;
@@ -45,15 +47,31 @@ public class AgentWorkspaceAppService {
      * 获取工作区下的所有Agent
      */
     public List<AgentDTO> getAgents(String userId) {
-        // 1.获取当前用户的所有助理
-        List<AgentDTO> userAgents = agentDomainService.getUserAgents(userId, new SearchAgentsRequest());
+
 
         // 2.获取已添加到工作区的助理
-        List<AgentDTO> workspaceAgents = agentWorkspaceDomainService.getWorkspaceAgents(userId);
+        List<AgentEntity> workspaceAgents = agentWorkspaceDomainService.getWorkspaceAgents(userId);
 
-        // 合并两个列表
-        userAgents.addAll(workspaceAgents);
-        return userAgents;
+        return AgentAssembler.toDTOList(workspaceAgents);
+    }
+
+    /**
+     * 添加Agent到Workspace
+     */
+    public AgentDTO addAgentToWorkspace(String agentId, String userId) {
+        boolean exist = agentWorkspaceDomainService.checkAgentExistWorkspace(agentId, userId);
+        if (exist) {
+            throw new BusinessException("该助理已经存在工作区");
+        }
+        AgentEntity agent = agentDomainService.getAgentById(agentId);
+        if (agent.getEnabled() == false) {
+            throw new BusinessException("该助理已禁用");
+        }
+        AgentWorkspaceEntity workspaceEntity = new AgentWorkspaceEntity();
+        workspaceEntity.setAgentId(agentId);
+        workspaceEntity.setUserId(userId);
+        agentWorkspaceDomainService.saveWorkspaceAgent(workspaceEntity);
+        return AgentAssembler.toDTO(agent);
     }
 
     /**

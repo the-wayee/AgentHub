@@ -9,8 +9,11 @@ import com.xiaoguai.agentx.infrastrcture.auth.UserContext;
 import com.xiaoguai.agentx.infrastrcture.llm.protocol.enums.ProviderProtocol;
 import com.xiaoguai.agentx.interfaces.api.common.Result;
 import com.xiaoguai.agentx.interfaces.dto.llm.ModelCreateRequest;
+import com.xiaoguai.agentx.interfaces.dto.llm.ModelUpdateRequest;
 import com.xiaoguai.agentx.interfaces.dto.llm.ProviderCreateRequest;
 import com.xiaoguai.agentx.interfaces.dto.llm.ProviderUpdateRequest;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import okhttp3.Protocol;
 import org.springframework.web.bind.annotation.*;
 
@@ -36,7 +39,7 @@ public class PortalLlmController {
      * 创建服务商
      */
     @PostMapping("/providers")
-    public Result<ProviderDTO> createProvider(@RequestBody ProviderCreateRequest request) {
+    public Result<ProviderDTO> createProvider(@RequestBody @Valid ProviderCreateRequest request) {
         String userId = UserContext.getUserId();
         return Result.success(llmAppService.createProvider(request, userId));
     }
@@ -45,7 +48,7 @@ public class PortalLlmController {
      * 更新服务商
      */
     @PutMapping("/providers")
-    public Result<ProviderDTO> createProvider(@RequestBody ProviderUpdateRequest request) {
+    public Result<ProviderDTO> createProvider(@RequestBody @Valid ProviderUpdateRequest request) {
         String userId = UserContext.getUserId();
         return Result.success(llmAppService.updateProvider(request, userId));
     }
@@ -69,6 +72,16 @@ public class PortalLlmController {
     }
 
     /**
+     * 切换服务商状态：启用/禁用
+     */
+    @PutMapping("/providers/{providerId}/toggle-staus")
+    public Result<Void> toggleProviderStatus(@PathVariable String providerId) {
+        String userId = UserContext.getUserId();
+        llmAppService.toggleProviderStatus(providerId, userId);
+        return Result.success();
+    }
+
+    /**
      * 根据类型获取服务商列表
      */
     @GetMapping("/providers")
@@ -76,6 +89,15 @@ public class PortalLlmController {
             @RequestParam(required = false, defaultValue = "all") String type) {
         String userId = UserContext.getUserId();
         return Result.success(llmAppService.getProvidersByType(type, userId));
+    }
+
+    /**
+     * 获取用户的提供商列表
+     */
+    @GetMapping("/providers/user")
+    public Result<List<ProviderDTO>> getUserProviders() {
+        String userId = UserContext.getUserId();
+        return Result.success(llmAppService.getUserProviders(userId));
     }
 
 
@@ -88,5 +110,22 @@ public class PortalLlmController {
         return Result.success(llmAppService.createModel(request, userId));
     }
 
+    /**
+     * 修改model
+     */
+    @PutMapping("/models")
+    public Result<ModelDTO> updateModel(@RequestBody ModelUpdateRequest request) {
+        String userId = UserContext.getUserId();
+        return null;
+    }
+
+    /**
+     * 获取激活状态的Provider和Model
+     */
+    @GetMapping("/models/active")
+    public Result<List<ProviderAggregate>> getProviderAggregatesActive() {
+        String userId = UserContext.getUserId();
+        return Result.success(llmAppService.getProviderAggregatesActive(userId));
+    }
 
 }

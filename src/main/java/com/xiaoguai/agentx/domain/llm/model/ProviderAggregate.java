@@ -1,7 +1,7 @@
 package com.xiaoguai.agentx.domain.llm.model;
 
 
-import com.xiaoguai.agentx.infrastrcture.llm.config.ProviderConfig;
+import com.xiaoguai.agentx.domain.llm.model.config.ProviderConfig;
 import com.xiaoguai.agentx.infrastrcture.llm.protocol.enums.ProviderProtocol;
 
 import java.time.LocalDateTime;

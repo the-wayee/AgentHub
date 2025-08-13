@@ -48,7 +48,7 @@ public class ModelEntity extends BaseEntity {
     /**
      * 是否官方
      */
-    private Boolean isOfficial;
+    private Boolean official;
 
     @TableField(typeHandler = ModelTypeConverter.class, jdbcType = JdbcType.VARCHAR)
     private ModelType type;
@@ -131,15 +131,15 @@ public class ModelEntity extends BaseEntity {
     }
 
     public Boolean getOfficial() {
-        return isOfficial;
+        return official;
     }
 
     public void setOfficial(Boolean official) {
-        isOfficial = official;
+        this.official = official;
     }
 
     public void isActive() {
-        if (!status){
+        if (Boolean.FALSE.equals(status)){
             throw new BusinessException("模型未激活");
         }
     }
