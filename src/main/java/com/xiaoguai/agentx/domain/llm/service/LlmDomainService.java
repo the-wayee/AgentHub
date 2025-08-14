@@ -5,7 +5,6 @@ import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.xiaoguai.agentx.application.llm.dto.ProviderDTO;
 import com.xiaoguai.agentx.domain.llm.model.ModelEntity;
 import com.xiaoguai.agentx.domain.llm.model.ProviderAggregate;
 import com.xiaoguai.agentx.domain.llm.model.ProviderEntity;
@@ -133,13 +132,13 @@ public class LlmDomainService {
 
 
     /**
-     * 切换服务商Id
+     * 切换服务商状态
      */
     public void toggleProviderStatus(String providerId, String userId) {
         LambdaUpdateWrapper<ProviderEntity> wrapper = Wrappers.<ProviderEntity>lambdaUpdate()
                 .eq(ProviderEntity::getId, providerId)
                 .eq(ProviderEntity::getUserId, userId)
-                .setSql("status = not staus");
+                .setSql("status = not status");
         providerRepository.checkUpdate(wrapper);
     }
 
@@ -174,6 +173,16 @@ public class LlmDomainService {
         return model;
     }
 
+    /**
+     * 切换模型状态
+     */
+    public void toggleModelStatus(String modelId, String userId) {
+        LambdaUpdateWrapper<ModelEntity> wrapper = Wrappers.<ModelEntity>lambdaUpdate()
+                .eq(ModelEntity::getId, modelId)
+                .eq(ModelEntity::getUserId, userId)
+                .setSql("status = not status");
+        modelRepository.checkUpdate(wrapper);
+    }
 
     /**
      * 构建服务商和模型的聚合根
@@ -212,5 +221,6 @@ public class LlmDomainService {
 
         return aggregates;
     }
+
 
 }

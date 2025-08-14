@@ -8,6 +8,7 @@ import com.xiaoguai.agentx.application.llm.dto.ProviderDTO;
 import com.xiaoguai.agentx.domain.llm.model.ModelEntity;
 import com.xiaoguai.agentx.domain.llm.model.ProviderAggregate;
 import com.xiaoguai.agentx.domain.llm.model.ProviderEntity;
+import com.xiaoguai.agentx.domain.llm.model.enums.ModelType;
 import com.xiaoguai.agentx.domain.llm.model.enums.ProviderType;
 import com.xiaoguai.agentx.domain.llm.service.LlmDomainService;
 import com.xiaoguai.agentx.infrastrcture.entity.Operator;
@@ -66,6 +67,15 @@ public class LlmAppService {
         llmDomainService.deleteProvider(providerId, userId, Operator.USER);
     }
 
+
+    /**
+     * 根据Id获取服务商信息
+     */
+    public ProviderDTO getProviderById(String providerId) {
+        ProviderEntity provider = llmDomainService.getProviderById(providerId);
+        return ProviderAssembler.toDTO(provider);
+    }
+
     /**
      * 获取所有供应商协议
      */
@@ -104,6 +114,13 @@ public class LlmAppService {
     }
 
     /**
+     * 获取服务商类型列表
+     */
+    public List<ProviderType> getProviderTypes() {
+        return List.of(ProviderType.values());
+    }
+
+    /**
      * 创建模型
      */
     public ModelDTO createModel(ModelCreateRequest request, String userId) {
@@ -114,6 +131,18 @@ public class LlmAppService {
         return ModelAssembler.toDTO(model);
     }
 
+    /**
+     * 切换模型状态
+     */
+    public void toggleModelStatus(String modelId, String userId) {
+        llmDomainService.toggleModelStatus(modelId, userId);
+    }
 
 
+    /**
+     * 获取模型类型列表
+     */
+    public List<ModelType> getModelTypes() {
+        return List.of(ModelType.values());
+    }
 }

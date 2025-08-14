@@ -5,10 +5,19 @@ export const dynamic = "force-dynamic"
 
 const BACKEND = (process.env.LLM_PROVIDERS_ENDPOINT || "http://localhost:8080/api/llm/providers").replace(/\/$/, "")
 
-export async function GET() {
-  const backendUrl = BACKEND
+export async function GET(req: Request) {
+  const { searchParams } = new URL(req.url)
+  const queryString = searchParams.toString()
+  const backendUrl = `${BACKEND}${queryString ? `?${queryString}` : ""}`
+  
   try {
-    const res = await fetch(backendUrl, { method: "GET", cache: "no-store" })
+    const res = await fetch(backendUrl, { 
+      method: "GET", 
+      cache: "no-store",
+      headers: {
+        "Content-Type": "application/json"
+      }
+    })
     const text = await res.text()
     return new NextResponse(text, {
       status: res.status,

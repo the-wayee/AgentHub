@@ -3,6 +3,7 @@ package com.xiaoguai.agentx.application.llm.assembler;
 
 import com.xiaoguai.agentx.application.llm.dto.ProviderDTO;
 import com.xiaoguai.agentx.domain.llm.model.ProviderEntity;
+import com.xiaoguai.agentx.domain.llm.model.config.ProviderConfig;
 import com.xiaoguai.agentx.interfaces.dto.llm.ProviderCreateRequest;
 import com.xiaoguai.agentx.interfaces.dto.llm.ProviderUpdateRequest;
 
@@ -72,6 +73,7 @@ public class ProviderAssembler {
         provider.setProtocol(request.getProtocol());
         provider.setName(request.getName());
         provider.setDescription(request.getDescription());
+        // TODO config 的 apikey前端是加密状态
         provider.setConfig(request.getConfig());
         provider.setStatus(request.getStatus());
 

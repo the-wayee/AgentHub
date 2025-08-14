@@ -2,11 +2,11 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Bot, Boxes, Home, Library, Settings2, Telescope, Menu, Shield } from "lucide-react"
+import { Bot, Boxes, Home, Library, Settings2, Telescope, Menu, Shield, Server } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuLabel } from "@/components/ui/dropdown-menu"
-import { User, SlidersHorizontal } from "lucide-react"
-import { ProviderSettings } from "./user/provider-settings"
+import { User } from "lucide-react"
+
 import * as React from "react"
 
 const links = [
@@ -14,8 +14,8 @@ const links = [
   { href: "/explore", label: "探索", icon: Telescope },
   { href: "/studio", label: "工作室", icon: Settings2 },
   { href: "/knowledge", label: "知识库", icon: Library },
+  { href: "/providers", label: "服务商", icon: Server },
   { href: "/tools", label: "工具", icon: Boxes },
-  { href: "/admin", label: "后台", icon: Shield },
 ]
 
 export function TopNav() {
@@ -71,7 +71,7 @@ export function TopNav() {
                   <Link href="/knowledge">知识库</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link href="/explore">探索</Link>
+                  <Link href="/providers">服务商</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link href="/tools">工具</Link>
@@ -94,16 +94,16 @@ export function TopNav() {
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuLabel>平台</DropdownMenuLabel>
+
               <DropdownMenuItem asChild>
-                <button onClick={() => (window as any).dispatchEvent(new CustomEvent('open-provider-settings'))} className="w-full text-left">
-                  <SlidersHorizontal className="w-4 h-4 mr-2" /> 设置服务商
-                </button>
+                <Link href="/admin">
+                  <Shield className="w-4 h-4 mr-2" /> 后台管理
+                </Link>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
       </div>
-      <ProviderSettings />
     </header>
   )
 }

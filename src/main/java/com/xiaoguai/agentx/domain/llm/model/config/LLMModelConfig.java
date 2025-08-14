@@ -13,11 +13,37 @@ public class LLMModelConfig {
      */
     private Integer maxContextLength;
 
+    /**
+     * 温度
+     */
+    private Double temperature;
+
+    /**
+     * 是否允许联网搜索
+     */
+    private Boolean enable_search;
+
     public Integer getMaxContextLength() {
         return maxContextLength;
     }
 
     public void setMaxContextLength(Integer maxContextLength) {
         this.maxContextLength = maxContextLength;
+    }
+
+    public Double getTemperature() {
+        return temperature;
+    }
+
+    public void setTemperature(Double temperature) {
+        this.temperature = temperature;
+    }
+
+    public Boolean getEnable_search() {
+        return enable_search;
+    }
+
+    public void setEnable_search(Boolean enable_search) {
+        this.enable_search = enable_search;
     }
 }

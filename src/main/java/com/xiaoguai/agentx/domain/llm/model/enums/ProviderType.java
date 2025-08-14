@@ -41,7 +41,7 @@ public enum ProviderType {
      */
     public static ProviderType fromCode(String code) {
         for (ProviderType type : ProviderType.values()) {
-            if (type.getType().equals(code)) {
+            if (type.name().equals(code)) {
                 return type;
             }
         }

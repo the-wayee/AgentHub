@@ -5,6 +5,8 @@ import com.xiaoguai.agentx.application.llm.dto.ModelDTO;
 import com.xiaoguai.agentx.application.llm.dto.ProviderDTO;
 import com.xiaoguai.agentx.application.llm.service.LlmAppService;
 import com.xiaoguai.agentx.domain.llm.model.ProviderAggregate;
+import com.xiaoguai.agentx.domain.llm.model.enums.ModelType;
+import com.xiaoguai.agentx.domain.llm.model.enums.ProviderType;
 import com.xiaoguai.agentx.infrastrcture.auth.UserContext;
 import com.xiaoguai.agentx.infrastrcture.llm.protocol.enums.ProviderProtocol;
 import com.xiaoguai.agentx.interfaces.api.common.Result;
@@ -13,8 +15,6 @@ import com.xiaoguai.agentx.interfaces.dto.llm.ModelUpdateRequest;
 import com.xiaoguai.agentx.interfaces.dto.llm.ProviderCreateRequest;
 import com.xiaoguai.agentx.interfaces.dto.llm.ProviderUpdateRequest;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
-import okhttp3.Protocol;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -54,6 +54,14 @@ public class PortalLlmController {
     }
 
     /**
+     * 获取服务商
+     */
+    @GetMapping("/providers/{providerId}")
+    public Result<ProviderDTO> getProvider(@PathVariable String providerId) {
+        return Result.success(llmAppService.getProviderById(providerId));
+    }
+
+    /**
      * 删除服务商
      */
     @DeleteMapping("/providers/{providerId}")
@@ -74,11 +82,19 @@ public class PortalLlmController {
     /**
      * 切换服务商状态：启用/禁用
      */
-    @PutMapping("/providers/{providerId}/toggle-staus")
+    @PutMapping("/providers/{providerId}/toggle-status")
     public Result<Void> toggleProviderStatus(@PathVariable String providerId) {
         String userId = UserContext.getUserId();
         llmAppService.toggleProviderStatus(providerId, userId);
         return Result.success();
+    }
+
+    /**
+     * 获取服务商类型下拉列表
+     */
+    @GetMapping("/providers/types")
+    public Result<List<ProviderType>> getProviderTypes() {
+        return Result.success(llmAppService.getProviderTypes());
     }
 
     /**
@@ -117,6 +133,24 @@ public class PortalLlmController {
     public Result<ModelDTO> updateModel(@RequestBody ModelUpdateRequest request) {
         String userId = UserContext.getUserId();
         return null;
+    }
+
+    /**
+     * 切换模型状态
+     */
+    @PutMapping("/models/{modelId}/toggle-status")
+    public Result<Void> toggleModelStatus(@PathVariable String modelId) {
+        String userId = UserContext.getUserId();
+        llmAppService.toggleModelStatus(modelId, userId);
+        return Result.success();
+    }
+
+    /**
+     * 获取模型类型
+     */
+    @GetMapping("/models/types")
+    public Result<List<ModelType>> getModelTypes() {
+        return Result.success(llmAppService.getModelTypes());
     }
 
     /**

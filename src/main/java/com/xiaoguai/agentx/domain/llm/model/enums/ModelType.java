@@ -11,8 +11,10 @@ import com.xiaoguai.agentx.infrastrcture.exception.BusinessException;
  */
 public enum ModelType {
 
-    NORMAL("NORMAL", "普通模型"),
-    EMBEDDING("EMBEDDING", "嵌入模型");
+    NORMAL("normal", "普通模型"),
+    VISION("vison", "视觉模型"),
+    FUNCTION("function", "工具调用"),
+    EMBEDDING("embedding", "嵌入模型");
 
     private final String code;
     private final String description;
@@ -32,7 +34,7 @@ public enum ModelType {
 
     public static ModelType fromCode(String code) {
         for (ModelType type : values()) {
-            if (type.code.equals(code)) {
+            if (type.name().equals(code)) {
                 return type;
             }
         }
