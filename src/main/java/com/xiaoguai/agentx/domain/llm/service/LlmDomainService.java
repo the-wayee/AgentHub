@@ -185,6 +185,14 @@ public class LlmDomainService {
     }
 
     /**
+     * 获取提供商模型列表
+     */
+    public List<ModelEntity> getProviderModels(String providerId) {
+        return modelRepository.selectList(Wrappers.<ModelEntity>lambdaQuery()
+                .eq(ModelEntity::getProviderId, providerId));
+    }
+
+    /**
      * 构建服务商和模型的聚合根
      */
     private List<ProviderAggregate> buildProviderAggregate(List<ProviderEntity> providers) {
@@ -222,5 +230,15 @@ public class LlmDomainService {
         return aggregates;
     }
 
+
+    /**
+     * 判断服务商是否存在
+     */
+    private void checkProviderExists(String providerId) {
+        boolean exists = providerRepository.exists(Wrappers.<ProviderEntity>lambdaQuery().eq(ProviderEntity::getId, providerId));
+        if (!exists) {
+            throw new BusinessException("该服务商不存在");
+        }
+    }
 
 }

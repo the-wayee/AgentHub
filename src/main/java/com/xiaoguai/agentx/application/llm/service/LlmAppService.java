@@ -145,4 +145,12 @@ public class LlmAppService {
     public List<ModelType> getModelTypes() {
         return List.of(ModelType.values());
     }
+
+    /**
+     * 获取服务商模型列表
+     */
+    public List<ModelDTO> getProviderModels(String providerId) {
+        List<ModelEntity> models = llmDomainService.getProviderModels(providerId);
+        return ModelAssembler.toDTOs(models);
+    }
 }

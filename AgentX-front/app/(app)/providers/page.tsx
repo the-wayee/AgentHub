@@ -281,6 +281,18 @@ export default function ProvidersPage() {
     loadProviders()
   }, [statusFilter])
 
+  // 监听服务商保存事件，重新加载数据
+  useEffect(() => {
+    const handleProviderSaved = () => {
+      loadProviders()
+    }
+    
+    window.addEventListener('provider-saved', handleProviderSaved)
+    return () => {
+      window.removeEventListener('provider-saved', handleProviderSaved)
+    }
+  }, [])
+
   const filteredProviders = providers.filter(provider => {
     const matchesSearch = provider.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          provider.protocol.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -487,16 +499,8 @@ export default function ProvidersPage() {
                     : 'bg-gray-600 hover:bg-gray-700'
                 }`}
                 onClick={() => {
-                  // 将服务商数据编码为查询参数
-                  const providerData = encodeURIComponent(JSON.stringify({
-                    id: provider.id,
-                    name: provider.name,
-                    protocol: provider.protocol,
-                    description: provider.description,
-                    status: provider.status,
-                    models: provider.models || []
-                  }))
-                  router.push(`/providers/${provider.id}/models?data=${providerData}`)
+                  // 直接跳转，不传递敏感数据
+                  router.push(`/providers/${provider.id}/models`)
                 }}
               >
                 <Settings className="w-4 h-4 mr-2" />

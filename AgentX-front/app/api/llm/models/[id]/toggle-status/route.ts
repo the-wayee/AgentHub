@@ -10,7 +10,7 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   const { id } = params
-  const backendUrl = `${BACKEND_BASE}/api/llm/model/${id}/toggle-status`
+  const backendUrl = `${BACKEND_BASE}/api/llm/models/${id}/toggle-status`
   
   try {
     const body = await req.text()

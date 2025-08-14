@@ -7,6 +7,9 @@ import com.xiaoguai.agentx.interfaces.dto.llm.ModelCreateRequest;
 import com.xiaoguai.agentx.interfaces.dto.llm.ModelUpdateRequest;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * @Author: the-way
@@ -26,7 +29,6 @@ public class ModelAssembler {
 
         ModelDTO dto = new ModelDTO();
         dto.setId(model.getId());
-        dto.setUserId(model.getUserId());
         dto.setProviderId(model.getProviderId());
         dto.setModelId(model.getModelId());
         dto.setName(model.getName());
@@ -71,5 +73,18 @@ public class ModelAssembler {
         model.setId(request.getId());
 
         return model;
+    }
+
+
+    public static List<ModelDTO> toDTOs(List<ModelEntity> models) {
+        if (models == null || models.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<ModelDTO> dtos = new ArrayList<>();
+        for (ModelEntity model : models) {
+            ModelDTO dto = toDTO(model);
+            dtos.add(dto);
+        }
+        return dtos;
     }
 }

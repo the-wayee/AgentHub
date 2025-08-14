@@ -21,7 +21,7 @@ public class ModelTypeConverter extends BaseTypeHandler<ModelType> {
     @Override
     public void setNonNullParameter(PreparedStatement ps, int i, ModelType parameter, JdbcType jdbcType)
             throws SQLException {
-        ps.setString(i, parameter.getCode());
+        ps.setString(i, parameter.name());
     }
 
     @Override

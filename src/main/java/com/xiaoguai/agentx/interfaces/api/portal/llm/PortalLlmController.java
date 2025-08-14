@@ -136,6 +136,15 @@ public class PortalLlmController {
     }
 
     /**
+     * 获取服务商模型列表
+     */
+    @GetMapping("/models/{providerId}")
+    public Result<List<ModelDTO>> getProviderModels(@PathVariable String providerId) {
+        return Result.success(llmAppService.getProviderModels(providerId));
+    }
+
+
+    /**
      * 切换模型状态
      */
     @PutMapping("/models/{modelId}/toggle-status")
@@ -161,5 +170,6 @@ public class PortalLlmController {
         String userId = UserContext.getUserId();
         return Result.success(llmAppService.getProviderAggregatesActive(userId));
     }
+
 
 }

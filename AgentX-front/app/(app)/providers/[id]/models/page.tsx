@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useParams, useRouter, useSearchParams } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
 import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -44,7 +44,6 @@ type Provider = {
 export default function ProviderModelsPage() {
   const params = useParams()
   const router = useRouter()
-  const searchParams = useSearchParams()
   const providerId = params.id as string
   const [provider, setProvider] = useState<Provider | null>(null)
   const [models, setModels] = useState<Model[]>([])
@@ -66,27 +65,7 @@ export default function ProviderModelsPage() {
   async function loadProviderAndModels() {
     setLoading(true)
     try {
-      // 优先从URL参数中获取数据
-      const dataParam = searchParams.get('data')
-      if (dataParam) {
-        try {
-          const providerData = JSON.parse(decodeURIComponent(dataParam))
-          setProvider({
-            id: providerData.id,
-            name: providerData.name,
-            protocol: providerData.protocol,
-            description: providerData.description,
-            status: providerData.status,
-          })
-          setModels(providerData.models || [])
-          setLoading(false)
-          return
-        } catch (e) {
-          console.warn('Failed to parse provider data from URL params:', e)
-        }
-      }
-      
-      // 如果URL参数无效或不存在，则调用API
+      // 直接调用API获取服务商信息
       const res = await fetch('/api/llm/providers', { cache: 'no-store' })
       const result = await res.json()
       
@@ -102,8 +81,10 @@ export default function ProviderModelsPage() {
             status: currentProvider.status,
           })
           
-          // 设置模型数据
-          setModels(currentProvider.models || [])
+          // 使用专门的模型接口获取最新模型数据
+          await loadModels()
+        } else {
+          throw new Error("未找到对应的服务商")
         }
       } else {
         throw new Error(result.message || "API返回错误")
@@ -116,6 +97,28 @@ export default function ProviderModelsPage() {
       })
     } finally {
       setLoading(false)
+    }
+  }
+
+  // 专门获取模型列表的函数
+  async function loadModels() {
+    try {
+      const res = await fetch(`/api/llm/providers/${providerId}/models`, { 
+        cache: 'no-store' 
+      })
+      const result = await res.json()
+      
+      if (result.code === 200 && Array.isArray(result.data)) {
+        setModels(result.data)
+      } else {
+        throw new Error(result.message || "获取模型列表失败")
+      }
+    } catch (error) {
+      toast({
+        title: "加载模型列表失败",
+        description: "无法获取最新的模型列表",
+        variant: "destructive"
+      })
     }
   }
 
@@ -180,7 +183,7 @@ export default function ProviderModelsPage() {
         setShowAddDialog(false)
         resetAddForm()
         // 重新加载模型列表
-        loadProviderAndModels()
+        loadModels()
       } else {
         const errorMsg = result?.message || '添加失败'
         toast({

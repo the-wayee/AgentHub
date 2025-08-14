@@ -199,6 +199,8 @@ export function ProviderSettings() {
                 if (r.ok) {
                   toast({ title: "已保存服务商" })
                   setOpen(false)
+                  // 触发事件通知服务商页面刷新数据
+                  window.dispatchEvent(new CustomEvent('provider-saved'))
                 } else {
                   toast({ title: "保存失败", description: "请稍后再试" })
                 }
