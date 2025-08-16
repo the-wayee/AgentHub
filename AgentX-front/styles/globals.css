@@ -121,3 +121,45 @@
     @apply bg-background text-foreground;
   }
 }
+
+@keyframes scroll-text {
+  0% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(0);
+  }
+  80% {
+    transform: translateX(-60px);
+  }
+  100% {
+    transform: translateX(-60px);
+  }
+}
+
+/* 确保在所有层级生效 */
+.scroll-text-container {
+  position: relative;
+  overflow: hidden;
+}
+
+.scroll-text-content {
+  display: inline-block;
+  white-space: nowrap;
+  animation: scroll-text 3s ease-in-out infinite paused;
+  transition: transform 0.3s ease;
+}
+
+/* 悬停时启动动画 */
+.scroll-text-container:hover .scroll-text-content {
+  animation-play-state: running;
+}
+
+/* 针对特定组件的强制样式 */
+[data-radix-select-content] .scroll-text-container {
+  max-width: 100px;
+}
+
+[data-radix-select-content] .scroll-text-content {
+  min-width: max-content;
+}

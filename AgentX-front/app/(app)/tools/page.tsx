@@ -4,14 +4,30 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { useAgentCatalog } from "@/lib/stores"
+import { useState, useEffect } from "react"
+import { ToolsPageSkeleton } from "@/components/ui/page-skeleton"
 
 export default function ToolsPage() {
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    // 模拟加载延迟
+    const timer = setTimeout(() => {
+      setLoading(false)
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [])
+
   const presets = [
     { name: "Web 搜索", desc: "接入实时搜索引擎以获取最新信息", enabled: true },
     { name: "天气预报", desc: "查询指定城市的实时/未来天气", enabled: false },
     { name: "Wiki 百科", desc: "检索维基百科词条并返回摘要", enabled: true },
     { name: "汇率换算", desc: "支持多币种实时汇率换算", enabled: false },
   ]
+
+  if (loading) {
+    return <ToolsPageSkeleton />
+  }
 
   return (
     <div className="max-w-5xl mx-auto p-6 space-y-6">

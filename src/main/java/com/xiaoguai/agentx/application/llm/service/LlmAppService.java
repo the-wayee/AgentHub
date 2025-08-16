@@ -14,6 +14,7 @@ import com.xiaoguai.agentx.domain.llm.service.LlmDomainService;
 import com.xiaoguai.agentx.infrastrcture.entity.Operator;
 import com.xiaoguai.agentx.infrastrcture.llm.protocol.enums.ProviderProtocol;
 import com.xiaoguai.agentx.interfaces.dto.llm.ModelCreateRequest;
+import com.xiaoguai.agentx.interfaces.dto.llm.ModelUpdateRequest;
 import com.xiaoguai.agentx.interfaces.dto.llm.ProviderCreateRequest;
 import com.xiaoguai.agentx.interfaces.dto.llm.ProviderUpdateRequest;
 import org.springframework.stereotype.Service;
@@ -42,9 +43,9 @@ public class LlmAppService {
     @Transactional
     public ProviderDTO createProvider(ProviderCreateRequest request, String userId) {
         // 转换 entity
-        ProviderEntity provider = ProviderAssembler.toEntity(request, userId);
-        provider.setOfficial(false);
-        llmDomainService.createProvider(provider);
+        ProviderEntity entity = ProviderAssembler.toEntity(request, userId);
+        entity.setOfficial(false);
+        ProviderEntity provider = llmDomainService.createProvider(entity);
         return ProviderAssembler.toDTO(provider);
     }
 
@@ -52,11 +53,10 @@ public class LlmAppService {
      * 更新服务商
      */
     @Transactional
-    public ProviderDTO updateProvider(ProviderUpdateRequest request, String userId) {
+    public void updateProvider(ProviderUpdateRequest request, String userId) {
         // 转换 entity
         ProviderEntity provider = ProviderAssembler.toEntity(request, userId);
         llmDomainService.updateProvider(provider);
-        return ProviderAssembler.toDTO(provider);
     }
 
     /**
@@ -123,6 +123,7 @@ public class LlmAppService {
     /**
      * 创建模型
      */
+    @Transactional
     public ModelDTO createModel(ModelCreateRequest request, String userId) {
         ModelEntity entity = ModelAssembler.toEntity(request, userId);
 
@@ -131,6 +132,20 @@ public class LlmAppService {
         return ModelAssembler.toDTO(model);
     }
 
+    /**
+     * 修改模型
+     */
+    @Transactional
+    public void updateModel(ModelUpdateRequest request, String userId) {
+        ModelEntity model = ModelAssembler.toEntity(request, userId);
+        model.setOfficial(false);
+        llmDomainService.updateModel(model);
+    }
+
+    @Transactional
+    public void deleteModel(String modelId, String userId) {
+        llmDomainService.deleteModel(modelId, userId, Operator.USER);
+    }
     /**
      * 切换模型状态
      */
@@ -153,4 +168,6 @@ public class LlmAppService {
         List<ModelEntity> models = llmDomainService.getProviderModels(providerId);
         return ModelAssembler.toDTOs(models);
     }
+
+
 }

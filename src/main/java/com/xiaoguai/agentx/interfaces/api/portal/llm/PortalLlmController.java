@@ -15,6 +15,7 @@ import com.xiaoguai.agentx.interfaces.dto.llm.ModelUpdateRequest;
 import com.xiaoguai.agentx.interfaces.dto.llm.ProviderCreateRequest;
 import com.xiaoguai.agentx.interfaces.dto.llm.ProviderUpdateRequest;
 import jakarta.validation.Valid;
+import org.apache.catalina.User;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -48,9 +49,10 @@ public class PortalLlmController {
      * 更新服务商
      */
     @PutMapping("/providers")
-    public Result<ProviderDTO> createProvider(@RequestBody @Valid ProviderUpdateRequest request) {
+    public Result<Void> createProvider(@RequestBody @Valid ProviderUpdateRequest request) {
         String userId = UserContext.getUserId();
-        return Result.success(llmAppService.updateProvider(request, userId));
+        llmAppService.updateProvider(request, userId);
+        return Result.success();
     }
 
     /**
@@ -130,9 +132,20 @@ public class PortalLlmController {
      * 修改model
      */
     @PutMapping("/models")
-    public Result<ModelDTO> updateModel(@RequestBody ModelUpdateRequest request) {
+    public Result<Void> updateModel(@RequestBody ModelUpdateRequest request) {
         String userId = UserContext.getUserId();
-        return null;
+        llmAppService.updateModel(request, userId);
+        return Result.success();
+    }
+
+    /**
+     * 删除模型
+     */
+    @DeleteMapping("/models/{modelId}")
+    public Result<Void> deleteModel(@PathVariable String modelId) {
+        String userId = UserContext.getUserId();
+        llmAppService.deleteModel(modelId, userId);
+        return Result.success();
     }
 
     /**

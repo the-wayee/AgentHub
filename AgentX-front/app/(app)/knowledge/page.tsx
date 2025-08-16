@@ -6,9 +6,25 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { useKnowledgeStore } from "@/lib/stores"
 import { Trash2, Upload } from "lucide-react"
+import { useState, useEffect } from "react"
+import { KnowledgePageSkeleton } from "@/components/ui/page-skeleton"
 
 export default function KnowledgePage() {
   const { items, addItem, removeItem } = useKnowledgeStore()
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    // 模拟加载延迟，实际项目中这里会是API调用
+    const timer = setTimeout(() => {
+      setLoading(false)
+    }, 500)
+    return () => clearTimeout(timer)
+  }, [])
+
+  if (loading) {
+    return <KnowledgePageSkeleton />
+  }
+
   return (
     <div className="max-w-5xl mx-auto p-6 space-y-6">
       <div>

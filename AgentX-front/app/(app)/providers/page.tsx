@@ -16,6 +16,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { ProvidersPageSkeleton } from "@/components/ui/page-skeleton"
 
 type Model = {
   id: string
@@ -129,7 +130,7 @@ export default function ProvidersPage() {
       
       const result = await res.json().catch(() => null)
       
-      if (res.ok && result?.code === 200) {
+      if (res.ok && result?.success) {
         // 更新本地状态
         setProviders(prev => prev.map(provider => 
           provider.id === providerId 
@@ -302,18 +303,7 @@ export default function ProvidersPage() {
   })
 
   if (loading) {
-    return (
-      <div className="max-w-7xl mx-auto p-6">
-        <div className="space-y-4">
-          <div className="h-8 bg-muted rounded animate-pulse" />
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="h-48 bg-muted rounded animate-pulse" />
-            ))}
-          </div>
-        </div>
-      </div>
-    )
+    return <ProvidersPageSkeleton />
   }
 
   return (
@@ -450,11 +440,43 @@ export default function ProvidersPage() {
               </p>
 
               {/* Model Count */}
-              <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center justify-between mb-4">
                 <span className="text-sm text-gray-500">模型数量</span>
                 <span className="text-sm font-medium text-gray-900">
                   {(provider.models || []).filter(m => m.status).length}/{(provider.models || []).length} 激活
                 </span>
+              </div>
+
+              {/* Model Tags */}
+              <div className="mb-6">
+                <span className="text-sm text-gray-500 mb-2 block">可用模型</span>
+                <div className="flex flex-wrap gap-2 max-h-20 overflow-y-auto">
+                  {(provider.models || []).length > 0 ? (
+                    provider.models.slice(0, 6).map((model, index) => (
+                      <Badge
+                        key={model.id || index}
+                        variant="outline"
+                        className={`text-xs px-2 py-1 rounded-md font-medium border transition-all duration-200 ${
+                          model.status
+                            ? 'bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100'
+                            : 'bg-gray-50 border-gray-200 text-gray-500'
+                        }`}
+                      >
+                        {model.name || model.modelId || '未命名模型'}
+                      </Badge>
+                    ))
+                  ) : (
+                    <span className="text-xs text-gray-400">暂无模型</span>
+                  )}
+                  {(provider.models || []).length > 6 && (
+                    <Badge
+                      variant="outline"
+                      className="text-xs px-2 py-1 rounded-md font-medium bg-gray-50 border-gray-200 text-gray-500"
+                    >
+                      +{(provider.models || []).length - 6} 更多
+                    </Badge>
+                  )}
+                </div>
               </div>
 
               {/* Buttons */}

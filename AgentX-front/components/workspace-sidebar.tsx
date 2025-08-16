@@ -21,6 +21,8 @@ import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
 import { WorkspaceSwitcher } from "./workspace-switcher"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { AgentQuickSettings } from "@/components/agent/agent-quick-settings"
+import { Settings } from "lucide-react"
 import { useEffect, useMemo, useState, useRef } from "react"
 
 export function WorkspaceSidebar({
@@ -35,6 +37,7 @@ export function WorkspaceSidebar({
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editingTitle, setEditingTitle] = useState<string>("")
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
+  const [openSettings, setOpenSettings] = useState(false)
   const { agents } = useAgentCatalog()
   const { setCurrentAgentId } = useWorkspaceStore()
   const { selectedId, setSelected } = useWorkspaceStore()
@@ -135,45 +138,65 @@ export function WorkspaceSidebar({
           </Button>
         </div>
         {/* Agent selector inside current workspace */}
-            <Select
-          value={agent?.id}
-          onValueChange={(v) => {
-            setCurrentAgentId(v)
-            // 仅切换列表状态，不跳转 URL
-            const convos = conversations.filter((c)=>c.agentId===v)
-            if (convos.length>0) {
-              setActive(convos[0].id)
-            } else {
-              // 先本地创建会话并选中
-              const c = createConversation({ agentId: v })
-              setActive(c.id)
-              // 异步尝试从后端拉一个会话（如果有）并替换本地
-              fetch(`/api/sessions/${v}`, { cache: 'no-store' })
-                .then(r=>r.json())
-                .then(list=>{
-                  if (Array.isArray(list) && list.length>0) {
-                    const mapped = list.map((s: any) => ({ id: s.id, title: s.title, createdAt: s.createdAt }))
-                    replaceConversationsForAgent(v, mapped)
-                    setActive(mapped[0].id)
-                  }
-                }).catch(()=>{})
-            }
-          }}
-        >
-          <SelectTrigger className="h-8">
-            <SelectValue placeholder="选择 Agent" />
-          </SelectTrigger>
-          <SelectContent>
-            {agentsInWs.map((a) => (
-              <SelectItem key={a.id} value={a.id}>
-                {a.name}
-              </SelectItem>
-            ))}
-            {agentsInWs.length === 0 && (
-              <div className="px-2 py-1 text-xs text-muted-foreground">该工作区暂无 Agent</div>
-            )}
-          </SelectContent>
-        </Select>
+        <div className="flex items-center gap-2">
+          <Select
+            value={agent?.id}
+            onValueChange={(v) => {
+              setCurrentAgentId(v)
+              // 仅切换列表状态，不跳转 URL
+              const convos = conversations.filter((c)=>c.agentId===v)
+              if (convos.length>0) {
+                setActive(convos[0].id)
+              } else {
+                // 先本地创建会话并选中
+                const c = createConversation({ agentId: v })
+                setActive(c.id)
+                // 异步尝试从后端拉一个会话（如果有）并替换本地
+                fetch(`/api/sessions/${v}`, { cache: 'no-store' })
+                  .then(r=>r.json())
+                  .then(list=>{
+                    if (Array.isArray(list) && list.length>0) {
+                      const mapped = list.map((s: any) => ({ id: s.id, title: s.title, createdAt: s.createdAt }))
+                      replaceConversationsForAgent(v, mapped)
+                      setActive(mapped[0].id)
+                    }
+                  }).catch(()=>{})
+              }
+            }}
+          >
+            <SelectTrigger className="h-8 flex-1">
+              <SelectValue placeholder="选择 Agent">
+                {agent && (
+                  <span className="text-sm truncate max-w-[120px] inline-block" title={agent.name}>
+                    {agent.name}
+                  </span>
+                )}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              {agentsInWs.map((a) => (
+                <SelectItem key={a.id} value={a.id}>
+                  <span className="text-sm truncate max-w-[180px] inline-block" title={a.name}>
+                    {a.name}
+                  </span>
+                </SelectItem>
+              ))}
+              {agentsInWs.length === 0 && (
+                <div className="px-2 py-1 text-xs text-muted-foreground">该工作区暂无 Agent</div>
+              )}
+            </SelectContent>
+          </Select>
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-8 w-8 p-0"
+            onClick={() => setOpenSettings(true)}
+            title="Agent设置"
+            disabled={!agent}
+          >
+            <Settings className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
 
       <ScrollArea className="flex-1">
@@ -282,14 +305,24 @@ export function WorkspaceSidebar({
         </AlertDialogContent>
       </AlertDialog>
 
-      <div className="p-3 border-t">
+      <div className="p-3 border-t space-y-2">
         <Button variant="secondary" className="w-full" asChild>
           <Link href="/explore">
             <Sparkles className="w-4 h-4 mr-2" />
             浏览探索
           </Link>
         </Button>
+        
       </div>
+
+      {/* Agent Quick Settings Dialog */}
+      {agent && (
+        <AgentQuickSettings 
+          open={openSettings} 
+          onOpenChange={setOpenSettings} 
+          agent={agent} 
+        />
+      )}
     </div>
   )
 }

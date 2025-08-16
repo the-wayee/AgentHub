@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Plus } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { StudioPageSkeleton } from "@/components/ui/page-skeleton"
 
 function PublishDialog({ agentId, onPublished }: { agentId: string; onPublished?: () => void }) {
   const [open, setOpen] = useState(false)
@@ -70,20 +71,32 @@ export default function StudioPage() {
   const [q, setQ] = useState("")
   const [enabled, setEnabled] = useState<string>("all")
   const [selectedAgent, setSelectedAgent] = useState<any | null>(null)
+  const [loading, setLoading] = useState(true)
 
   async function reload() {
-    const params = new URLSearchParams()
-    if (q.trim()) params.set("name", q.trim())
-    if (enabled !== "all") params.set("enable", enabled)
-    const url = `/api/agents/user${params.toString() ? `?${params.toString()}` : ""}`
-    const r = await fetch(url, { cache: "no-store" })
-    const list = await r.json()
-    if (Array.isArray(list)) setMyAgents(list)
+    setLoading(true)
+    try {
+      const params = new URLSearchParams()
+      if (q.trim()) params.set("name", q.trim())
+      if (enabled !== "all") params.set("enable", enabled)
+      const url = `/api/agents${params.toString() ? `?${params.toString()}` : ""}`
+      const r = await fetch(url, { cache: "no-store" })
+      const list = await r.json()
+      if (Array.isArray(list)) setMyAgents(list)
+    } catch (error) {
+      console.error('Failed to load agents:', error)
+    } finally {
+      setLoading(false)
+    }
   }
 
   useEffect(() => {
     reload()
   }, [])
+
+  if (loading) {
+    return <StudioPageSkeleton />
+  }
 
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-6">

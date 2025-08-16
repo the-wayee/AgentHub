@@ -11,12 +11,16 @@ import com.xiaoguai.agentx.application.conversation.dto.SessionDTO;
 import com.xiaoguai.agentx.domain.conversation.model.SessionEntity;
 import com.xiaoguai.agentx.domain.conversation.service.ConversationDomainService;
 import com.xiaoguai.agentx.domain.conversation.service.SessionDomainService;
+import com.xiaoguai.agentx.domain.llm.model.ModelEntity;
+import com.xiaoguai.agentx.domain.llm.service.LlmDomainService;
 import com.xiaoguai.agentx.infrastrcture.exception.BusinessException;
 import com.xiaoguai.agentx.interfaces.dto.agent.SearchAgentsRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @Author: the-way
@@ -32,15 +36,17 @@ public class AgentWorkspaceAppService {
     private final AgentDomainService agentDomainService;
     private final SessionDomainService sessionDomainService;
     private final ConversationDomainService conversationDomainService;
+    private final LlmDomainService llmDomainService;
 
     public AgentWorkspaceAppService(AgentWorkspaceDomainService agentWorkspaceDomainService,
                                     AgentDomainService agentDomainService,
                                     SessionDomainService sessionDomainService,
-                                    ConversationDomainService conversationDomainService) {
+                                    ConversationDomainService conversationDomainService, LlmDomainService llmDomainService) {
         this.agentWorkspaceDomainService = agentWorkspaceDomainService;
         this.agentDomainService = agentDomainService;
         this.sessionDomainService = sessionDomainService;
         this.conversationDomainService = conversationDomainService;
+        this.llmDomainService = llmDomainService;
     }
 
     /**
@@ -99,4 +105,31 @@ public class AgentWorkspaceAppService {
         sessionDomainService.deleteSessions(sessionIds);
     }
 
+    /**
+     * 设置工作区Agent的模型Id
+     */
+    @Transactional
+    public void saveModelId(String agentId, String modelId, String userId) {
+        ModelEntity model = llmDomainService.getModelById(modelId);
+        if (!model.getOfficial() && !model.getUserId().equals(userId)) {
+            throw new BusinessException("模型不存在");
+        }
+
+        AgentWorkspaceEntity workspace = agentWorkspaceDomainService.getWorkspace(agentId, userId);
+        if (workspace == null) {
+            workspace = new AgentWorkspaceEntity();
+            workspace.setAgentId(agentId);
+            workspace.setUserId(userId);
+        }
+        workspace.setModelId(modelId);
+        agentWorkspaceDomainService.saveWorkspaceAgent(workspace);
+    }
+
+    public Map<String, String> getAgentConfiguration(String agentId, String userId) {
+        AgentWorkspaceEntity workspace = agentWorkspaceDomainService.getWorkspace(agentId, userId);
+        String modelId = workspace.getModelId();
+        Map<String, String> config = new HashMap<>();
+        config.put("modelId", modelId);
+        return config;
+    }
 }

@@ -13,6 +13,7 @@ import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import type { Agent } from "@/lib/types"
 import { useAgentCatalog } from "@/lib/stores"
+import { useToast } from "@/hooks/use-toast"
 
 type Props = {
   open: boolean
@@ -22,6 +23,7 @@ type Props = {
 
 export function AgentQuickSettings({ open, onOpenChange, agent }: Props) {
   const { upsertAgent } = useAgentCatalog()
+  const { toast } = useToast()
 
   const [draft, setDraft] = useState<Agent>(agent)
   type ModelItem = { id: string; name: string; modelId: string; description?: string; official?: boolean; config?: { maxContextLength?: number } }
@@ -36,17 +38,27 @@ export function AgentQuickSettings({ open, onOpenChange, agent }: Props) {
     if (open) setDraft(agent)
   }, [open, agent])
 
-  // 加载活跃模型列表（按服务商分组）
+  // 加载活跃模型列表（按服务商分组）和当前Agent配置
   useEffect(() => {
     if (!open) return
     let cancelled = false
     ;(async () => {
       try {
-        const r = await fetch('/api/llm/models/active', { cache: 'no-store' })
-        const json = await r.json()
-        const list = Array.isArray(json) ? json : (json?.data ?? [])
+        // 并行请求模型列表和Agent配置
+        const [modelsRes, configRes] = await Promise.all([
+          fetch('/api/llm/models/active', { cache: 'no-store' }),
+          fetch(`/api/agent/workspace/config/${agent.id}`, { cache: 'no-store' })
+        ])
+
+        const modelsJson = await modelsRes.json()
+        const configJson = await configRes.json()
+        
+        const list = Array.isArray(modelsJson) ? modelsJson : (modelsJson?.data ?? [])
+        const currentModelId = configJson?.data?.modelId || ""
+        
         if (cancelled) return
         setProviderBlocks(list)
+        
         // 去重 Provider（按 protocol）
         const seen: Record<string, { official: boolean; label: string }> = {}
         for (const it of list as ProviderBlock[]) {
@@ -56,6 +68,30 @@ export function AgentQuickSettings({ open, onOpenChange, agent }: Props) {
           if (!seen[proto]) seen[proto] = { official: off, label: it?.provider?.name || it?.provider?.protocol || proto }
           else seen[proto].official = seen[proto].official || off
         }
+
+        // 如果有当前modelId，找到对应的provider和model
+        if (currentModelId) {
+          let foundProvider = ""
+          let foundModel: ModelItem | undefined
+          
+          for (const block of list as ProviderBlock[]) {
+            const model = block.models?.find(m => m.id === currentModelId)
+            if (model) {
+              foundProvider = block.provider.protocol || block.provider.name || ""
+              foundModel = model
+              break
+            }
+          }
+          
+          if (foundProvider && foundModel) {
+            setSelectedProvider(foundProvider)
+            setSelectedModelId(currentModelId)
+            setCtxLen(foundModel.config?.maxContextLength ?? 0)
+            return
+          }
+        }
+        
+        // 如果没有找到当前模型或currentModelId为空，使用默认的第一个
         const uniq = Object.keys(seen)
         const firstProvider = uniq[0] || ""
         setSelectedProvider(firstProvider)
@@ -64,10 +100,12 @@ export function AgentQuickSettings({ open, onOpenChange, agent }: Props) {
         const firstModelId = models[0]?.id || ""
         setSelectedModelId(firstModelId)
         setCtxLen(models[0]?.config?.maxContextLength ?? 0)
-      } catch {}
+      } catch (error) {
+        console.error('Failed to load agent config or models:', error)
+      }
     })()
     return () => { cancelled = true }
-  }, [open])
+  }, [open, agent.id])
 
   // 当选择的 Provider 变化时，自动选中其第一个模型并刷新上下文长度
   useEffect(() => {
@@ -83,9 +121,73 @@ export function AgentQuickSettings({ open, onOpenChange, agent }: Props) {
     }
   }, [selectedProvider, providerBlocks])
 
-  function save() {
-    upsertAgent({ ...agent, ...draft })
-    onOpenChange(false)
+  async function save() {
+    try {
+      // 获取选中的模型信息
+      const selectedModel = providerBlocks
+        .find(pb => (pb.provider.protocol || pb.provider.name) === selectedProvider)
+        ?.models?.find(m => m.id === selectedModelId)
+
+      if (!selectedModel) {
+        console.error('No model selected')
+        return
+      }
+
+      // 调用后端接口更新模型配置
+      const response = await fetch(`/api/agent/workspace/${agent.id}/model/${selectedModelId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          modelId: selectedModelId,
+          provider: selectedProvider,
+          modelName: selectedModel.name,
+          maxContextLength: ctxLen,
+          tools: draft.tools || {},
+        }),
+      })
+
+      if (response.ok) {
+        // 更新本地状态
+        upsertAgent({ 
+          ...agent, 
+          model: {
+            ...draft.model!,
+            provider: selectedProvider,
+            model: selectedModel.name,
+            maxTokens: ctxLen,
+          },
+          tools: draft.tools
+        })
+        
+        // 显示成功提示
+        toast({
+          title: "保存成功",
+          description: "Agent 设置已更新",
+        })
+        
+        onOpenChange(false)
+      } else {
+        console.error('Failed to save agent settings:', await response.text())
+        
+        // 显示错误提示
+        toast({
+          title: "保存失败",
+          description: "无法保存 Agent 设置，请稍后重试",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      console.error('Error saving agent settings:', error)
+      
+      // 显示网络错误提示
+      toast({
+        title: "保存失败",
+        description: "网络错误，请检查连接后重试",
+        variant: "destructive",
+      })
+    }
   }
 
   return (
@@ -102,18 +204,22 @@ export function AgentQuickSettings({ open, onOpenChange, agent }: Props) {
             <Label>名称</Label>
             <Input
               value={draft.name}
-              onChange={(e) => setDraft({ ...draft, name: e.target.value })}
+              disabled
+              className="bg-gray-50 text-gray-500"
               placeholder="给你的 Agent 起个名字"
             />
+            <p className="text-xs text-gray-500">名称不允许修改</p>
           </div>
           <div className="grid gap-1.5">
             <Label>描述</Label>
             <Textarea
               rows={3}
               value={draft.description || ""}
-              onChange={(e) => setDraft({ ...draft, description: e.target.value })}
+              disabled
+              className="bg-gray-50 text-gray-500"
               placeholder="一句话描述能力与使用场景…"
             />
+            <p className="text-xs text-gray-500">描述不允许修改</p>
           </div>
 
           <div className="grid gap-1.5">
@@ -158,7 +264,11 @@ export function AgentQuickSettings({ open, onOpenChange, agent }: Props) {
                 return (
                   <Card
                     key={m.id}
-                    className={`p-4 cursor-pointer ${isSelected ? 'ring-2 ring-primary' : ''}`}
+                    className={`p-4 cursor-pointer transition-all duration-200 ${
+                      isSelected 
+                        ? 'ring-2 ring-primary bg-primary/5 border-primary shadow-md' 
+                        : 'hover:bg-muted/50 hover:border-muted-foreground/20'
+                    }`}
                     onClick={() => {
                       setSelectedModelId(m.id)
                       setDraft({ ...draft, model: { ...draft.model!, model: m.name || "" } })
@@ -166,7 +276,10 @@ export function AgentQuickSettings({ open, onOpenChange, agent }: Props) {
                     }}
                   >
                     <div className="flex items-center justify-between">
-                      <div className="font-medium truncate">{m.name}</div>
+                      <div className={`font-medium truncate ${isSelected ? 'text-primary' : ''}`}>
+                        {m.name}
+                        {isSelected && <span className="ml-2 text-xs bg-primary text-primary-foreground px-1.5 py-0.5 rounded">当前使用</span>}
+                      </div>
                       {m.official && <Badge className="bg-emerald-600 hover:bg-emerald-600">官方</Badge>}
                     </div>
                     {m.description && (

@@ -250,14 +250,7 @@ export function ChatShell({ agentId }: { agentId: string }) {
             )}
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Button size="sm" variant="outline" onClick={() => setOpenSettings(true)}>
-            设置
-          </Button>
-          <Button size="sm" asChild>
-            <a href="/explore">探索</a>
-          </Button>
-        </div>
+
       </div>
 
       <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto px-4 py-6">

@@ -67,7 +67,8 @@ public class LlmDomainService {
 
         // 删除provider下的模型
         LambdaQueryWrapper<ModelEntity> modelWrapper = Wrappers.<ModelEntity>lambdaQuery()
-                .eq(ModelEntity::getProviderId, providerId);
+                .eq(ModelEntity::getProviderId, providerId)
+                .eq(operator.needCheckUserId(), ModelEntity::getUserId, userId);
         modelRepository.delete(modelWrapper);
     }
 
@@ -163,6 +164,27 @@ public class LlmDomainService {
     }
 
     /**
+     * 修改模型
+     */
+    public void updateModel(ModelEntity model) {
+        Wrapper<ModelEntity> wrapper = Wrappers.<ModelEntity>lambdaUpdate()
+                .eq(ModelEntity::getId, model.getId())
+                .eq(model.needCheckUserId(), ModelEntity::getUserId, model.getUserId());
+        modelRepository.checkUpdate(wrapper);
+    }
+
+    /**
+     * 删除模型
+     */
+    public void deleteModel(String modelId, String userId, Operator operator) {
+        LambdaQueryWrapper<ModelEntity> wrapper = Wrappers.<ModelEntity>lambdaQuery()
+                .eq(ModelEntity::getId, modelId)
+                .eq(operator.needCheckUserId(), ModelEntity::getUserId, userId);
+
+        modelRepository.checkDelete(wrapper);
+    }
+
+    /**
      * 根据id获取模型
      */
     public ModelEntity getModelById(String id) {
@@ -240,5 +262,6 @@ public class LlmDomainService {
             throw new BusinessException("该服务商不存在");
         }
     }
+
 
 }

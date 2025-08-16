@@ -67,13 +67,11 @@ public class AgentWorkspaceDomainService {
     /**
      * 保存Agent到工作区
      */
-    public AgentWorkspaceEntity saveWorkspaceAgent(AgentWorkspaceEntity agentWorkspace) {
-        int insert = agentWorkspaceRepository.insert(agentWorkspace);
-        if (insert == 0) {
-            throw new BusinessException("保存助理到工作区失败");
+    public void saveWorkspaceAgent(AgentWorkspaceEntity agentWorkspace) {
+        boolean  success= agentWorkspaceRepository.insertOrUpdate(agentWorkspace);
+        if (!success) {
+            throw new BusinessException("保存助理失败");
         }
-        return agentWorkspace;
-
     }
 
     /**

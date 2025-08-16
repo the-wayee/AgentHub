@@ -45,7 +45,7 @@ export function TopNav() {
             </Link>
           ))}
         </nav>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3" style={{ marginRight: '120px' }}>
           <div className="hidden sm:block text-xs text-muted-foreground">构建你的 AI 社区</div>
           <div className="md:hidden">
             <DropdownMenu>

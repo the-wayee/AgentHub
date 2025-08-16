@@ -56,6 +56,11 @@ export function AgentsLoader() {
   const pathname = usePathname()
 
   useEffect(() => {
+    // 在后台管理页面不加载Agent列表
+    if (pathname.startsWith('/admin')) {
+      return
+    }
+    
     let cancelled = false
     ;(async () => {
       try {

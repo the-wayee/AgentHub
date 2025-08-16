@@ -121,3 +121,75 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* 使用最高优先级覆盖Tailwind默认样式 */
+@layer utilities {
+  /* 文字滚动动画 */
+  @keyframes agent-name-scroll {
+    0% {
+      transform: translateX(0);
+    }
+    20% {
+      transform: translateX(0);
+    }
+    80% {
+      transform: translateX(-80px);
+    }
+    100% {
+      transform: translateX(-80px);
+    }
+  }
+
+  /* 使用非常具体的选择器覆盖Tailwind样式 */
+  .scroll-text-container.scroll-text-container {
+    position: relative;
+    overflow: hidden;
+    max-width: 100px;
+    width: 100px;
+  }
+
+  .scroll-text-content.scroll-text-content {
+    display: inline-block;
+    white-space: nowrap;
+    animation: agent-name-scroll 4s ease-in-out infinite paused;
+    min-width: max-content;
+    will-change: transform;
+  }
+
+  /* 悬停触发动画 */
+  .scroll-text-container:hover .scroll-text-content.scroll-text-content {
+    animation-play-state: running;
+  }
+
+  /* 强制覆盖Select组件内的样式 */
+  button[role="combobox"] .scroll-text-container.scroll-text-container {
+    overflow: hidden;
+    position: relative;
+    max-width: 100px;
+  }
+
+  button[role="combobox"] .scroll-text-content.scroll-text-content {
+    display: inline-block;
+    white-space: nowrap;
+    animation: agent-name-scroll 4s ease-in-out infinite paused;
+    min-width: max-content;
+  }
+
+  button[role="combobox"]:hover .scroll-text-content.scroll-text-content {
+    animation-play-state: running;
+  }
+
+  /* 针对具体的Select Value区域 */
+  [data-slot="select-value"] .scroll-text-container.scroll-text-container {
+    overflow: hidden;
+    max-width: 100px;
+    width: 100px;
+  }
+
+  [data-slot="select-value"] .scroll-text-content.scroll-text-content {
+    display: inline-block;
+    white-space: nowrap;
+    animation: agent-name-scroll 4s ease-in-out infinite paused;
+    min-width: max-content;
+  }
+}

@@ -6,14 +6,17 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { AgentCard } from "@/components/agent/agent-card"
 import { useAgentCatalog } from "@/lib/stores"
+import { ExplorePageSkeleton } from "@/components/ui/page-skeleton"
 
 export default function ExplorePage() {
   const { setAll } = useAgentCatalog()
   const [agents, setAgents] = useState<any[]>([])
   const [q, setQ] = useState("")
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     let cancelled = false
+    setLoading(true)
     ;(async () => {
       try {
         const params = new URLSearchParams()
@@ -25,6 +28,9 @@ export default function ExplorePage() {
           setAll(list)
         }
       } catch {}
+      finally {
+        if (!cancelled) setLoading(false)
+      }
     })()
     return () => {
       cancelled = true
@@ -45,6 +51,10 @@ export default function ExplorePage() {
 
   const trending = useMemo(() => list.slice(0, 6), [list])
   const latest = useMemo(() => list.slice().reverse().slice(0, 6), [list])
+
+  if (loading) {
+    return <ExplorePageSkeleton />
+  }
 
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-8">

@@ -9,6 +9,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @Author: the-way
@@ -55,4 +56,22 @@ public class PortalWorkspaceController {
         return Result.success();
     }
 
+    /**
+     * 设置工作区Agent的模型
+     */
+    @PutMapping("/{agentId}/model/{modelId}")
+    public Result<Void> saveModelId(@PathVariable String agentId, @PathVariable String modelId) {
+        String userId = UserContext.getUserId();
+        agentWorkspaceAppService.saveModelId(agentId, modelId, userId);
+        return Result.success();
+    }
+
+    /**
+     * 获取Agent配置
+     */
+    @GetMapping("/config/{agentId}")
+    public Result<Map<String, String>> getAgentConfiguration(@PathVariable String agentId) {
+        String userId = UserContext.getUserId();
+        return  Result.success(agentWorkspaceAppService.getAgentConfiguration(agentId, userId));
+    }
 }

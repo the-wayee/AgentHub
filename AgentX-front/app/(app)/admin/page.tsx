@@ -8,11 +8,12 @@ import { Textarea } from "@/components/ui/textarea"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { PublishStatusLabel, type AgentVersion, type PublishStatusCode } from "@/lib/admin-types"
 import { CheckCircle2, Clock, XCircle } from "lucide-react"
+import { AdminPageSkeleton } from "@/components/ui/page-skeleton"
 
 export default function AdminPage() {
   const [status, setStatus] = useState<PublishStatusCode>(1)
   const [versions, setVersions] = useState<AgentVersion[]>([])
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [selected, setSelected] = useState<AgentVersion | null>(null)
   const [reason, setReason] = useState("")
   const [count, setCount] = useState({ reviewing: 0, published: 0, rejected: 0 })
@@ -26,24 +27,68 @@ export default function AdminPage() {
   async function reload() {
     setLoading(true)
     try {
-      // 去重：统一请求 1/2/3 三类一次用于统计，当前列表按 status 从中挑选
-      const [r1, r2, r3] = await Promise.all([
-        fetchList(1 as PublishStatusCode),
-        fetchList(2 as PublishStatusCode),
-        fetchList(3 as PublishStatusCode),
-      ])
-      const map: Record<number, AgentVersion[]> = { 1: r1 || [], 2: r2 || [], 3: r3 || [] }
-      setVersions(map[status] || [])
-      setCount({ reviewing: map[1].length, published: map[2].length, rejected: map[3].length })
+      // 只获取当前状态的数据
+      const currentData = await fetchList(status)
+      setVersions(currentData || [])
     } finally {
       setLoading(false)
     }
   }
 
+  // 获取所有状态的统计数据（仅初始化时使用）
+  async function loadAllCounts() {
+    try {
+      // 只获取当前状态（status=1）的数据
+      const currentData = await fetchList(1 as PublishStatusCode)
+      const currentCount = (currentData || []).length
+      
+      // 同时设置数据和计数，避免重复调用
+      setVersions(currentData || [])
+      setCount({ 
+        reviewing: currentCount, 
+        published: 0, 
+        rejected: 0 
+      })
+      setLoading(false)
+    } catch (error) {
+      console.error('Failed to load all counts:', error)
+      setLoading(false)
+    }
+  }
+
+  // 单独获取统计数据 - 只获取当前状态的数据
+  async function loadCounts() {
+    try {
+      // 只获取当前状态的数据
+      const currentData = await fetchList(status)
+      const currentCount = (currentData || []).length
+      
+      // 根据当前状态更新对应的计数
+      setCount(prev => ({
+        ...prev,
+        ...(status === 1 && { reviewing: currentCount }),
+        ...(status === 2 && { published: currentCount }),
+        ...(status === 3 && { rejected: currentCount })
+      }))
+    } catch (error) {
+      console.error('Failed to load counts:', error)
+    }
+  }
+
+
+
   useEffect(() => {
-    reload()
+    // 只有在状态改变时才重新加载（不是初始化）
+    if (versions.length > 0 || status !== 1) {
+      reload()
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status])
+
+  // 初始化时加载数据
+  useEffect(() => {
+    loadAllCounts()
+  }, [])
 
   async function updateStatus(versionId: string, next: PublishStatusCode) {
     const qs = new URLSearchParams({ status: String(next) })
@@ -54,11 +99,16 @@ export default function AdminPage() {
     if (r.ok) {
       setSelected(null)
       setReason("")
-      await reload()
+      // 更新操作后，重新加载当前列表和统计数据
+      await Promise.all([reload(), loadCounts()])
     }
   }
 
   const title = useMemo(() => "Agent 审核后台", [])
+
+  if (loading) {
+    return <AdminPageSkeleton />
+  }
 
   return (
     <div className="max-w-6xl mx-auto p-6 space-y-6">
