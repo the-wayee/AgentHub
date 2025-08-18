@@ -1,7 +1,7 @@
 package com.xiaoguai.agentx.interfaces.dto.llm;
 
 
-import com.xiaoguai.agentx.domain.llm.model.config.LLMModelConfig;
+import com.xiaoguai.agentx.domain.llm.model.config.LlmModelConfig;
 import com.xiaoguai.agentx.domain.llm.model.enums.ModelType;
 import jakarta.validation.constraints.NotBlank;
 
@@ -43,7 +43,7 @@ public class ModelCreateRequest {
     /**
      * 模型配置
      */
-    private LLMModelConfig modelConfig;
+    private LlmModelConfig modelConfig;
 
     public String getProviderId() {
         return providerId;
@@ -85,11 +85,11 @@ public class ModelCreateRequest {
         this.modelType = modelType;
     }
 
-    public LLMModelConfig getModelConfig() {
+    public LlmModelConfig getModelConfig() {
         return modelConfig;
     }
 
-    public void setModelConfig(LLMModelConfig modelConfig) {
+    public void setModelConfig(LlmModelConfig modelConfig) {
         this.modelConfig = modelConfig;
     }
 }

@@ -1,7 +1,7 @@
 package com.xiaoguai.agentx.application.llm.dto;
 
 
-import com.xiaoguai.agentx.domain.llm.model.config.LLMModelConfig;
+import com.xiaoguai.agentx.domain.llm.model.config.LlmModelConfig;
 import com.xiaoguai.agentx.domain.llm.model.enums.ModelType;
 
 import java.time.LocalDateTime;
@@ -49,7 +49,7 @@ public class ModelDTO {
     /**
      * 模型配置
      */
-    private LLMModelConfig config;
+    private LlmModelConfig config;
     /**
      * 是否官方
      */
@@ -131,11 +131,11 @@ public class ModelDTO {
         this.type = type;
     }
 
-    public LLMModelConfig getConfig() {
+    public LlmModelConfig getConfig() {
         return config;
     }
 
-    public void setConfig(LLMModelConfig config) {
+    public void setConfig(LlmModelConfig config) {
         this.config = config;
     }
 

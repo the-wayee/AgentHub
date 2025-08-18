@@ -82,10 +82,14 @@ public class AgentDomainService {
     /**
      * 根据id获取Agent
      */
-    public AgentEntity getAgentById(String agentId) {
+    public AgentEntity getAgentById(String agentId, String userId) {
         AgentEntity agent = agentRepository.selectById(agentId);
         if (agent == null) {
             throw new BusinessException("Agent不存在: " + agentId);
+        }
+
+        if (!agent.getEnabled() && !userId.equals(agent.getUserId())) {
+            throw new BusinessException("该Agent已被禁用");
         }
         return agent;
     }
@@ -127,7 +131,7 @@ public class AgentDomainService {
 
         // 更新Agent信息
         agentRepository.updateById(agent);
-        return agent.toDTO();
+        return AgentAssembler.toDTO(agent);
     }
 
     /**
@@ -149,7 +153,7 @@ public class AgentDomainService {
             agent.enable();
         }
         agentRepository.updateById(agent);
-        return agent.toDTO();
+        return AgentAssembler.toDTO(agent);
     }
 
     /**

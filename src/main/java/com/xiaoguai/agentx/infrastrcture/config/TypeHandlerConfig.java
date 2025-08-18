@@ -1,9 +1,9 @@
 package com.xiaoguai.agentx.infrastrcture.config;
 
 
-import com.xiaoguai.agentx.domain.agent.model.AgentModelConfig;
-import com.xiaoguai.agentx.domain.conversation.contants.Role;
-import com.xiaoguai.agentx.domain.llm.model.config.LLMModelConfig;
+import com.xiaoguai.agentx.domain.agent.constant.AgentType;
+import com.xiaoguai.agentx.domain.conversation.constants.Role;
+import com.xiaoguai.agentx.domain.llm.model.config.LlmModelConfig;
 import com.xiaoguai.agentx.domain.llm.model.config.ProviderConfig;
 import com.xiaoguai.agentx.domain.llm.model.enums.ModelType;
 import com.xiaoguai.agentx.infrastrcture.converter.*;
@@ -41,10 +41,9 @@ public class TypeHandlerConfig {
 
         // 确保自动扫描没有生效时，我们手动注册需要的转换器
         typeHandlerRegistry.register(ProviderConfig.class, new ProviderConfigConverter());
-        typeHandlerRegistry.register(AgentModelConfig.class, new AgentModelConfigConverter());
-        typeHandlerRegistry.register(AgentModelConfig.class, new AgentModelConfigConverter());
+        typeHandlerRegistry.register(AgentType.class, new AgentTypeConverter());
         typeHandlerRegistry.register(List.class, new ListConverter());
-        typeHandlerRegistry.register(LLMModelConfig.class, new ModelConfigConverter());
+        typeHandlerRegistry.register(LlmModelConfig.class, new LlmModelConfigConverter());
         typeHandlerRegistry.register(ModelType.class, new ModelTypeConverter());
         typeHandlerRegistry.register(ProviderProtocol.class, new ProviderProtocolConverter());
         typeHandlerRegistry.register(Role.class, new RoleConverter());

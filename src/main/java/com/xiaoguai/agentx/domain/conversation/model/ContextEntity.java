@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.extension.activerecord.Model;
+import com.xiaoguai.agentx.infrastrcture.converter.ListConverter;
 import com.xiaoguai.agentx.infrastrcture.entity.BaseEntity;
 import com.xiaoguai.agentx.infrastrcture.typehandler.JsonTypeHandler;
 
@@ -34,35 +35,14 @@ public class ContextEntity extends BaseEntity {
     /**
      * 活跃消息ID列表，JSON数组
      */
-    @TableField(value = "active_messages", typeHandler = JsonTypeHandler.class)
-    private String activeMessages;
+    @TableField(value = "active_messages", typeHandler = ListConverter.class)
+    private List<String> activeMessages;
 
     /**
      * 历史消息摘要
      */
     @TableField("summary")
     private String summary;
-
-
-    /**
-     * 无参构造函数
-     */
-    public ContextEntity() {
-    }
-
-    /**
-     * 全参构造函数
-     */
-    public ContextEntity(String id, String sessionId, String activeMessages,
-                         String summary, LocalDateTime updatedAt) {
-        this.id = id;
-        this.sessionId = sessionId;
-        this.activeMessages = activeMessages;
-        this.summary = summary;
-        this.updatedAt = updatedAt;
-    }
-
-    // Getter和Setter方法
 
 
     public String getId() {
@@ -81,11 +61,11 @@ public class ContextEntity extends BaseEntity {
         this.sessionId = sessionId;
     }
 
-    public String getActiveMessages() {
+    public List<String> getActiveMessages() {
         return activeMessages;
     }
 
-    public void setActiveMessages(String activeMessages) {
+    public void setActiveMessages(List<String> activeMessages) {
         this.activeMessages = activeMessages;
     }
 
@@ -96,82 +76,4 @@ public class ContextEntity extends BaseEntity {
     public void setSummary(String summary) {
         this.summary = summary;
     }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
-    /**
-     * 创建新的上下文
-     */
-    public static ContextEntity createNew(String sessionId) {
-        ContextEntity contextEntity = new ContextEntity();
-        contextEntity.setSessionId(sessionId);
-        contextEntity.setActiveMessages("[]"); // 初始化为空数组
-        contextEntity.setUpdatedAt(LocalDateTime.now());
-        return contextEntity;
-    }
-
-    /**
-     * 添加消息到活跃消息列表
-     */
-    public void addMessage(String messageId) {
-        // 简单实现，实际项目中应该使用JSON库处理
-        // 这里假设activeMessages是一个JSON数组字符串
-        List<String> messages = parseActiveMessages();
-        messages.add(messageId);
-        this.activeMessages = formatActiveMessages(messages);
-        this.updatedAt = LocalDateTime.now();
-    }
-
-    /**
-     * 获取活跃消息ID列表
-     */
-    public List<String> getActiveMessageIds() {
-        return parseActiveMessages();
-    }
-
-    /**
-     * 设置活跃消息列表
-     */
-    public void setActiveMessageIds(List<String> messageIds) {
-        this.activeMessages = formatActiveMessages(messageIds);
-        this.updatedAt = LocalDateTime.now();
-    }
-
-    /**
-     * 清空上下文
-     */
-    public void clear() {
-        this.activeMessages = "[]";
-        this.summary = null;
-        this.updatedAt = LocalDateTime.now();
-    }
-
-    /**
-     * 解析activeMessages字符串为List
-     */
-    private List<String> parseActiveMessages() {
-        if (activeMessages == null || activeMessages.isEmpty()) {
-            return new ArrayList<>();
-        }
-
-        try {
-            return JSON.parseArray(activeMessages, String.class);
-        } catch (Exception e) {
-            return new ArrayList<>();
-        }
-    }
-
-    private String formatActiveMessages(List<String> messages) {
-        if (messages == null || messages.isEmpty()) {
-            return "[]";
-        }
-        return JSON.toJSONString(messages);
-    }
-
 }

@@ -2,7 +2,6 @@ package com.xiaoguai.agentx.interfaces.dto.agent;
 
 
 import com.xiaoguai.agentx.domain.agent.model.AgentTool;
-import com.xiaoguai.agentx.domain.agent.model.AgentModelConfig;
 import com.xiaoguai.agentx.infrastrcture.utils.ValidationUtils;
 
 import java.util.List;
@@ -24,7 +23,6 @@ public class UpdateAgentRequest {
     // 配置信息字段
     private String systemPrompt;
     private String welcomeMessage;
-    private AgentModelConfig agentModelConfig;
     private List<AgentTool> tools;
     private List<String> knowledgeBaseIds;
 
@@ -32,22 +30,6 @@ public class UpdateAgentRequest {
     public UpdateAgentRequest() {
     }
 
-    /**
-     * 全参构造方法
-     */
-    public UpdateAgentRequest(String name, String avatar, String description,
-                              String systemPrompt, String welcomeMessage,
-                              AgentModelConfig agentModelConfig, List<AgentTool> tools,
-                              List<String> knowledgeBaseIds) {
-        this.name = name;
-        this.avatar = avatar;
-        this.description = description;
-        this.systemPrompt = systemPrompt;
-        this.welcomeMessage = welcomeMessage;
-        this.agentModelConfig = agentModelConfig;
-        this.tools = tools;
-        this.knowledgeBaseIds = knowledgeBaseIds;
-    }
 
     /**
      * 校验请求参数
@@ -105,14 +87,6 @@ public class UpdateAgentRequest {
 
     public void setWelcomeMessage(String welcomeMessage) {
         this.welcomeMessage = welcomeMessage;
-    }
-
-    public AgentModelConfig getModelConfig() {
-        return agentModelConfig;
-    }
-
-    public void setModelConfig(AgentModelConfig agentModelConfig) {
-        this.agentModelConfig = agentModelConfig;
     }
 
     public List<AgentTool> getTools() {

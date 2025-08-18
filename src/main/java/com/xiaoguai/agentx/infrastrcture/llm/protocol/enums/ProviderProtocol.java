@@ -13,7 +13,8 @@ public enum ProviderProtocol {
 
     OPENAI("OpenAI"),
     DASHSCOPE("阿里百炼"),
-    ZHIPU("清华智谱");
+    ZHIPU("清华智谱"),
+    CUSTOM("自定义");
     private final String name;
 
     ProviderProtocol(String name) {

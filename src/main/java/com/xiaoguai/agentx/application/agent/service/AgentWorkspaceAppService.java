@@ -2,19 +2,21 @@ package com.xiaoguai.agentx.application.agent.service;
 
 
 import com.xiaoguai.agentx.application.agent.assembler.AgentAssembler;
+import com.xiaoguai.agentx.application.agent.assembler.AgentWorkspaceAssembler;
 import com.xiaoguai.agentx.application.agent.dto.AgentDTO;
 import com.xiaoguai.agentx.domain.agent.model.AgentEntity;
 import com.xiaoguai.agentx.domain.agent.model.AgentWorkspaceEntity;
 import com.xiaoguai.agentx.domain.agent.service.AgentDomainService;
 import com.xiaoguai.agentx.domain.agent.service.AgentWorkspaceDomainService;
-import com.xiaoguai.agentx.application.conversation.dto.SessionDTO;
 import com.xiaoguai.agentx.domain.conversation.model.SessionEntity;
 import com.xiaoguai.agentx.domain.conversation.service.ConversationDomainService;
 import com.xiaoguai.agentx.domain.conversation.service.SessionDomainService;
 import com.xiaoguai.agentx.domain.llm.model.ModelEntity;
+import com.xiaoguai.agentx.domain.llm.model.ProviderEntity;
+import com.xiaoguai.agentx.domain.llm.model.config.LlmModelConfig;
 import com.xiaoguai.agentx.domain.llm.service.LlmDomainService;
 import com.xiaoguai.agentx.infrastrcture.exception.BusinessException;
-import com.xiaoguai.agentx.interfaces.dto.agent.SearchAgentsRequest;
+import com.xiaoguai.agentx.interfaces.dto.agent.UpdateModelConfigRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -69,10 +71,7 @@ public class AgentWorkspaceAppService {
         if (exist) {
             throw new BusinessException("该助理已经存在工作区");
         }
-        AgentEntity agent = agentDomainService.getAgentById(agentId);
-        if (agent.getEnabled() == false) {
-            throw new BusinessException("该助理已禁用");
-        }
+        AgentEntity agent = agentDomainService.getAgentById(agentId, userId);
         AgentWorkspaceEntity workspaceEntity = new AgentWorkspaceEntity();
         workspaceEntity.setAgentId(agentId);
         workspaceEntity.setUserId(userId);
@@ -109,25 +108,20 @@ public class AgentWorkspaceAppService {
      * 设置工作区Agent的模型Id
      */
     @Transactional
-    public void saveModelId(String agentId, String modelId, String userId) {
-        ModelEntity model = llmDomainService.getModelById(modelId);
-        if (!model.getOfficial() && !model.getUserId().equals(userId)) {
-            throw new BusinessException("模型不存在");
-        }
+    public void updateModelConfig(UpdateModelConfigRequest request, String agentId, String userId) {
+        ModelEntity model = llmDomainService.getModelById(request.getModelId());
+        model.isActive();
+        ProviderEntity provider = llmDomainService.getProviderById(model.getProviderId());
+        provider.isActive();
 
-        AgentWorkspaceEntity workspace = agentWorkspaceDomainService.getWorkspace(agentId, userId);
-        if (workspace == null) {
-            workspace = new AgentWorkspaceEntity();
-            workspace.setAgentId(agentId);
-            workspace.setUserId(userId);
-        }
-        workspace.setModelId(modelId);
-        agentWorkspaceDomainService.saveWorkspaceAgent(workspace);
+        LlmModelConfig llmModelConfig = AgentWorkspaceAssembler.toLLMModelConfig(request);
+        AgentWorkspaceEntity workspaceEntity = new AgentWorkspaceEntity(agentId, userId, llmModelConfig);
+        agentWorkspaceDomainService.update(workspaceEntity);
     }
 
     public Map<String, String> getAgentConfiguration(String agentId, String userId) {
         AgentWorkspaceEntity workspace = agentWorkspaceDomainService.getWorkspace(agentId, userId);
-        String modelId = workspace.getModelId();
+        String modelId = workspace.getLlmModelConfig().getModelId();
         Map<String, String> config = new HashMap<>();
         config.put("modelId", modelId);
         return config;

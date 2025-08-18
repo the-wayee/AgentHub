@@ -1,6 +1,8 @@
 package com.xiaoguai.agentx.infrastrcture.llm;
 
 
+import com.xiaoguai.agentx.domain.llm.model.ModelEntity;
+import com.xiaoguai.agentx.domain.llm.model.ProviderEntity;
 import com.xiaoguai.agentx.infrastrcture.llm.config.BaseProviderConfig;
 import com.xiaoguai.agentx.infrastrcture.llm.factory.LlmProviderFactory;
 import com.xiaoguai.agentx.infrastrcture.llm.protocol.enums.ProviderProtocol;
@@ -18,10 +20,16 @@ public class LlmProviderService {
 
     /**
      * 获取流式输出模型
-     * @param protocol 服务商协议
-     * @param config 服务商配置
+     * @param provider 服务商
+     * @param model 模型
      */
-    public StreamingChatModel getStreamModel(ProviderProtocol protocol, BaseProviderConfig config) {
-        return LlmProviderFactory.createChatModel(protocol, config);
+    public StreamingChatModel getStreamModel(ProviderEntity provider, ModelEntity model) {
+
+        BaseProviderConfig config = new BaseProviderConfig();
+        config.setApiKey(provider.getConfig().getApiKey());
+        config.setBaseUrl(provider.getConfig().getBaseUrl());
+        config.setModel(model.getModelId());
+
+        return LlmProviderFactory.createChatModel(provider.getProtocol(), config);
     }
 }

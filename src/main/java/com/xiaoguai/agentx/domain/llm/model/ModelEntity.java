@@ -5,9 +5,9 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.xiaoguai.agentx.domain.llm.model.config.LLMModelConfig;
+import com.xiaoguai.agentx.domain.llm.model.config.LlmModelConfig;
 import com.xiaoguai.agentx.domain.llm.model.enums.ModelType;
-import com.xiaoguai.agentx.infrastrcture.converter.ModelConfigConverter;
+import com.xiaoguai.agentx.infrastrcture.converter.LlmModelConfigConverter;
 import com.xiaoguai.agentx.infrastrcture.converter.ModelTypeConverter;
 import com.xiaoguai.agentx.infrastrcture.entity.BaseEntity;
 import com.xiaoguai.agentx.infrastrcture.exception.BusinessException;
@@ -52,9 +52,6 @@ public class ModelEntity extends BaseEntity {
 
     @TableField(typeHandler = ModelTypeConverter.class, jdbcType = JdbcType.VARCHAR)
     private ModelType type;
-
-    @TableField(typeHandler = ModelConfigConverter.class)
-    private LLMModelConfig config;
 
     private Boolean status;
 
@@ -112,14 +109,6 @@ public class ModelEntity extends BaseEntity {
 
     public void setType(ModelType type) {
         this.type = type;
-    }
-
-    public LLMModelConfig getConfig() {
-        return config;
-    }
-
-    public void setConfig(LLMModelConfig config) {
-        this.config = config;
     }
 
     public Boolean getStatus() {

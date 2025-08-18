@@ -1,6 +1,7 @@
 package com.xiaoguai.agentx.domain.agent.service;
 
 
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.xiaoguai.agentx.application.agent.assembler.AgentAssembler;
 import com.xiaoguai.agentx.application.agent.dto.AgentDTO;
@@ -101,5 +102,12 @@ public class AgentWorkspaceDomainService {
         return agentWorkspaceRepository.exists(Wrappers.<AgentWorkspaceEntity>lambdaQuery()
                 .eq(AgentWorkspaceEntity::getAgentId, agentId)
                 .eq(AgentWorkspaceEntity::getUserId, userId));
+    }
+
+    public void update(AgentWorkspaceEntity agentWorkspace) {
+        LambdaUpdateWrapper<AgentWorkspaceEntity> wrapper = Wrappers.<AgentWorkspaceEntity>lambdaUpdate()
+                .eq(AgentWorkspaceEntity::getAgentId, agentWorkspace.getAgentId())
+                .eq(AgentWorkspaceEntity::getUserId, agentWorkspace.getUserId());
+        agentWorkspaceRepository.checkUpdate(agentWorkspace, wrapper);
     }
 }

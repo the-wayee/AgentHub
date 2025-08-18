@@ -1,9 +1,8 @@
 package com.xiaoguai.agentx.interfaces.dto.agent;
 
 
-import com.xiaoguai.agentx.domain.agent.model.AgentTool;
-import com.xiaoguai.agentx.domain.agent.model.AgentModelConfig;
 import com.xiaoguai.agentx.domain.agent.constant.AgentType;
+import com.xiaoguai.agentx.domain.agent.model.AgentTool;
 import com.xiaoguai.agentx.infrastrcture.utils.ValidationUtils;
 import jakarta.validation.constraints.NotBlank;
 
@@ -47,12 +46,6 @@ public class CreateAgentRequest {
      * 欢迎信息
      */
     private String welcomeMessage;
-
-    /**
-     * 模型配置
-     */
-    private AgentModelConfig agentModelConfig;
-
     /**
      * 工具列表
      */
@@ -77,17 +70,7 @@ public class CreateAgentRequest {
     public CreateAgentRequest() {
     }
 
-    public CreateAgentRequest(String name, String avatar, String description, AgentType agentType, String systemPrompt, String welcomeMessage, AgentModelConfig agentModelConfig, List<AgentTool> tools, List<String> knowledgeBaseIds) {
-        this.name = name;
-        this.avatar = avatar;
-        this.description = description;
-        this.agentType = agentType;
-        this.systemPrompt = systemPrompt;
-        this.welcomeMessage = welcomeMessage;
-        this.agentModelConfig = agentModelConfig;
-        this.tools = tools;
-        this.knowledgeBaseIds = knowledgeBaseIds;
-    }
+
 
     public String getName() {
         return name;
@@ -135,14 +118,6 @@ public class CreateAgentRequest {
 
     public void setWelcomeMessage(String welcomeMessage) {
         this.welcomeMessage = welcomeMessage;
-    }
-
-    public AgentModelConfig getModelConfig() {
-        return agentModelConfig;
-    }
-
-    public void setModelConfig(AgentModelConfig agentModelConfig) {
-        this.agentModelConfig = agentModelConfig;
     }
 
     public List<AgentTool> getTools() {

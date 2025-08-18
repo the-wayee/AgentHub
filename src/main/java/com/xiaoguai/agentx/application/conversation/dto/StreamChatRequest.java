@@ -27,6 +27,11 @@ public class StreamChatRequest {
      */
     private Boolean enableThink = false;
 
+    /**
+     * 使用允许联网搜索
+     */
+    private Boolean enableSearch = false;
+
     public String getMessage() {
         return message;
     }
@@ -49,5 +54,13 @@ public class StreamChatRequest {
 
     public void setEnableThink(Boolean enableThink) {
         this.enableThink = enableThink;
+    }
+
+    public Boolean getEnableSearch() {
+        return enableSearch;
+    }
+
+    public void setEnableSearch(Boolean enableSearch) {
+        this.enableSearch = enableSearch;
     }
 }

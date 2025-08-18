@@ -6,8 +6,9 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.xiaoguai.agentx.application.agent.dto.AgentVersionDTO;
+import com.xiaoguai.agentx.domain.agent.constant.AgentType;
 import com.xiaoguai.agentx.domain.agent.constant.PublishStatus;
-import com.xiaoguai.agentx.infrastrcture.converter.AgentModelConfigConverter;
+import com.xiaoguai.agentx.infrastrcture.converter.AgentTypeConverter;
 import com.xiaoguai.agentx.infrastrcture.converter.ListConverter;
 import com.xiaoguai.agentx.infrastrcture.entity.BaseEntity;
 import org.apache.ibatis.type.JdbcType;
@@ -73,12 +74,6 @@ public class AgentVersionEntity extends BaseEntity {
     private String welcomeMessage;
 
     /**
-     * 模型配置，包含模型类型、温度等参数
-     */
-    @TableField(value = "model_config", typeHandler = AgentModelConfigConverter.class, jdbcType = JdbcType.OTHER)
-    private AgentModelConfig agentModelConfig;
-
-    /**
      * Agent可使用的工具列表
      */
     @TableField(value = "tools", typeHandler = ListConverter.class, jdbcType = JdbcType.OTHER)
@@ -99,8 +94,8 @@ public class AgentVersionEntity extends BaseEntity {
     /**
      * Agent类型：1-聊天助手, 2-功能性Agent
      */
-    @TableField("agent_type")
-    private Integer agentType;
+    @TableField(value = "agent_type", typeHandler = AgentTypeConverter.class)
+    private AgentType agentType;
 
     /**
      * 发布状态：1-审核中, 2-已发布, 3-拒绝, 4-已下架
@@ -136,7 +131,6 @@ public class AgentVersionEntity extends BaseEntity {
      * 无参构造函数
      */
     public AgentVersionEntity() {
-        this.agentModelConfig = AgentModelConfig.createDefault();
         this.tools = new ArrayList<>();
         this.knowledgeBaseIds = new ArrayList<>();
     }
@@ -183,14 +177,6 @@ public class AgentVersionEntity extends BaseEntity {
         this.welcomeMessage = welcomeMessage;
     }
 
-    public AgentModelConfig getModelConfig() {
-        return agentModelConfig != null ? agentModelConfig : AgentModelConfig.createDefault();
-    }
-
-    public void setModelConfig(AgentModelConfig agentModelConfig) {
-        this.agentModelConfig = agentModelConfig;
-    }
-
     public List<AgentTool> getTools() {
         return tools != null ? tools : new ArrayList<>();
     }
@@ -215,11 +201,11 @@ public class AgentVersionEntity extends BaseEntity {
         this.changeLog = changeLog;
     }
 
-    public Integer getAgentType() {
+    public AgentType getAgentType() {
         return agentType;
     }
 
-    public void setAgentType(Integer agentType) {
+    public void setAgentType(AgentType agentType) {
         this.agentType = agentType;
     }
 
@@ -324,7 +310,6 @@ public class AgentVersionEntity extends BaseEntity {
         version.setVersionNumber(versionNumber);
         version.setSystemPrompt(agent.getSystemPrompt());
         version.setWelcomeMessage(agent.getWelcomeMessage());
-        version.setModelConfig(agent.getModelConfig());
         version.setTools(agent.getTools());
         version.setKnowledgeBaseIds(agent.getKnowledgeBaseIds());
         version.setChangeLog(changeLog);
@@ -354,7 +339,6 @@ public class AgentVersionEntity extends BaseEntity {
         dto.setVersionNumber(this.versionNumber);
         dto.setSystemPrompt(this.systemPrompt);
         dto.setWelcomeMessage(this.welcomeMessage);
-        dto.setModelConfig(this.agentModelConfig);
         dto.setTools(this.tools);
         dto.setKnowledgeBaseIds(this.knowledgeBaseIds);
         dto.setChangeLog(this.changeLog);

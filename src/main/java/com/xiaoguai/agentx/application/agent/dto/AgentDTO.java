@@ -1,11 +1,8 @@
 package com.xiaoguai.agentx.application.agent.dto;
 
 
-import com.xiaoguai.agentx.domain.agent.model.AgentTool;
-import com.xiaoguai.agentx.domain.agent.model.AgentModelConfig;
-import com.xiaoguai.agentx.domain.agent.model.AgentEntity;
-import com.xiaoguai.agentx.domain.agent.constant.AgentStatus;
 import com.xiaoguai.agentx.domain.agent.constant.AgentType;
+import com.xiaoguai.agentx.domain.agent.model.AgentTool;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -50,10 +47,6 @@ public class AgentDTO {
      */
     private String welcomeMessage;
 
-    /**
-     * 模型配置，包含模型类型、温度等参数
-     */
-    private AgentModelConfig agentModelConfig;
 
     /**
      * Agent可使用的工具列表
@@ -78,7 +71,7 @@ public class AgentDTO {
     /**
      * Agent类型：1-聊天助手, 2-功能性Agent
      */
-    private Integer agentType;
+    private AgentType agentType;
 
     /**
      * 创建者用户ID
@@ -99,7 +92,6 @@ public class AgentDTO {
      * 无参构造函数
      */
     public AgentDTO() {
-        this.agentModelConfig = AgentModelConfig.createDefault();
         this.tools = new ArrayList<>();
         this.knowledgeBaseIds = new ArrayList<>();
     }
@@ -153,14 +145,6 @@ public class AgentDTO {
         this.welcomeMessage = welcomeMessage;
     }
 
-    public AgentModelConfig getModelConfig() {
-        return agentModelConfig;
-    }
-
-    public void setModelConfig(AgentModelConfig agentModelConfig) {
-        this.agentModelConfig = agentModelConfig;
-    }
-
     public List<AgentTool> getTools() {
         return tools;
     }
@@ -193,11 +177,12 @@ public class AgentDTO {
         this.enabled = enabled;
     }
 
-    public Integer getAgentType() {
+
+    public AgentType getAgentType() {
         return agentType;
     }
 
-    public void setAgentType(Integer agentType) {
+    public void setAgentType(AgentType agentType) {
         this.agentType = agentType;
     }
 
@@ -225,41 +210,5 @@ public class AgentDTO {
         this.updatedAt = updatedAt;
     }
 
-    /**
-     * 获取状态文本描述
-     */
-    public String getStatusText() {
-        return AgentStatus.fromCode(enabled ? 1 : 0).getDescription();
-    }
 
-    /**
-     * 获取类型文本描述
-     */
-    public String getAgentTypeText() {
-        return AgentType.fromCode(agentType).getDescription();
-    }
-
-    /**
-     * 将当前DTO转换为Entity对象
-     * @return 转换后的AgentEntity对象
-     */
-    public AgentEntity toEntity() {
-        AgentEntity entity = new AgentEntity();
-        entity.setId(this.id);
-        entity.setName(this.name);
-        entity.setAvatar(this.avatar);
-        entity.setDescription(this.description);
-        entity.setSystemPrompt(this.systemPrompt);
-        entity.setWelcomeMessage(this.welcomeMessage);
-        entity.setModelConfig(this.agentModelConfig);
-        entity.setTools(this.tools);
-        entity.setKnowledgeBaseIds(this.knowledgeBaseIds);
-        entity.setPublishedVersion(this.publishedVersion);
-        entity.setEnabled(this.enabled);
-        entity.setAgentType(this.agentType);
-        entity.setUserId(this.userId);
-        entity.setCreatedAt(this.createdAt);
-        entity.setUpdatedAt(this.updatedAt);
-        return entity;
-    }
 }

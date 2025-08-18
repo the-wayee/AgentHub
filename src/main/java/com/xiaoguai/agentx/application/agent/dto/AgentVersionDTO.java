@@ -4,7 +4,6 @@ package com.xiaoguai.agentx.application.agent.dto;
 import com.xiaoguai.agentx.domain.agent.constant.AgentType;
 import com.xiaoguai.agentx.domain.agent.constant.PublishStatus;
 import com.xiaoguai.agentx.domain.agent.model.AgentTool;
-import com.xiaoguai.agentx.domain.agent.model.AgentModelConfig;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -59,10 +58,6 @@ public class AgentVersionDTO {
      */
     private String welcomeMessage;
 
-    /**
-     * 模型配置，包含模型类型、温度等参数
-     */
-    private AgentModelConfig agentModelConfig;
 
     /**
      * Agent可使用的工具列表
@@ -82,7 +77,7 @@ public class AgentVersionDTO {
     /**
      * Agent类型：1-聊天助手, 2-功能性Agent
      */
-    private Integer agentType;
+    private AgentType agentType;
 
     /**
      * 发布状态：1-审核中, 2-已发布, 3-拒绝, 4-已下架
@@ -128,42 +123,10 @@ public class AgentVersionDTO {
      * 无参构造函数
      */
     public AgentVersionDTO() {
-        this.agentModelConfig = AgentModelConfig.createDefault();
         this.tools = new ArrayList<>();
         this.knowledgeBaseIds = new ArrayList<>();
     }
 
-    /**
-     * 全参构造函数
-     */
-    public AgentVersionDTO(String id, String agentId, String name, String avatar, String description,
-                           String versionNumber, String systemPrompt, String welcomeMessage,
-                           AgentModelConfig agentModelConfig, List<AgentTool> tools, List<String> knowledgeBaseIds,
-                           String changeLog, Integer agentType, Integer publishStatus,
-                           String rejectReason, LocalDateTime reviewTime, LocalDateTime publishedAt,
-                           String userId, LocalDateTime createdAt, LocalDateTime updatedAt, LocalDateTime deletedAt) {
-        this.id = id;
-        this.agentId = agentId;
-        this.name = name;
-        this.avatar = avatar;
-        this.description = description;
-        this.versionNumber = versionNumber;
-        this.systemPrompt = systemPrompt;
-        this.welcomeMessage = welcomeMessage;
-        this.agentModelConfig = agentModelConfig;
-        this.tools = tools;
-        this.knowledgeBaseIds = knowledgeBaseIds;
-        this.changeLog = changeLog;
-        this.agentType = agentType;
-        this.publishStatus = publishStatus;
-        this.rejectReason = rejectReason;
-        this.reviewTime = reviewTime;
-        this.publishedAt = publishedAt;
-        this.userId = userId;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-        this.deletedAt = deletedAt;
-    }
 
     // Getter和Setter方法
     public String getId() {
@@ -230,14 +193,6 @@ public class AgentVersionDTO {
         this.welcomeMessage = welcomeMessage;
     }
 
-    public AgentModelConfig getModelConfig() {
-        return agentModelConfig;
-    }
-
-    public void setModelConfig(AgentModelConfig agentModelConfig) {
-        this.agentModelConfig = agentModelConfig;
-    }
-
     public List<AgentTool> getTools() {
         return tools;
     }
@@ -262,11 +217,12 @@ public class AgentVersionDTO {
         this.changeLog = changeLog;
     }
 
-    public Integer getAgentType() {
+
+    public AgentType getAgentType() {
         return agentType;
     }
 
-    public void setAgentType(Integer agentType) {
+    public void setAgentType(AgentType agentType) {
         this.agentType = agentType;
     }
 
@@ -274,7 +230,7 @@ public class AgentVersionDTO {
      * 获取类型文本描述
      */
     public String getAgentTypeText() {
-        return AgentType.fromCode(agentType).getDescription();
+        return agentType.getDescription();
     }
 
     public Integer getPublishStatus() {

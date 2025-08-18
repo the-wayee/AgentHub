@@ -1,7 +1,6 @@
 package com.xiaoguai.agentx.application.conversation.dto;
 
-import com.xiaoguai.agentx.domain.conversation.contants.Role;
-import com.xiaoguai.agentx.domain.conversation.model.MessageEntity;
+import com.xiaoguai.agentx.domain.conversation.constants.Role;
 
 import java.time.LocalDateTime;
 

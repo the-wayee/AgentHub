@@ -1,10 +1,12 @@
 package com.xiaoguai.agentx.domain.agent.model;
 
 
-import com.baomidou.mybatisplus.annotation.*;
-import com.xiaoguai.agentx.application.agent.dto.AgentDTO;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import com.xiaoguai.agentx.domain.agent.constant.AgentType;
-import com.xiaoguai.agentx.infrastrcture.converter.AgentModelConfigConverter;
+import com.xiaoguai.agentx.infrastrcture.converter.AgentTypeConverter;
 import com.xiaoguai.agentx.infrastrcture.converter.ListConverter;
 import com.xiaoguai.agentx.infrastrcture.entity.BaseEntity;
 import org.apache.ibatis.type.JdbcType;
@@ -59,12 +61,6 @@ public class AgentEntity extends BaseEntity {
     private String welcomeMessage;
 
     /**
-     * 模型配置，包含模型类型、温度等参数
-     */
-    @TableField(value = "model_config", typeHandler = AgentModelConfigConverter.class, jdbcType = JdbcType.OTHER)
-    private AgentModelConfig agentModelConfig;
-
-    /**
      * Agent可使用的工具列表
      */
     @TableField(value = "tools", typeHandler = ListConverter.class, jdbcType = JdbcType.OTHER)
@@ -91,8 +87,8 @@ public class AgentEntity extends BaseEntity {
     /**
      * Agent类型：1-聊天助手, 2-功能性Agent
      */
-    @TableField("agent_type")
-    private Integer agentType;
+    @TableField(value = "agent_type", typeHandler = AgentTypeConverter.class)
+    private AgentType agentType;
 
     /**
      * 创建者用户ID
@@ -151,14 +147,6 @@ public class AgentEntity extends BaseEntity {
         this.welcomeMessage = welcomeMessage;
     }
 
-    public AgentModelConfig getModelConfig() {
-        return agentModelConfig;
-    }
-
-    public void setModelConfig(AgentModelConfig agentModelConfig) {
-        this.agentModelConfig = agentModelConfig;
-    }
-
     public List<AgentTool> getTools() {
         return tools;
     }
@@ -191,11 +179,11 @@ public class AgentEntity extends BaseEntity {
         this.enabled = enabled;
     }
 
-    public Integer getAgentType() {
+    public AgentType getAgentType() {
         return agentType;
     }
 
-    public void setAgentType(Integer agentType) {
+    public void setAgentType(AgentType agentType) {
         this.agentType = agentType;
     }
 
@@ -207,26 +195,6 @@ public class AgentEntity extends BaseEntity {
         this.userId = userId;
     }
 
-
-
-    public AgentEntity(String id, String name, String avatar, String description, String systemPrompt, String welcomeMessage, AgentModelConfig agentModelConfig, List<AgentTool> tools, List<String> knowledgeBaseIds, String publishedVersion, Boolean enabled, Integer agentType, String userId, LocalDateTime createdAt, LocalDateTime updatedAt, LocalDateTime deletedAt) {
-        this.id = id;
-        this.name = name;
-        this.avatar = avatar;
-        this.description = description;
-        this.systemPrompt = systemPrompt;
-        this.welcomeMessage = welcomeMessage;
-        this.agentModelConfig = agentModelConfig;
-        this.tools = tools;
-        this.knowledgeBaseIds = knowledgeBaseIds;
-        this.publishedVersion = publishedVersion;
-        this.enabled = enabled;
-        this.agentType = agentType;
-        this.userId = userId;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-        this.deletedAt = deletedAt;
-    }
 
     /**
      * 更新Agent基本信息
@@ -241,11 +209,10 @@ public class AgentEntity extends BaseEntity {
     /**
      * 更新Agent配置
      */
-    public void updateConfig(String systemPrompt, String welcomeMessage, AgentModelConfig agentModelConfig,
+    public void updateConfig(String systemPrompt, String welcomeMessage,
                              List<AgentTool> tools, List<String> knowledgeBaseIds) {
         this.systemPrompt = systemPrompt;
         this.welcomeMessage = welcomeMessage;
-        this.agentModelConfig = agentModelConfig;
         this.tools = tools;
         this.knowledgeBaseIds = knowledgeBaseIds;
         this.updatedAt = LocalDateTime.now();
@@ -275,39 +242,4 @@ public class AgentEntity extends BaseEntity {
         this.updatedAt = LocalDateTime.now();
     }
 
-    /**
-     * 软删除
-     */
-    public void delete() {
-        this.deletedAt = LocalDateTime.now();
-    }
-    /**
-     * 转换为DTO对象
-     */
-    public AgentDTO toDTO() {
-        AgentDTO dto = new AgentDTO();
-        dto.setId(this.id);
-        dto.setName(this.name);
-        dto.setAvatar(this.avatar);
-        dto.setDescription(this.description);
-        dto.setSystemPrompt(this.systemPrompt);
-        dto.setWelcomeMessage(this.welcomeMessage);
-        dto.setModelConfig(this.agentModelConfig);
-        dto.setTools(this.tools);
-        dto.setKnowledgeBaseIds(this.knowledgeBaseIds);
-        dto.setPublishedVersion(this.publishedVersion);
-        dto.setEnabled(this.enabled);
-        dto.setAgentType(this.agentType);
-        dto.setUserId(this.userId);
-        dto.setCreatedAt(this.createdAt);
-        dto.setUpdatedAt(this.updatedAt);
-        return dto;
-    }
-
-    /**
-     * 获取Agent类型枚举
-     */
-    public AgentType getAgentTypeEnum() {
-        return AgentType.fromCode(this.agentType);
-    }
 }

@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.xiaoguai.agentx.domain.llm.model.config.LlmModelConfig;
+import com.xiaoguai.agentx.infrastrcture.converter.LlmModelConfigConverter;
 import com.xiaoguai.agentx.infrastrcture.entity.BaseEntity;
 
 import java.time.LocalDateTime;
@@ -39,26 +41,27 @@ public class AgentWorkspaceEntity extends BaseEntity {
     /**
      * 模型id
      */
-    @TableField("model_id")
-    private String modelId;
+    @TableField(value = "llm_model_config", typeHandler = LlmModelConfigConverter.class)
+    private LlmModelConfig llmModelConfig;
 
     /**
      * 默认构造函数
      */
     public AgentWorkspaceEntity() {
+
     }
 
     /**
      * 带参数的构造函数
      *
-     * @param id        主键ID
      * @param agentId   Agent ID
      * @param userId    用户ID
+     * @param llmModelConfig 模型配置
      */
-    public AgentWorkspaceEntity(String id, String agentId, String userId) {
-        this.id = id;
+    public AgentWorkspaceEntity(String agentId, String userId, LlmModelConfig llmModelConfig) {
         this.agentId = agentId;
         this.userId = userId;
+        this.llmModelConfig = llmModelConfig;
     }
 
     // Getter 和 Setter 方法
@@ -87,11 +90,14 @@ public class AgentWorkspaceEntity extends BaseEntity {
         this.userId = userId;
     }
 
-    public String getModelId() {
-        return modelId;
+    public LlmModelConfig getLlmModelConfig() {
+        if (llmModelConfig == null) {
+            llmModelConfig = new LlmModelConfig();
+        }
+        return llmModelConfig;
     }
 
-    public void setModelId(String modelId) {
-        this.modelId = modelId;
+    public void setLlmModelConfig(LlmModelConfig llmModelConfig) {
+        this.llmModelConfig = llmModelConfig;
     }
 }

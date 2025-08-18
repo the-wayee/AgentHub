@@ -8,14 +8,19 @@ import dev.langchain4j.data.message.UserMessage;
 import dev.langchain4j.model.chat.StreamingChatModel;
 import dev.langchain4j.model.chat.request.ChatRequest;
 import dev.langchain4j.model.chat.request.ChatRequestParameters;
+import dev.langchain4j.model.chat.request.DefaultChatRequestParameters;
 import dev.langchain4j.model.chat.response.ChatResponse;
 import dev.langchain4j.model.chat.response.PartialThinking;
 import dev.langchain4j.model.chat.response.StreamingChatResponseHandler;
+import dev.langchain4j.model.openai.OpenAiChatRequestParameters;
+import dev.langchain4j.model.openai.OpenAiStreamingChatModel;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
 @SpringBootTest
@@ -99,25 +104,28 @@ class AgentXApplicationTests {
 
     @Test
     void testZhipu() throws InterruptedException {
-        ZhipuAiStreamingChatModel model = ZhipuAiStreamingChatModel.builder()
+        StreamingChatModel model = OpenAiStreamingChatModel.builder()
                 .apiKey(System.getenv("CHATGLM_API_KEY"))
-                .model("glm-4-9b")
+                .baseUrl("https://open.bigmodel.cn/api/paas/v4/")
+                .modelName("GLM-4.5")
+                .returnThinking(true)
                 .build();
 
-        String message = "你好，你叫什么";
+        String message = "写100字作文";
 
 
         UserMessage userMessage = UserMessage.from(message);
-        QwenChatRequestParameters parameters = QwenChatRequestParameters.builder()
-                .enableThinking(true)
-                .build();
 
+        Map<String, String> think = new HashMap<>();
+        think.put("type", "enabled");
+        ChatRequestParameters parameters = OpenAiChatRequestParameters.builder()
+                .customParameters(new HashMap<>(){{put("thinking", think);}})
+                .build();
 
         ChatRequest request = ChatRequest.builder()
                 .messages(userMessage)
                 .parameters(parameters)
                 .build();
-
         CountDownLatch latch = new CountDownLatch(1);
 
 
@@ -130,6 +138,9 @@ class AgentXApplicationTests {
             @Override
             public void onCompleteResponse(ChatResponse completeResponse) {
                 System.out.println("Done = " + completeResponse.aiMessage().text());
+                System.out.println("Think = " + completeResponse.aiMessage().thinking());
+                System.out.println("MetaData = " + completeResponse.metadata());
+
                 latch.countDown();
             }
 

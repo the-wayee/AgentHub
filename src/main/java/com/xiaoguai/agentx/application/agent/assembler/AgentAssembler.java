@@ -3,10 +3,9 @@ package com.xiaoguai.agentx.application.agent.assembler;
 
 import com.xiaoguai.agentx.application.agent.dto.AgentDTO;
 import com.xiaoguai.agentx.application.agent.dto.AgentVersionDTO;
-import com.xiaoguai.agentx.domain.agent.model.AgentModelConfig;
+import com.xiaoguai.agentx.domain.agent.constant.AgentType;
 import com.xiaoguai.agentx.domain.agent.model.AgentEntity;
 import com.xiaoguai.agentx.domain.agent.model.AgentVersionEntity;
-import com.xiaoguai.agentx.domain.agent.constant.AgentType;
 import com.xiaoguai.agentx.interfaces.dto.agent.CreateAgentRequest;
 import com.xiaoguai.agentx.interfaces.dto.agent.PublishAgentVersionRequest;
 import com.xiaoguai.agentx.interfaces.dto.agent.UpdateAgentRequest;
@@ -38,20 +37,12 @@ public class AgentAssembler {
 
         // 设置Agent类型
         AgentType agentType = request.getAgentType();
-        agentEntity.setAgentType(agentType.getCode());
+        agentEntity.setAgentType(agentType);
         agentEntity.setUserId(userId);
 
         // 默认启用
         agentEntity.setEnabled(true);
 
-        // 模型配置
-        if (request.getModelConfig() == null) {
-            // 默认配置
-            AgentModelConfig agentModelConfig = AgentModelConfig.createDefault();
-            agentEntity.setModelConfig(agentModelConfig);
-        } else {
-            agentEntity.setModelConfig(request.getModelConfig());
-        }
 
         // 工具和知识库
         agentEntity.setTools(request.getTools() == null ? new ArrayList<>() : request.getTools());
@@ -76,7 +67,6 @@ public class AgentAssembler {
         entity.setAvatar(request.getAvatar());
         entity.setSystemPrompt(request.getSystemPrompt());
         entity.setWelcomeMessage(request.getWelcomeMessage());
-        entity.setModelConfig(request.getModelConfig());
         entity.setTools(request.getTools());
         entity.setKnowledgeBaseIds(request.getKnowledgeBaseIds());
         entity.setUserId(userId);
@@ -107,7 +97,6 @@ public class AgentAssembler {
         dto.setDescription(entity.getDescription());
         dto.setSystemPrompt(entity.getSystemPrompt());
         dto.setWelcomeMessage(entity.getWelcomeMessage());
-        dto.setModelConfig(entity.getModelConfig());
         dto.setTools(entity.getTools());
         dto.setKnowledgeBaseIds(entity.getKnowledgeBaseIds());
         dto.setPublishedVersion(entity.getPublishedVersion());
@@ -134,7 +123,6 @@ public class AgentAssembler {
         dto.setVersionNumber(entity.getVersionNumber());
         dto.setSystemPrompt(entity.getSystemPrompt());
         dto.setWelcomeMessage(entity.getWelcomeMessage());
-        dto.setModelConfig(entity.getModelConfig());
         dto.setTools(entity.getTools());
         dto.setKnowledgeBaseIds(entity.getKnowledgeBaseIds());
         dto.setChangeLog(entity.getChangeLog());

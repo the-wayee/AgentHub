@@ -2,8 +2,11 @@ package com.xiaoguai.agentx.infrastrcture.converter;
 
 
 import com.xiaoguai.agentx.domain.llm.model.enums.ModelType;
+import com.xiaoguai.agentx.infrastrcture.llm.protocol.enums.ProviderProtocol;
 import org.apache.ibatis.type.BaseTypeHandler;
 import org.apache.ibatis.type.JdbcType;
+import org.apache.ibatis.type.MappedJdbcTypes;
+import org.apache.ibatis.type.MappedTypes;
 
 import java.sql.CallableStatement;
 import java.sql.PreparedStatement;
@@ -16,6 +19,8 @@ import java.sql.SQLException;
  * @Date: 2025-08-12 20:35
  * @Description: ModelTypeConverter
  */
+@MappedJdbcTypes(JdbcType.VARCHAR)
+@MappedTypes(ModelType.class)
 public class ModelTypeConverter extends BaseTypeHandler<ModelType> {
 
     @Override

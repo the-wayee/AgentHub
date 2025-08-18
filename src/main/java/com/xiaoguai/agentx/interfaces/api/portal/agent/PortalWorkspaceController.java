@@ -5,6 +5,7 @@ import com.xiaoguai.agentx.application.agent.dto.AgentDTO;
 import com.xiaoguai.agentx.application.agent.service.AgentWorkspaceAppService;
 import com.xiaoguai.agentx.infrastrcture.auth.UserContext;
 import com.xiaoguai.agentx.interfaces.api.common.Result;
+import com.xiaoguai.agentx.interfaces.dto.agent.UpdateModelConfigRequest;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -59,10 +60,10 @@ public class PortalWorkspaceController {
     /**
      * 设置工作区Agent的模型
      */
-    @PutMapping("/{agentId}/model/{modelId}")
-    public Result<Void> saveModelId(@PathVariable String agentId, @PathVariable String modelId) {
+    @PutMapping("/{agentId}/model/config")
+    public Result<Void> saveModelId(@PathVariable String agentId, @RequestBody @Validated UpdateModelConfigRequest request) {
         String userId = UserContext.getUserId();
-        agentWorkspaceAppService.saveModelId(agentId, modelId, userId);
+        agentWorkspaceAppService.updateModelConfig(request,agentId, userId);
         return Result.success();
     }
 
@@ -72,6 +73,6 @@ public class PortalWorkspaceController {
     @GetMapping("/config/{agentId}")
     public Result<Map<String, String>> getAgentConfiguration(@PathVariable String agentId) {
         String userId = UserContext.getUserId();
-        return  Result.success(agentWorkspaceAppService.getAgentConfiguration(agentId, userId));
+        return Result.success(agentWorkspaceAppService.getAgentConfiguration(agentId, userId));
     }
 }

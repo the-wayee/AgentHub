@@ -7,7 +7,7 @@ import com.xiaoguai.agentx.application.agent.dto.AgentDTO;
 import com.xiaoguai.agentx.domain.agent.service.AgentDomainService;
 import com.xiaoguai.agentx.domain.agent.service.AgentWorkspaceDomainService;
 import com.xiaoguai.agentx.application.conversation.dto.SessionDTO;
-import com.xiaoguai.agentx.domain.conversation.contants.Role;
+import com.xiaoguai.agentx.domain.conversation.constants.Role;
 import com.xiaoguai.agentx.domain.conversation.model.MessageEntity;
 import com.xiaoguai.agentx.domain.conversation.model.SessionEntity;
 import com.xiaoguai.agentx.domain.conversation.service.ConversationDomainService;

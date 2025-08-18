@@ -1,4 +1,4 @@
-package com.xiaoguai.agentx.domain.conversation.contants;
+package com.xiaoguai.agentx.domain.conversation.constants;
 
 
 import com.xiaoguai.agentx.infrastrcture.exception.BusinessException;

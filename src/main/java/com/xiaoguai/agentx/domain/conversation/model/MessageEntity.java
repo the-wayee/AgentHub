@@ -4,11 +4,8 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.xiaoguai.agentx.application.conversation.dto.MessageDTO;
-import com.xiaoguai.agentx.domain.conversation.contants.Role;
+import com.xiaoguai.agentx.domain.conversation.constants.Role;
 import com.xiaoguai.agentx.infrastrcture.entity.BaseEntity;
-
-import java.time.LocalDateTime;
 
 /**
  * 消息实体类，代表对话中的一条消息

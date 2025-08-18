@@ -30,14 +30,14 @@ public enum AgentType {
     /**
      * 根据代码获取枚举值
      */
-    public static AgentType fromCode(Integer code) {
-        if (code == null) {
+    public static AgentType fromType(String type) {
+        if (type == null) {
             return CHAT_ASSISTANT;
         }
 
-        for (AgentType type : AgentType.values()) {
-            if (type.getCode().equals(code)) {
-                return type;
+        for (AgentType value : values()) {
+            if (value.name().equals(type)) {
+                return value;
             }
         }
 

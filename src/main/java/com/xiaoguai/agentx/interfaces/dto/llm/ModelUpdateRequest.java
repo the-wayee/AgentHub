@@ -1,7 +1,7 @@
 package com.xiaoguai.agentx.interfaces.dto.llm;
 
 
-import com.xiaoguai.agentx.domain.llm.model.config.LLMModelConfig;
+import com.xiaoguai.agentx.domain.llm.model.config.LlmModelConfig;
 import jakarta.validation.constraints.NotBlank;
 
 /**
@@ -34,11 +34,11 @@ public class ModelUpdateRequest {
      */
     private String description;
 
-    public LLMModelConfig getConfig() {
+    public LlmModelConfig getConfig() {
         return config;
     }
 
-    public void setConfig(LLMModelConfig config) {
+    public void setConfig(LlmModelConfig config) {
         this.config = config;
     }
 
@@ -77,5 +77,5 @@ public class ModelUpdateRequest {
     /**
      * 模型配置
      */
-    private LLMModelConfig config;
+    private LlmModelConfig config;
 }

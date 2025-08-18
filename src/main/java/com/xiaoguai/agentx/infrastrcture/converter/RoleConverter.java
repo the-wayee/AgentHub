@@ -1,6 +1,6 @@
 package com.xiaoguai.agentx.infrastrcture.converter;
 
-import com.xiaoguai.agentx.domain.conversation.contants.Role;
+import com.xiaoguai.agentx.domain.conversation.constants.Role;
 import org.apache.ibatis.type.BaseTypeHandler;
 import org.apache.ibatis.type.JdbcType;
 import org.apache.ibatis.type.MappedJdbcTypes;
