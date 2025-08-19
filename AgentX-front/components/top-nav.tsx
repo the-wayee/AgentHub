@@ -24,7 +24,7 @@ export function TopNav() {
   return (
     <header className="h-14 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="max-w-7xl mx-auto h-full px-4 flex items-center justify-between gap-4">
-        <Link href="/chat/demo" className="flex items-center gap-2 font-semibold">
+        <Link href="/chat/demo" className="flex items-center gap-2 font-semibold" prefetch={false}>
           <Bot className="w-5 h-5 text-primary" />
           <span>AgentHub</span>
         </Link>
@@ -33,6 +33,7 @@ export function TopNav() {
             <Link
               key={href}
               href={href}
+              prefetch={false}
               className={cn(
                 "px-3 py-1.5 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-muted",
                 pathname.startsWith(href) && "bg-muted text-foreground",
@@ -59,22 +60,22 @@ export function TopNav() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-44">
                 <DropdownMenuItem asChild>
-                  <Link href="/chat/demo">主页</Link>
+                  <Link href="/chat/demo" prefetch={false}>主页</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link href="/explore">探索</Link>
+                  <Link href="/explore" prefetch={false}>探索</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link href="/studio">工作室</Link>
+                  <Link href="/studio" prefetch={false}>工作室</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link href="/knowledge">知识库</Link>
+                  <Link href="/knowledge" prefetch={false}>知识库</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link href="/providers">服务商</Link>
+                  <Link href="/providers" prefetch={false}>服务商</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link href="/tools">工具</Link>
+                  <Link href="/tools" prefetch={false}>工具</Link>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -96,7 +97,7 @@ export function TopNav() {
               <DropdownMenuLabel>平台</DropdownMenuLabel>
 
               <DropdownMenuItem asChild>
-                <Link href="/admin">
+                <Link href="/admin" prefetch={false}>
                   <Shield className="w-4 h-4 mr-2" /> 后台管理
                 </Link>
               </DropdownMenuItem>

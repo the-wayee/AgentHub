@@ -4,9 +4,13 @@ package com.xiaoguai.agentx.infrastrcture.llm.factory;
 import com.xiaoguai.agentx.infrastrcture.exception.BusinessException;
 import com.xiaoguai.agentx.infrastrcture.llm.config.BaseProviderConfig;
 import com.xiaoguai.agentx.infrastrcture.llm.protocol.enums.ProviderProtocol;
+import dev.langchain4j.community.model.dashscope.QwenChatModel;
 import dev.langchain4j.community.model.dashscope.QwenStreamingChatModel;
+import dev.langchain4j.community.model.zhipu.ZhipuAiChatModel;
 import dev.langchain4j.community.model.zhipu.ZhipuAiStreamingChatModel;
+import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.model.chat.StreamingChatModel;
+import dev.langchain4j.model.openai.OpenAiChatModel;
 import dev.langchain4j.model.openai.OpenAiStreamingChatModel;
 
 /**
@@ -17,7 +21,51 @@ import dev.langchain4j.model.openai.OpenAiStreamingChatModel;
  */
 public class LlmProviderFactory {
 
-    public static StreamingChatModel createChatModel(ProviderProtocol protocol, BaseProviderConfig config) {
+    /**
+     * 获取普通聊天模型
+     */
+    public static ChatModel createChatModel(ProviderProtocol protocol, BaseProviderConfig config) {
+        ChatModel model = null;
+        switch (protocol) {
+            case OPENAI -> {
+                model = OpenAiChatModel.builder()
+                        .apiKey(config.getApiKey()) // APIKEY
+                        .baseUrl(config.getBaseUrl())
+                        .modelName(config.getModel())
+                        .build();
+            }
+            case DASHSCOPE -> {
+                model = QwenChatModel.builder()
+                        .apiKey(config.getApiKey())
+                        .modelName(config.getModel())
+                        .build();
+            }
+            case ZHIPU -> {
+                model = ZhipuAiChatModel.builder()
+                        .apiKey(config.getApiKey())
+                        .model(config.getModel())
+                        .build();
+            }
+            case CUSTOM -> {
+                model = OpenAiChatModel.builder()
+                        .apiKey(config.getApiKey())
+                        .baseUrl(config.getBaseUrl())
+                        .modelName(config.getModel())
+                        .build();
+            }
+            default -> {
+                throw new BusinessException("获取服务商协议失败: " + protocol.getName());
+            }
+        }
+
+        return model;
+    }
+
+
+    /**
+     * 获取流式聊天模型
+     */
+    public static StreamingChatModel createStreamChatModel(ProviderProtocol protocol, BaseProviderConfig config) {
         StreamingChatModel model = null;
         switch (protocol) {
             case OPENAI -> {

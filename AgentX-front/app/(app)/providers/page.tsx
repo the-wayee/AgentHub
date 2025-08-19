@@ -1,22 +1,21 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
-import { Settings, Plus, Search, ExternalLink, CheckCircle, XCircle, Edit, Trash2 } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
-import { ProviderSettings } from "@/components/user/provider-settings"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { useToast } from "@/hooks/use-toast"
+import { cn } from "@/lib/utils"
+import { Server, Settings, Plus, Search, Edit, Trash2, CheckCircle, XCircle, AlertCircle } from "lucide-react"
 import { ProvidersPageSkeleton } from "@/components/ui/page-skeleton"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
+import { ProviderSettings } from "@/components/user/provider-settings"
 
 type Model = {
   id: string
@@ -64,7 +63,6 @@ type Provider = {
 }
 
 export default function ProvidersPage() {
-  const router = useRouter()
   const [providers, setProviders] = useState<Provider[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
@@ -316,7 +314,12 @@ export default function ProvidersPage() {
         </div>
         <Button 
           className="bg-black text-white hover:bg-black/90 cursor-pointer"
-          onClick={() => (window as any).dispatchEvent(new CustomEvent('open-provider-settings'))}
+          onClick={() => {
+            console.log('Providers page: Add provider button clicked')
+            console.log('Providers page: Dispatching open-provider-settings event')
+            window.dispatchEvent(new CustomEvent('open-provider-settings'))
+            console.log('Providers page: Event dispatched')
+          }}
         >
           <Plus className="w-4 h-4 mr-2" />
           添加服务商
@@ -502,7 +505,7 @@ export default function ProvidersPage() {
                       }
                     }}
                   >
-                    <ExternalLink className="w-4 h-4 mr-2" />
+                    <Server className="w-4 h-4 mr-2" />
                     官方网站
                   </Button>
                   <Button
@@ -520,9 +523,31 @@ export default function ProvidersPage() {
                     ? 'bg-green-600 hover:bg-green-700 shadow-sm' 
                     : 'bg-gray-600 hover:bg-gray-700'
                 }`}
-                onClick={() => {
-                  // 直接跳转，不传递敏感数据
-                  router.push(`/providers/${provider.id}/models`)
+                onClick={async () => {
+                  try {
+                    // 直接调用后端接口加载模型列表
+                    const res = await fetch(`http://localhost:8080/api/llm/models/${provider.id}`, { 
+                      cache: 'no-store' 
+                    })
+                    const result = await res.json()
+                    
+                    if (result.code === 200) {
+                      // 成功加载模型列表后跳转
+                      window.location.href = `/providers/${provider.id}/models`
+                    } else {
+                      toast({
+                        title: "加载失败",
+                        description: result.message || "无法加载模型列表",
+                        variant: "destructive"
+                      })
+                    }
+                  } catch (error) {
+                    toast({
+                      title: "加载失败",
+                      description: "网络错误，请稍后重试",
+                      variant: "destructive"
+                    })
+                  }
                 }}
               >
                 <Settings className="w-4 h-4 mr-2" />

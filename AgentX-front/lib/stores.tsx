@@ -262,6 +262,7 @@ export type ProviderConfig = {
   kind: ProviderKind
   apiKey?: string
   baseUrl?: string
+  description?: string
   enabled: boolean
   models: ProviderModel[]
 }

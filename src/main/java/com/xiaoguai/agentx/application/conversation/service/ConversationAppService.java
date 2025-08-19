@@ -20,15 +20,13 @@ import com.xiaoguai.agentx.domain.conversation.service.SessionDomainService;
 import com.xiaoguai.agentx.domain.llm.model.ModelEntity;
 import com.xiaoguai.agentx.domain.llm.model.ProviderEntity;
 import com.xiaoguai.agentx.domain.llm.model.config.LlmModelConfig;
+import com.xiaoguai.agentx.domain.llm.model.config.ProviderConfig;
 import com.xiaoguai.agentx.domain.llm.service.LlmDomainService;
 import com.xiaoguai.agentx.domain.token.model.TokenMessage;
 import com.xiaoguai.agentx.domain.token.model.TokenProcessResult;
 import com.xiaoguai.agentx.domain.token.model.config.TokenOverflowConfig;
-import com.xiaoguai.agentx.domain.token.model.enums.TokenOverflowStrategyEnum;
 import com.xiaoguai.agentx.domain.token.service.TokenDomainService;
-import com.xiaoguai.agentx.domain.token.service.TokenOverflowStrategyFactory;
 import com.xiaoguai.agentx.infrastrcture.exception.BusinessException;
-import com.xiaoguai.agentx.infrastrcture.llm.LlmProviderService;
 import com.xiaoguai.agentx.infrastrcture.transport.MessageTransport;
 import com.xiaoguai.agentx.infrastrcture.transport.MessageTransportFactory;
 import org.slf4j.Logger;
@@ -38,6 +36,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.xiaoguai.agentx.domain.token.model.enums.TokenOverflowStrategyEnum.SUMMARIZE;
 
@@ -144,6 +143,7 @@ public class ConversationAppService {
 
         // 获取服务商
         ProviderEntity provider = llmDomainService.getProviderById(model.getProviderId());
+        provider.isActive();
         environment.setProviderEntity(provider);
 
         // 准备上下文，使用Token上下文策略
@@ -160,11 +160,11 @@ public class ConversationAppService {
     private void setupContext(ChatEnvironment environment) {
         // 获取上下文
         ContextEntity context = contextDomainService.findBySessionId(environment.getSessionId());
-        List<MessageEntity> historyMessages = new ArrayList<>();
+        List<MessageEntity> activeMessages = new ArrayList<>();
         if (context != null) {
             // 获取活跃消息
             List<String> activeMessageIds = context.getActiveMessages();
-            List<MessageEntity> activeMessages = messageDomainService.listByIds(activeMessageIds);
+            activeMessages = messageDomainService.listByIds(activeMessageIds);
             applyTokenOverflowStrategy(environment, context, activeMessages);
         } else {
             // 创建新的上下文
@@ -173,7 +173,7 @@ public class ConversationAppService {
             context.setActiveMessages(new ArrayList<>());
         }
 
-        environment.setHistoryMessages(historyMessages);
+        environment.setHistoryMessages(activeMessages);
         environment.setContextEntity(context);
     }
 
@@ -195,6 +195,17 @@ public class ConversationAppService {
         tokenOverflowConfig.setReserveRatio(llmModelConfig.getReserveRatio());
         tokenOverflowConfig.setSummaryThreshold(llmModelConfig.getSummaryThreshold());
 
+        // 服务商配置：apikey, baseurl, protocol, modelId
+        ProviderConfig providerConfig = new ProviderConfig();
+        ProviderEntity provider = environment.getProviderEntity();
+        providerConfig.setApiKey(provider.getConfig().getApiKey());
+        providerConfig.setBaseUrl(provider.getConfig().getBaseUrl());
+        providerConfig.setProtocol(provider.getProtocol());
+        providerConfig.setModel(environment.getModelEntity().getModelId());
+        tokenOverflowConfig.setProviderConfig(providerConfig);
+        // 设置对话环境配置
+        provider.setConfig(providerConfig);
+
         // 使用策略处理消息
         TokenProcessResult result = tokenDomainService.processMessages(tokenMessages, tokenOverflowConfig);
 
@@ -203,13 +214,13 @@ public class ConversationAppService {
             List<String> retainedMessageIds = result.getRetainedMessages()
                     .stream()
                     .map(TokenMessage::getId)
-                    .toList();
+                    .collect(Collectors.toList());
 
             // 摘要策略
             if (llmModelConfig.getStrategyType() == SUMMARIZE) {
                 String oldSummary = context.getSummary();
                 String newSummary = result.getSummary();
-                context.setSummary(oldSummary + newSummary);
+                context.setSummary(oldSummary + "\n\n"+ newSummary);
             }
 
             context.setActiveMessages(retainedMessageIds);
@@ -227,6 +238,6 @@ public class ConversationAppService {
                     tokenMessage.setTokenCount(message.getTokenCount());
                     tokenMessage.setCreatedAt(message.getCreatedAt());
                     return tokenMessage;
-                }).toList();
+                }).collect(Collectors.toList());
     }
 }

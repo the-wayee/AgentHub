@@ -318,7 +318,7 @@ export function ChatShell({ agentId }: { agentId: string }) {
                     </div>
                   </TooltipTrigger>
                   <TooltipContent side="bottom" align="end" className="max-w-[220px] text-xs">
-                    目前仅 Qwen 模型支持推理。
+                    目前仅部分模型支持推理。
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>

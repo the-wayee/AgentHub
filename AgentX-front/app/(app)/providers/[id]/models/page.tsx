@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useParams, useRouter } from "next/navigation"
+import { useParams } from "next/navigation"
 import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -17,16 +17,17 @@ import { useToast } from "@/hooks/use-toast"
 
 type Model = {
   id: string
-  userId: string
+  userId: string | null
   providerId: string
+  providerName: string | null
   modelId: string
   name: string
   description?: string
-  official: boolean
   type: string
   config?: {
     maxContextLength?: number
-  }
+  } | null
+  official: boolean
   status: boolean
   createdAt: string
   updatedAt: string
@@ -43,7 +44,6 @@ type Provider = {
 
 export default function ProviderModelsPage() {
   const params = useParams()
-  const router = useRouter()
   const providerId = params.id as string
   const [provider, setProvider] = useState<Provider | null>(null)
   const [models, setModels] = useState<Model[]>([])
@@ -66,7 +66,7 @@ export default function ProviderModelsPage() {
     setLoading(true)
     try {
       // 直接调用API获取服务商信息
-      const res = await fetch('/api/llm/providers', { cache: 'no-store' })
+      const res = await fetch('http://localhost:8080/api/llm/providers', { cache: 'no-store' })
       const result = await res.json()
       
       if (result.code === 200 && Array.isArray(result.data)) {
@@ -103,7 +103,7 @@ export default function ProviderModelsPage() {
   // 专门获取模型列表的函数
   async function loadModels() {
     try {
-      const res = await fetch(`/api/llm/providers/${providerId}/models`, { 
+      const res = await fetch(`http://localhost:8080/api/llm/models/${providerId}`, { 
         cache: 'no-store' 
       })
       const result = await res.json()
@@ -125,7 +125,7 @@ export default function ProviderModelsPage() {
   async function loadModelTypes() {
     setModelTypesLoading(true)
     try {
-      const res = await fetch('/api/llm/models/types', { cache: 'no-store' })
+      const res = await fetch('http://localhost:8080/api/llm/models/types', { cache: 'no-store' })
       const result = await res.json()
       
       if (result.code === 200 && Array.isArray(result.data)) {
@@ -154,7 +154,7 @@ export default function ProviderModelsPage() {
     }
 
     try {
-      const res = await fetch('/api/llm/models', {
+      const res = await fetch('http://localhost:8080/api/llm/models', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -164,8 +164,8 @@ export default function ProviderModelsPage() {
           modelId: addForm.modelId,
           name: addForm.name,
           description: addForm.description,
-          modelType: addForm.modelType,
-          modelConfig: {
+          type: addForm.modelType,
+          config: {
             maxContextLength: addForm.maxContextLength,
             temperature: addForm.temperature,
             enable_search: addForm.enable_search
@@ -234,7 +234,7 @@ export default function ProviderModelsPage() {
 
   async function toggleModel(modelId: string, currentStatus: boolean) {
     try {
-      const res = await fetch(`/api/llm/models/${modelId}/toggle-status`, {
+      const res = await fetch(`http://localhost:8080/api/llm/models/${modelId}/toggle-status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' }
       })
@@ -287,7 +287,7 @@ export default function ProviderModelsPage() {
       <div className="max-w-7xl mx-auto p-6">
         <div className="text-center py-12">
           <div className="text-muted-foreground">服务商不存在</div>
-          <Button className="mt-4" onClick={() => router.back()}>
+          <Button className="mt-4" onClick={() => window.history.back()}>
             返回
           </Button>
         </div>
@@ -302,7 +302,7 @@ export default function ProviderModelsPage() {
         <Button 
           variant="ghost" 
           size="sm" 
-          onClick={() => router.back()}
+          onClick={() => window.history.back()}
           className="cursor-pointer hover:bg-gray-100 transition-colors"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
@@ -462,6 +462,16 @@ export default function ProviderModelsPage() {
                           {model.config.maxContextLength.toLocaleString()} tokens
                         </Badge>
                       )}
+                      <Badge 
+                        variant="outline" 
+                        className={`text-xs px-2 py-1 ${
+                          model.status 
+                            ? 'bg-purple-50 border-purple-200 text-purple-700' 
+                            : 'bg-gray-50 border-gray-200 text-gray-700'
+                        }`}
+                      >
+                        {model.type}
+                      </Badge>
                     </div>
 
                     {/* Pricing/Stats Section */}
@@ -580,8 +590,8 @@ export default function ProviderModelsPage() {
                       const typeLabels: Record<string, string> = {
                         "NORMAL": "普通模型",
                         "VISION": "视觉模型", 
-                        "FUNCTION": "函数调用",
-                        "EMBEDDING": "向量嵌入"
+                        "FUNCTION": "工具调用",
+                        "EMBEDDING": "嵌入模型"
                       }
                       return (
                         <SelectItem key={type} value={type}>
@@ -634,13 +644,11 @@ export default function ProviderModelsPage() {
               <Button 
                 variant="outline" 
                 onClick={() => setShowAddDialog(false)}
-                className="cursor-pointer"
               >
                 取消
               </Button>
               <Button 
                 onClick={addModel}
-                className="cursor-pointer"
               >
                 添加模型
               </Button>

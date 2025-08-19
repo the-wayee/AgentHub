@@ -8,8 +8,10 @@ import com.xiaoguai.agentx.domain.agent.service.AgentDomainService;
 import com.xiaoguai.agentx.domain.agent.service.AgentWorkspaceDomainService;
 import com.xiaoguai.agentx.application.conversation.dto.SessionDTO;
 import com.xiaoguai.agentx.domain.conversation.constants.Role;
+import com.xiaoguai.agentx.domain.conversation.model.ContextEntity;
 import com.xiaoguai.agentx.domain.conversation.model.MessageEntity;
 import com.xiaoguai.agentx.domain.conversation.model.SessionEntity;
+import com.xiaoguai.agentx.domain.conversation.service.ContextDomainService;
 import com.xiaoguai.agentx.domain.conversation.service.ConversationDomainService;
 import com.xiaoguai.agentx.domain.conversation.service.SessionDomainService;
 import com.xiaoguai.agentx.infrastrcture.exception.BusinessException;
@@ -35,14 +37,17 @@ public class AgentSessionAppService {
 
     private final ConversationDomainService conversationDomainService;
 
+    private final ContextDomainService contextDomainService;
+
     public AgentSessionAppService(AgentWorkspaceDomainService agentWorkspaceDomainService,
                                   AgentDomainService agentServiceDomainService,
                                   SessionDomainService sessionDomainService,
-                                  ConversationDomainService conversationDomainService) {
+                                  ConversationDomainService conversationDomainService, ContextDomainService contextDomainService) {
         this.agentWorkspaceDomainService = agentWorkspaceDomainService;
         this.agentServiceDomainService = agentServiceDomainService;
         this.sessionDomainService = sessionDomainService;
         this.conversationDomainService = conversationDomainService;
+        this.contextDomainService = contextDomainService;
     }
 
     /**
@@ -75,13 +80,25 @@ public class AgentSessionAppService {
         SessionEntity session = sessionDomainService.createSession(agentId, userId);
         // 获取Agent
         AgentDTO agent = agentServiceDomainService.getAgentWithPermissionCheck(agentId, userId);
+        String systemPrompt = agent.getSystemPrompt();
         String welcomeMessage = agent.getWelcomeMessage();
 
-        MessageEntity messageEntity = new MessageEntity();
-        messageEntity.setRole(Role.SYSTEM);
-        messageEntity.setContent(welcomeMessage);
-        messageEntity.setSessionId(session.getId());
-        conversationDomainService.saveMessage(messageEntity);
+        // 系统提示词
+        MessageEntity systemMessageEntity = new MessageEntity();
+        systemMessageEntity.setRole(Role.SYSTEM);
+        systemMessageEntity.setContent(systemPrompt);
+        systemMessageEntity.setSessionId(session.getId());
+
+        MessageEntity welcomeMessageEntity = new MessageEntity();
+        welcomeMessageEntity.setRole(Role.ASSISTANT);
+        welcomeMessageEntity.setContent(welcomeMessage);
+        welcomeMessageEntity.setSessionId(session.getId());
+        conversationDomainService.saveMessages(List.of(systemMessageEntity, welcomeMessageEntity));
+
+        ContextEntity context = new ContextEntity();
+        context.setSessionId(session.getId());
+        context.setActiveMessages(List.of(systemMessageEntity.getId(), welcomeMessageEntity.getId()));
+        contextDomainService.insertOrUpdate(context);
         return SessionAssembler.toDTO(session);
     }
 

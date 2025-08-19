@@ -15,7 +15,6 @@ import { useAgentCatalog, useKnowledgeStore } from "@/lib/stores"
 import type { Agent } from "@/lib/types"
 import { AgentTypeSelector } from "./agent-type-selector"
 import { AgentPreview } from "./agent-preview"
-import { useRouter } from "next/navigation"
 
 const defaultModel = {
   provider: "openai",
@@ -28,7 +27,6 @@ export function AgentBuilder({ agent, onSave, showTitle = true, onCancel }: { ag
   const { upsertAgent } = useAgentCatalog()
   const knowledge = useKnowledgeStore((s) => s.items)
   const [activeTab, setActiveTab] = useState("base")
-  const router = useRouter()
   const [isSaving, setIsSaving] = useState(false)
 
   const [draft, setDraft] = useState<Agent>(

@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useParams, useRouter } from "next/navigation"
+import { useParams } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -38,7 +38,6 @@ interface Model {
 
 export default function AdminProviderModelsPage() {
   const params = useParams()
-  const router = useRouter()
   const { toast } = useToast()
   
   const [models, setModels] = useState<Model[]>([])
@@ -312,7 +311,7 @@ export default function AdminProviderModelsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button variant="outline" onClick={() => router.back()}>
+          <Button variant="outline" onClick={() => window.history.back()}>
             <ArrowLeft className="w-4 h-4 mr-2" />
             返回
           </Button>

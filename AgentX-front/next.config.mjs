@@ -10,6 +10,14 @@ const nextConfig = {
     unoptimized: true,
   },
   reactStrictMode: false,
+  async rewrites() {
+    return [
+      {
+        source: '/api/agent/workspace/:path*',
+        destination: 'http://localhost:8080/api/agent/workspace/:path*',
+      },
+    ]
+  },
 }
 
 export default nextConfig

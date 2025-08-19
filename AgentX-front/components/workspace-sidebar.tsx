@@ -1,7 +1,14 @@
 "use client"
 
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { useEffect, useMemo, useState, useRef } from "react"
+import { useConvoStore, useAgentCatalog, useWorkspaceStore } from "@/lib/stores"
+import { useToast } from "@/hooks/use-toast"
+import { cn } from "@/lib/utils"
+import { WorkspaceSwitcher } from "./workspace-switcher"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { AgentQuickSettings } from "@/components/agent/agent-quick-settings"
+import { Settings } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Pencil, Plus, Search, Sparkles, Trash2 } from "lucide-react"
@@ -16,14 +23,6 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 // lightweight inline UI without bringing full antd styles
-import { useConvoStore, useAgentCatalog, useWorkspaceStore } from "@/lib/stores"
-import { useToast } from "@/hooks/use-toast"
-import { cn } from "@/lib/utils"
-import { WorkspaceSwitcher } from "./workspace-switcher"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { AgentQuickSettings } from "@/components/agent/agent-quick-settings"
-import { Settings } from "lucide-react"
-import { useEffect, useMemo, useState, useRef } from "react"
 
 export function WorkspaceSidebar({
   defaultAgentId = "demo",
@@ -32,7 +31,6 @@ export function WorkspaceSidebar({
   defaultAgentId?: string
   currentAgentId?: string
 }) {
-  const router = useRouter()
   const { conversations, createConversation, addConversation, activeId, setActive, replaceConversationsForAgent, renameConversation, deleteConversation } = useConvoStore()
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editingTitle, setEditingTitle] = useState<string>("")
@@ -307,7 +305,7 @@ export function WorkspaceSidebar({
 
       <div className="p-3 border-t space-y-2">
         <Button variant="secondary" className="w-full" asChild>
-          <Link href="/explore">
+          <Link href="/explore" prefetch={false}>
             <Sparkles className="w-4 h-4 mr-2" />
             浏览探索
           </Link>

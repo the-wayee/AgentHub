@@ -27,10 +27,10 @@ export function AgentCard({ agent }: { agent: Agent }) {
       </CardContent>
       <CardFooter className="mt-auto flex gap-2">
         <Button asChild variant="secondary" className="flex-1">
-          <Link href={`/chat/${agent.id}`}>试用</Link>
+          <Link href={`/chat/${agent.id}`} prefetch={false}>试用</Link>
         </Button>
         <Button asChild className="flex-1">
-          <Link href="/studio">克隆编辑</Link>
+          <Link href="/studio" prefetch={false}>克隆编辑</Link>
         </Button>
       </CardFooter>
     </Card>

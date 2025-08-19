@@ -34,7 +34,7 @@ public class MessageFactory {
         messageEntity.setSessionId(environment.getSessionId());
         messageEntity.setProvider(environment.getProviderEntity().getId());
         messageEntity.setModel(environment.getModelEntity().getId());
-        messageEntity.setRole(Role.SYSTEM);
+        messageEntity.setRole(Role.ASSISTANT);
         return messageEntity;
     }
 }

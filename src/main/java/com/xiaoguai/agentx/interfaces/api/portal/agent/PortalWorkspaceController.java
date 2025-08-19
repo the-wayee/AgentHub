@@ -3,6 +3,7 @@ package com.xiaoguai.agentx.interfaces.api.portal.agent;
 
 import com.xiaoguai.agentx.application.agent.dto.AgentDTO;
 import com.xiaoguai.agentx.application.agent.service.AgentWorkspaceAppService;
+import com.xiaoguai.agentx.domain.llm.model.config.LlmModelConfig;
 import com.xiaoguai.agentx.infrastrcture.auth.UserContext;
 import com.xiaoguai.agentx.interfaces.api.common.Result;
 import com.xiaoguai.agentx.interfaces.dto.agent.UpdateModelConfigRequest;
@@ -71,7 +72,7 @@ public class PortalWorkspaceController {
      * 获取Agent配置
      */
     @GetMapping("/config/{agentId}")
-    public Result<Map<String, String>> getAgentConfiguration(@PathVariable String agentId) {
+    public Result<LlmModelConfig> getAgentConfiguration(@PathVariable String agentId) {
         String userId = UserContext.getUserId();
         return Result.success(agentWorkspaceAppService.getAgentConfiguration(agentId, userId));
     }

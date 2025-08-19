@@ -2,12 +2,12 @@ import { NextResponse } from "next/server"
 
 export async function PUT(
   req: Request, 
-  { params }: { params: Promise<{ agentId: string; modelId: string }> }
+  { params }: { params: Promise<{ agentId: string }> }
 ) {
-  const { agentId, modelId } = await params
+  const { agentId } = await params
   const body = await req.json().catch(() => ({}))
   
-  const backendUrl = `http://localhost:8080/api/agent/workspace/${encodeURIComponent(agentId)}/model/${encodeURIComponent(modelId)}`
+  const backendUrl = `http://localhost:8080/api/agent/workspace/${encodeURIComponent(agentId)}/model/config`
   
   try {
     const response = await fetch(backendUrl, {

@@ -5,6 +5,7 @@ import com.xiaoguai.agentx.domain.conversation.model.MessageEntity;
 import com.xiaoguai.agentx.domain.conversation.repository.MessageRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -28,6 +29,9 @@ public class MessageDomainService {
      * @return 消息列表
      */
     public List<MessageEntity> listByIds(List<String> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return Collections.emptyList();
+        }
         return messageRepository.selectBatchIds(ids);
     }
 }

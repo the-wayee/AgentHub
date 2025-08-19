@@ -119,11 +119,8 @@ public class AgentWorkspaceAppService {
         agentWorkspaceDomainService.update(workspaceEntity);
     }
 
-    public Map<String, String> getAgentConfiguration(String agentId, String userId) {
+    public LlmModelConfig getAgentConfiguration(String agentId, String userId) {
         AgentWorkspaceEntity workspace = agentWorkspaceDomainService.getWorkspace(agentId, userId);
-        String modelId = workspace.getLlmModelConfig().getModelId();
-        Map<String, String> config = new HashMap<>();
-        config.put("modelId", modelId);
-        return config;
+        return workspace.getLlmModelConfig();
     }
 }

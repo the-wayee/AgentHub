@@ -6,12 +6,20 @@ import com.xiaoguai.agentx.domain.token.model.TokenProcessResult;
 import com.xiaoguai.agentx.domain.token.model.config.TokenOverflowConfig;
 import com.xiaoguai.agentx.domain.token.model.enums.TokenOverflowStrategyEnum;
 import com.xiaoguai.agentx.domain.token.service.TokenOverflowStrategy;
+import com.xiaoguai.agentx.infrastrcture.llm.LlmProviderService;
+import dev.langchain4j.data.message.Content;
+import dev.langchain4j.data.message.SystemMessage;
+import dev.langchain4j.data.message.TextContent;
+import dev.langchain4j.data.message.UserMessage;
+import dev.langchain4j.model.chat.ChatModel;
+import dev.langchain4j.model.chat.response.ChatResponse;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * @Author: the-way
@@ -41,6 +49,15 @@ public class SummerizeTokenOverflowStrategy implements TokenOverflowStrategy {
      */
     private static final String SUMMARY_ROLE = "summary";
 
+    private static final String SUMMARY_PROMPT = "你是一个专业的对话摘要生成器，请严格按照以下要求工作：\n" +
+            "1. 只基于提供的对话内容生成客观摘要，不得添加任何原对话中没有的信息\n" +
+            "2. 特别关注：用户问题、回答中的关键信息、重要事实\n" +
+            "3. 去除所有寒暄、表情符号和情感表达\n" +
+            "4. 使用简洁的第三人称陈述句\n" +
+            "5. 保持时间顺序和逻辑关系\n" +
+            "6. 示例格式：[用户]问... [AI]回答...\n" +
+            "禁止使用任何表情符号或拟人化表达";
+
     public SummerizeTokenOverflowStrategy(TokenOverflowConfig config) {
         this.config = config;
     }
@@ -68,10 +85,6 @@ public class SummerizeTokenOverflowStrategy implements TokenOverflowStrategy {
 
         // 生成摘要消息
         String summary = generateSummary(summaryMessages);
-        TokenMessage summaryMessage = createTokenMessage(summary);
-
-        // 将摘要消息插入头部
-        retainedMessages.add(0,  summaryMessage);
 
         // 组装Result
         TokenProcessResult result = new TokenProcessResult();
@@ -105,9 +118,19 @@ public class SummerizeTokenOverflowStrategy implements TokenOverflowStrategy {
     /**
      * 生成摘要消息
      */
-    private String generateSummary(List<TokenMessage> messages) {
-        // TODO 调用LLM生产摘要消息
-        return String.format("这是%d条历史数据消息", messages.size());
+    private String generateSummary(List<TokenMessage> summaryMessages) {
+
+        ChatModel chatModel = LlmProviderService.getChatModel(config.getProviderConfig().getProtocol(), config.getProviderConfig());
+        SystemMessage systemMessage = new SystemMessage(SUMMARY_PROMPT);
+        List<Content> summaryContents = summaryMessages.stream()
+                .map(m -> new TextContent(m.getContent()))
+                .collect(Collectors.toList());
+        UserMessage userMessage = new UserMessage(summaryContents);
+
+        // 总结摘要
+        ChatResponse response = chatModel.chat(List.of(systemMessage, userMessage));
+
+        return response.aiMessage().text();
     }
 
     /**

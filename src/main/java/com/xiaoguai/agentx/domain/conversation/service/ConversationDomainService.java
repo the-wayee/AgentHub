@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.xiaoguai.agentx.application.conversation.assembler.MessageAssembler;
 import com.xiaoguai.agentx.application.conversation.dto.MessageDTO;
+import com.xiaoguai.agentx.domain.conversation.constants.Role;
+import com.xiaoguai.agentx.domain.conversation.model.ContextEntity;
 import com.xiaoguai.agentx.domain.conversation.model.MessageEntity;
 import com.xiaoguai.agentx.domain.conversation.repository.ContextRepository;
 import com.xiaoguai.agentx.domain.conversation.repository.MessageRepository;
@@ -40,7 +42,9 @@ public class ConversationDomainService {
     public List<MessageDTO> getConversationMessages(String sessionId) {
         List<MessageEntity> messageEntities = messageRepository.selectList(Wrappers.<MessageEntity>lambdaQuery()
                 .eq(MessageEntity::getSessionId, sessionId));
-        return messageEntities.stream().map(MessageAssembler::toDTO).toList();
+        return messageEntities.stream()
+                .filter(f -> !f.getRole().equals(Role.SYSTEM))
+                .map(MessageAssembler::toDTO).toList();
     }
 
     /**
@@ -64,6 +68,10 @@ public class ConversationDomainService {
         LambdaQueryWrapper<MessageEntity> wrapper = Wrappers.<MessageEntity>lambdaQuery()
                 .eq(MessageEntity::getSessionId, sessionId);
         messageRepository.checkDelete(wrapper);
+
+        LambdaQueryWrapper<ContextEntity> contextWrapper = Wrappers.<ContextEntity>lambdaQuery()
+                .eq(ContextEntity::getSessionId, sessionId);
+        contextRepository.checkDelete(contextWrapper);
     }
 
     public void deleteConversationMessages(List<String> sessionIds) {

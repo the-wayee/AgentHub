@@ -3,7 +3,6 @@ package com.xiaoguai.agentx.domain.conversation.handler;
 
 import com.xiaoguai.agentx.domain.conversation.service.ContextDomainService;
 import com.xiaoguai.agentx.domain.conversation.service.ConversationDomainService;
-import com.xiaoguai.agentx.infrastrcture.llm.LlmProviderService;
 import com.xiaoguai.agentx.infrastrcture.transport.MessageTransport;
 import org.springframework.stereotype.Component;
 
@@ -17,9 +16,8 @@ import org.springframework.stereotype.Component;
 public class AgentMessageHandler extends ChatMessageHandler {
 
     public AgentMessageHandler(ConversationDomainService conversationDomainService,
-                               LlmProviderService llmProviderService,
                                ContextDomainService contextDomainService) {
-        super(conversationDomainService, llmProviderService, contextDomainService);
+        super(conversationDomainService, contextDomainService);
     }
 
     @Override

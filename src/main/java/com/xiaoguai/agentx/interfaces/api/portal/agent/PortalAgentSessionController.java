@@ -6,6 +6,7 @@ import com.xiaoguai.agentx.application.conversation.dto.StreamChatRequest;
 import com.xiaoguai.agentx.application.conversation.service.ConversationAppService;
 import com.xiaoguai.agentx.application.conversation.dto.MessageDTO;
 import com.xiaoguai.agentx.application.conversation.dto.SessionDTO;
+import com.xiaoguai.agentx.domain.conversation.service.ContextDomainService;
 import com.xiaoguai.agentx.infrastrcture.auth.UserContext;
 import com.xiaoguai.agentx.interfaces.api.common.Result;
 import org.slf4j.Logger;
@@ -30,7 +31,6 @@ public class PortalAgentSessionController {
     private final AgentSessionAppService agentSessionAppService;
     private final ConversationAppService conversationAppService;
     private final ExecutorService contextExecutorService;
-
     public PortalAgentSessionController(AgentSessionAppService agentSessionAppService, ConversationAppService conversationAppService, ExecutorService contextExecutorService) {
         this.agentSessionAppService = agentSessionAppService;
         this.conversationAppService = conversationAppService;

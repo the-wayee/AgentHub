@@ -47,12 +47,10 @@ public class ChatMessageHandler implements MessageHandler {
 
 
     private final ConversationDomainService conversationDomainService;
-    private final LlmProviderService llmProviderService;
     private final ContextDomainService contextDomainService;
 
-    public ChatMessageHandler(ConversationDomainService conversationDomainService, LlmProviderService llmProviderService, ContextDomainService contextDomainService) {
+    public ChatMessageHandler(ConversationDomainService conversationDomainService, ContextDomainService contextDomainService) {
         this.conversationDomainService = conversationDomainService;
-        this.llmProviderService = llmProviderService;
         this.contextDomainService = contextDomainService;
     }
 
@@ -68,7 +66,7 @@ public class ChatMessageHandler implements MessageHandler {
         ChatRequest chatRequest = prepareChatRequest(environment);
 
         // 获取聊天客户端
-        StreamingChatModel chatModel = llmProviderService.getStreamModel(environment.getProviderEntity(), environment.getModelEntity());
+        StreamingChatModel chatModel = LlmProviderService.getStreamModel(environment.getProviderEntity().getProtocol(), environment.getProviderEntity().getConfig());
 
         // 处理聊天请求
         processChat(chatRequest,
@@ -94,7 +92,7 @@ public class ChatMessageHandler implements MessageHandler {
 
         // 2.获取摘要信息（需要有摘要前缀提示）
         if (StringUtils.isNotBlank(environment.getContextEntity().getSummary())) {
-            chatMessages.add(new AiMessage(environment.getContextEntity().getSummary()));
+            chatMessages.add(new AiMessage( SUMMARY_PREFIX + environment.getContextEntity().getSummary()));
         }
 
         // 3.获取历史消息

@@ -38,7 +38,7 @@ public class ProviderAssembler {
         dto.setUpdatedAt(provider.getUpdatedAt());
 
         // 脱敏处理（针对返回前端的场景）
-        dto.maskSensitiveInfo();
+//        dto.maskSensitiveInfo();
 
         return dto;
     }

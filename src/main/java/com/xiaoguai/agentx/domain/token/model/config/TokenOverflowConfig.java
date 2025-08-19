@@ -1,6 +1,7 @@
 package com.xiaoguai.agentx.domain.token.model.config;
 
 
+import com.xiaoguai.agentx.domain.llm.model.config.ProviderConfig;
 import com.xiaoguai.agentx.domain.token.model.enums.TokenOverflowStrategyEnum;
 
 /**
@@ -32,6 +33,11 @@ public class TokenOverflowConfig {
      * 摘要触发阈值（消息数量），适用于摘要策略
      */
     private Integer summaryThreshold;
+
+    /**
+     * 供应商配置，获取protocol
+     */
+    private ProviderConfig providerConfig;
 
     public TokenOverflowConfig() {
     }
@@ -103,4 +109,14 @@ public class TokenOverflowConfig {
     public void setSummaryThreshold(Integer summaryThreshold) {
         this.summaryThreshold = summaryThreshold;
     }
+
+    public ProviderConfig getProviderConfig() {
+        return providerConfig;
+    }
+
+    public void setProviderConfig(ProviderConfig providerConfig) {
+        this.providerConfig = providerConfig;
+    }
+
+
 }
