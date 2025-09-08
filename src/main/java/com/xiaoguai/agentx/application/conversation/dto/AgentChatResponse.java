@@ -1,7 +1,10 @@
 package com.xiaoguai.agentx.application.conversation.dto;
 
 
+import com.xiaoguai.agentx.application.task.dto.TaskDTO;
 import com.xiaoguai.agentx.domain.conversation.constants.MessageType;
+
+import java.util.List;
 
 /**
  * @Author: the-way
@@ -22,6 +25,11 @@ public class AgentChatResponse {
     private boolean done;
 
     /**
+     * 是否思考
+     */
+    private boolean isThinking;
+
+    /**
      * 消息类型
      */
     private MessageType messageType = MessageType.TEXT;
@@ -36,8 +44,86 @@ public class AgentChatResponse {
      */
     private String payLoad;
 
-    private
+    /**
+     * 子任务列表
+     */
+    private List<TaskDTO> tasks;
+
 
     private Long timestamp = System.currentTimeMillis();
 
+
+    public static AgentChatResponse build(String content, boolean isDone, boolean isThinking, MessageType messageType) {
+        AgentChatResponse streamChatResponse = new AgentChatResponse();
+        streamChatResponse.setContent(content);
+        streamChatResponse.setDone(isDone);
+        streamChatResponse.setThinking(isThinking);
+        streamChatResponse.setMessageType(messageType);
+        return streamChatResponse;
+    }
+
+
+    public String getContent() {
+        return content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
+    }
+
+    public boolean isDone() {
+        return done;
+    }
+
+    public void setDone(boolean done) {
+        this.done = done;
+    }
+
+    public boolean isThinking() {
+        return isThinking;
+    }
+
+    public void setThinking(boolean thinking) {
+        isThinking = thinking;
+    }
+
+    public MessageType getMessageType() {
+        return messageType;
+    }
+
+    public void setMessageType(MessageType messageType) {
+        this.messageType = messageType;
+    }
+
+    public String getTaskId() {
+        return taskId;
+    }
+
+    public void setTaskId(String taskId) {
+        this.taskId = taskId;
+    }
+
+    public String getPayLoad() {
+        return payLoad;
+    }
+
+    public void setPayLoad(String payLoad) {
+        this.payLoad = payLoad;
+    }
+
+    public List<TaskDTO> getTasks() {
+        return tasks;
+    }
+
+    public void setTasks(List<TaskDTO> tasks) {
+        this.tasks = tasks;
+    }
+
+    public Long getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(Long timestamp) {
+        this.timestamp = timestamp;
+    }
 }

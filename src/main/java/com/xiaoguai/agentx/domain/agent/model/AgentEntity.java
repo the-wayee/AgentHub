@@ -63,13 +63,13 @@ public class AgentEntity extends BaseEntity {
     /**
      * Agent可使用的工具列表
      */
-    @TableField(value = "tools", typeHandler = ListConverter.class, jdbcType = JdbcType.OTHER)
+    @TableField(value = "tools", exist = false)
     private List<AgentTool> tools;
 
     /**
      * 关联的知识库ID列表
      */
-    @TableField(value = "knowledge_base_ids", typeHandler = ListConverter.class, jdbcType = JdbcType.OTHER)
+    @TableField(value = "knowledge_base_ids", exist = false)
     private List<String> knowledgeBaseIds;
 
     /**

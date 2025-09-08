@@ -85,6 +85,40 @@ public class TaskEntity extends BaseEntity {
     @TableField("task_result")
     private String taskResult;
 
+
+    /**
+     * 更新任务状态
+     *
+     * @param status 新状态
+     */
+    public void updateStatus(TaskStatus status) {
+        this.status = status;
+        if (status == TaskStatus.PROGRESSING && this.startTime == null) {
+            this.startTime = LocalDateTime.now();
+        } else if ((status == TaskStatus.COMPLETED || status == TaskStatus.FAILED) && this.endTime == null) {
+            this.endTime = LocalDateTime.now();
+        }
+
+        if (status == TaskStatus.COMPLETED) {
+            this.progress = 100;
+        }
+    }
+
+    /**
+     * 更新进度
+     *
+     * @param progress 进度值(0-100)
+     */
+    public void updateProgress(Integer progress) {
+        if (progress < 0) {
+            this.progress = 0;
+        } else if (progress > 100) {
+            this.progress = 100;
+        } else {
+            this.progress = progress;
+        }
+    }
+
     public String getId() {
         return id;
     }
@@ -172,4 +206,5 @@ public class TaskEntity extends BaseEntity {
     public void setTaskResult(String taskResult) {
         this.taskResult = taskResult;
     }
+
 }

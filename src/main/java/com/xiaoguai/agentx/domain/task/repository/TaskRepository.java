@@ -1,8 +1,8 @@
 package com.xiaoguai.agentx.domain.task.repository;
 
 
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiaoguai.agentx.domain.task.model.TaskEntity;
+import com.xiaoguai.agentx.infrastrcture.domain.ExtraMapper;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
@@ -12,5 +12,5 @@ import org.apache.ibatis.annotations.Mapper;
  * @Description: TaskRepository
  */
 @Mapper
-public interface TaskRepository extends BaseMapper<TaskEntity> {
+public interface TaskRepository extends ExtraMapper<TaskEntity> {
 }

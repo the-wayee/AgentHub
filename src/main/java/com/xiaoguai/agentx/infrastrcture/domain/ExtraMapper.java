@@ -47,10 +47,17 @@ public interface ExtraMapper<T> extends BaseMapper<T> {
         }
     }
 
-    default void checkDeleteById(T entity) {
-        int delete = deleteById(entity);
-        if (delete == 0) {
-            throw new BusinessException("数据删除失败");
+    default void checkedDelete(Wrapper<T> deleteWrapper) {
+        int affected = delete(deleteWrapper);
+        if (affected == 0) {
+            throw new BusinessException("数据更新失败");
+        }
+    }
+
+    default void checkInsert(T t) {
+        int affected = insert(t);
+        if (affected == 0) {
+            throw new BusinessException("数据更新失败");
         }
     }
 }

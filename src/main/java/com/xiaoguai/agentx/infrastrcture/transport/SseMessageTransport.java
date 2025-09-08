@@ -1,6 +1,7 @@
 package com.xiaoguai.agentx.infrastrcture.transport;
 
 
+import com.xiaoguai.agentx.application.conversation.dto.AgentChatResponse;
 import com.xiaoguai.agentx.application.conversation.dto.StreamChatResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,14 +55,8 @@ public class SseMessageTransport implements MessageTransport<SseEmitter>{
     }
 
     @Override
-    public void sendMessage(SseEmitter connection, String content, boolean isDone, boolean isReasoning, String provider, String model) {
+    public void sendMessage(SseEmitter connection, AgentChatResponse response) {
         try {
-            StreamChatResponse response = new StreamChatResponse();
-            response.setDone(isDone);
-            response.setReasoning(isReasoning);
-            response.setProvider(provider);
-            response.setModel(model);
-            response.setContent(content);
             connection.send(response);
         } catch (IOException e) {
             logger.error("消息发送失败: {}", e.getMessage());
@@ -74,11 +69,12 @@ public class SseMessageTransport implements MessageTransport<SseEmitter>{
     }
 
     @Override
-    public void handlerError(SseEmitter connection, Throwable ex) {
+    public void handleError(SseEmitter connection, Throwable ex) {
         try {
-            StreamChatResponse response = new StreamChatResponse();
+            AgentChatResponse response = new AgentChatResponse();
             response.setContent(ex.getMessage());
             response.setDone(true);
+            response.setThinking(false);
             connection.send(response);
             connection.complete();
         } catch (IOException e) {

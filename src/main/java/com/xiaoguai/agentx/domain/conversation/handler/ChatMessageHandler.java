@@ -2,6 +2,8 @@ package com.xiaoguai.agentx.domain.conversation.handler;
 
 
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
+import com.xiaoguai.agentx.application.conversation.dto.AgentChatResponse;
+import com.xiaoguai.agentx.domain.conversation.constants.MessageType;
 import com.xiaoguai.agentx.domain.conversation.constants.Role;
 import com.xiaoguai.agentx.domain.conversation.factory.MessageFactory;
 import com.xiaoguai.agentx.domain.conversation.model.MessageEntity;
@@ -92,7 +94,7 @@ public class ChatMessageHandler implements MessageHandler {
 
         // 2.获取摘要信息（需要有摘要前缀提示）
         if (StringUtils.isNotBlank(environment.getContextEntity().getSummary())) {
-            chatMessages.add(new AiMessage( SUMMARY_PREFIX + environment.getContextEntity().getSummary()));
+            chatMessages.add(new AiMessage(SUMMARY_PREFIX + environment.getContextEntity().getSummary()));
         }
 
         // 3.获取历史消息
@@ -140,12 +142,8 @@ public class ChatMessageHandler implements MessageHandler {
         chatModel.chat(chatRequest, new StreamingChatResponseHandler() {
             @Override
             public void onPartialResponse(String partialResponse) {
-                transport.sendMessage(connection,
-                        partialResponse,
-                        false,
-                        false,
-                        environment.getProviderEntity().getName(),
-                        environment.getModelEntity().getModelId());
+                AgentChatResponse response = AgentChatResponse.build(partialResponse, false, false, MessageType.TEXT);
+                transport.sendMessage(connection, response);
             }
 
             @Override
@@ -161,14 +159,9 @@ public class ChatMessageHandler implements MessageHandler {
                 assistMessage.setContent(aiMessage);
                 assistMessage.setTokenCount(outputTokenCount);
 
+                AgentChatResponse response = AgentChatResponse.build("", true, false, MessageType.TEXT);
                 // 发送完成消息
-                transport.sendMessage(connection,
-                        "",
-                        true,
-                        false,
-                        environment.getProviderEntity().getName(),
-                        environment.getModelEntity().getModelId()
-                );
+                transport.sendMessage(connection, response);
                 transport.completeConnection(connection);
 
                 // 保存消息
@@ -183,17 +176,13 @@ public class ChatMessageHandler implements MessageHandler {
 
             @Override
             public void onError(Throwable error) {
-                transport.handlerError(connection, error);
+                transport.handleError(connection, error);
             }
 
             @Override
             public void onPartialThinking(PartialThinking partialThinking) {
-                transport.sendMessage(connection,
-                        partialThinking.text(),
-                        false,
-                        true,
-                        environment.getProviderEntity().getName(),
-                        environment.getModelEntity().getModelId());
+                AgentChatResponse response = AgentChatResponse.build(partialThinking.text(), false, true, MessageType.TEXT);
+                transport.sendMessage(connection, response);
             }
         });
     }

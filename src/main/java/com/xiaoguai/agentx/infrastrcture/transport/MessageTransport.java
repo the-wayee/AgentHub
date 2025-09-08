@@ -1,6 +1,8 @@
 package com.xiaoguai.agentx.infrastrcture.transport;
 
 
+import com.xiaoguai.agentx.application.conversation.dto.AgentChatResponse;
+
 /**
  * @Author: the-way
  * @Verson: v1.0
@@ -18,17 +20,9 @@ public interface MessageTransport<T>{
     /**
      * 发送消息
      * @param connection 连接对象
-     * @param content 消息内容
-     * @param isDone 是否完成
-     * @param isReasoning 是否推理
-     * @param provider 服务商
-     * @param model 模型
+     * @param response 响应内容
      */
-    void sendMessage(T connection, String content,
-                     boolean isDone,
-                     boolean isReasoning,
-                     String provider,
-                     String model);
+    void sendMessage(T connection, AgentChatResponse response);
 
     /**
      * 连接完成
@@ -41,5 +35,5 @@ public interface MessageTransport<T>{
      * @param connection 连接对象
      * @param ex 异常
      */
-    void handlerError(T connection, Throwable ex);
+    void handleError(T connection, Throwable ex);
 }
