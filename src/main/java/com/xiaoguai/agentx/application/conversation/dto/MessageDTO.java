@@ -1,5 +1,6 @@
 package com.xiaoguai.agentx.application.conversation.dto;
 
+import com.xiaoguai.agentx.domain.conversation.constants.MessageType;
 import com.xiaoguai.agentx.domain.conversation.constants.Role;
 
 import java.time.LocalDateTime;
@@ -11,6 +12,7 @@ public class MessageDTO {
     private String id;
     private Role role;
     private String content;
+    private MessageType messageType;
     private LocalDateTime createdAt;
     private String provider;
     private String model;
@@ -68,5 +70,13 @@ public class MessageDTO {
 
     public void setModel(String model) {
         this.model = model;
+    }
+
+    public MessageType getMessageType() {
+        return messageType;
+    }
+
+    public void setMessageType(MessageType messageType) {
+        this.messageType = messageType;
     }
 }

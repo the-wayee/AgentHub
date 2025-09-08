@@ -1,0 +1,175 @@
+package com.xiaoguai.agentx.domain.task.model;
+
+
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
+import com.xiaoguai.agentx.domain.task.constants.TaskStatus;
+import com.xiaoguai.agentx.infrastrcture.converter.TaskStatusConverter;
+import com.xiaoguai.agentx.infrastrcture.entity.BaseEntity;
+
+import java.time.LocalDateTime;
+
+/**
+ * @Author: the-way
+ * @Verson: v1.0
+ * @Date: 2025-09-08 11:33
+ * @Description: 任务实体类
+ */
+@TableName("agent_tasks")
+public class TaskEntity extends BaseEntity {
+    /**
+     * 任务ID
+     */
+    @TableId(value = "id", type = IdType.ASSIGN_UUID)
+    private String id;
+
+    /**
+     * 所属会话ID
+     */
+    @TableField("session_id")
+    private String sessionId;
+
+    /**
+     * 用户ID
+     */
+    @TableField("user_id")
+    private String userId;
+
+    /**
+     * 父任务ID
+     */
+    @TableField("parent_task_id")
+    private String parentTaskId;
+
+    /**
+     * 任务名称
+     */
+    @TableField("task_name")
+    private String taskName;
+
+    /**
+     * 任务描述
+     */
+    @TableField("description")
+    private String description;
+
+    /**
+     * 任务状态，只有子任务有
+     */
+    @TableField(value = "status", typeHandler = TaskStatusConverter.class)
+    private TaskStatus status;
+
+    /**
+     * 任务进度,存放父任务中
+     */
+    @TableField("progress")
+    private Integer progress = 0;
+
+    /**
+     * 开始时间
+     */
+    @TableField("start_time")
+    private LocalDateTime startTime;
+
+    /**
+     * 结束时间
+     */
+    @TableField("end_time")
+    private LocalDateTime endTime;
+
+    /**
+     * 任务结果
+     */
+    @TableField("task_result")
+    private String taskResult;
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getSessionId() {
+        return sessionId;
+    }
+
+    public void setSessionId(String sessionId) {
+        this.sessionId = sessionId;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
+    public String getParentTaskId() {
+        return parentTaskId;
+    }
+
+    public void setParentTaskId(String parentTaskId) {
+        this.parentTaskId = parentTaskId;
+    }
+
+    public String getTaskName() {
+        return taskName;
+    }
+
+    public void setTaskName(String taskName) {
+        this.taskName = taskName;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public TaskStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(TaskStatus status) {
+        this.status = status;
+    }
+
+    public Integer getProgress() {
+        return progress;
+    }
+
+    public void setProgress(Integer progress) {
+        this.progress = progress;
+    }
+
+    public LocalDateTime getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(LocalDateTime startTime) {
+        this.startTime = startTime;
+    }
+
+    public LocalDateTime getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(LocalDateTime endTime) {
+        this.endTime = endTime;
+    }
+
+    public String getTaskResult() {
+        return taskResult;
+    }
+
+    public void setTaskResult(String taskResult) {
+        this.taskResult = taskResult;
+    }
+}

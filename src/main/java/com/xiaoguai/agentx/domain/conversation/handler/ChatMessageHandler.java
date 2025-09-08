@@ -38,7 +38,7 @@ public class ChatMessageHandler implements MessageHandler {
     /**
      * 默认连接超时时间：5min
      */
-    private static final long CONNECTION_TIMEOUT = 300000L;
+    protected static final long CONNECTION_TIMEOUT = 300000L;
 
     /**
      * 摘要前缀信息
@@ -46,8 +46,8 @@ public class ChatMessageHandler implements MessageHandler {
     private static final String SUMMARY_PREFIX = "以下是用户历史消息的摘要，请仅作为参考，用户没有提起则不要回答摘要中的内容：\\n";
 
 
-    private final ConversationDomainService conversationDomainService;
-    private final ContextDomainService contextDomainService;
+    protected final ConversationDomainService conversationDomainService;
+    protected final ContextDomainService contextDomainService;
 
     public ChatMessageHandler(ConversationDomainService conversationDomainService, ContextDomainService contextDomainService) {
         this.conversationDomainService = conversationDomainService;

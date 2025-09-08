@@ -1,372 +1,285 @@
-create table sessions
-(
-    id          varchar(36) not null
-        primary key,
-    title       varchar(255),
-    user_id     varchar(36),
-    agent_id    varchar(36),
-    description text,
-    is_archived boolean default false,
-    metadata    text,
-    created_at  timestamp   not null,
-    updated_at  timestamp   not null,
-    deleted_at  timestamp
+-- AgentX初始化数据库脚本 - PostgreSQL版本
+
+-- 会话表，存储用户与Agent的对话会话
+CREATE TABLE sessions (
+                          id VARCHAR(36) PRIMARY KEY,
+                          title VARCHAR(255) NOT NULL,
+                          user_id VARCHAR(36) NOT NULL,
+                          agent_id VARCHAR(36),
+                          description TEXT,
+                          is_archived BOOLEAN DEFAULT FALSE,
+                          metadata TEXT,
+                          created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                          updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                          deleted_at TIMESTAMP
 );
 
-comment on table sessions is '会话表，存储用户与Agent的对话会话';
-
-comment on column sessions.id is '会话唯一ID';
-
-comment on column sessions.title is '会话标题';
-
-comment on column sessions.user_id is '所属用户ID';
-
-comment on column sessions.agent_id is '关联的Agent版本ID';
-
-comment on column sessions.description is '会话描述';
-
-comment on column sessions.is_archived is '会话是否被归档';
-
-comment on column sessions.metadata is '会话元数据，可存储其他自定义信息';
-
-comment on column sessions.created_at is '创建时间';
-
-comment on column sessions.updated_at is '更新时间';
-
-comment on column sessions.deleted_at is '删除时间（逻辑删除）';
-
-alter table sessions
-    owner to postgres;
-
-create index idx_sessions_user_id
-    on sessions (user_id);
-
-create index idx_sessions_created_at
-    on sessions (created_at);
-
-create index idx_sessions_updated_at
-    on sessions (updated_at);
-
-create index idx_sessions_agent_id
-    on sessions (agent_id);
-
-create table messages
-(
-    id          varchar(36) not null
-        primary key,
-    session_id  varchar(36) not null,
-    role        varchar(20) not null,
-    content     text        not null,
-    token_count integer default 0,
-    provider    varchar(100),
-    model       varchar(100),
-    metadata    text,
-    created_at  timestamp   not null,
-    updated_at  timestamp   not null,
-    deleted_at  timestamp
+-- 消息表，存储会话中的所有消息
+CREATE TABLE messages (
+                          id VARCHAR(36) PRIMARY KEY,
+                          session_id VARCHAR(36) NOT NULL,
+                          role VARCHAR(20) NOT NULL,
+                          content TEXT NOT NULL,
+                          message_type VARCHAR(20) NOT NULL DEFAULT 'TEXT',
+                          token_count INTEGER DEFAULT 0,
+                          provider VARCHAR(50),
+                          model VARCHAR(50),
+                          metadata TEXT,
+                          created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                          updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                          deleted_at TIMESTAMP
 );
 
-comment on table messages is '对话消息表';
-
-comment on column messages.id is '消息唯一ID';
-
-comment on column messages.session_id is '所属会话ID';
-
-comment on column messages.role is '消息角色(user/assistant/system)';
-
-comment on column messages.content is '消息内容';
-
-comment on column messages.token_count is 'Token数量';
-
-comment on column messages.provider is '服务提供商';
-
-comment on column messages.model is '使用的模型';
-
-comment on column messages.metadata is '消息元数据';
-
-comment on column messages.created_at is '创建时间';
-
-comment on column messages.updated_at is '更新时间';
-
-comment on column messages.deleted_at is '删除时间（逻辑删除）';
-
-alter table messages
-    owner to postgres;
-
-create index idx_messages_session_id
-    on messages (session_id);
-
-create index idx_messages_created_at
-    on messages (created_at);
-
-create table context
-(
-    id              varchar(36) not null
-        primary key,
-    session_id      varchar(36) not null,
-    active_messages text,
-    summary         text,
-    created_at      timestamp   not null,
-    updated_at      timestamp   not null,
-    deleted_at      timestamp
+-- 上下文表，管理对话上下文
+CREATE TABLE context (
+                         id VARCHAR(36) PRIMARY KEY,
+                         session_id VARCHAR(36) NOT NULL,
+                         active_messages TEXT,
+                         summary TEXT,
+                         created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                         updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                         deleted_at TIMESTAMP
 );
 
-comment on table context is '会话上下文表';
-
-comment on column context.id is '上下文唯一ID';
-
-comment on column context.session_id is '所属会话ID';
-
-comment on column context.active_messages is '活跃消息ID列表';
-
-comment on column context.summary is '历史消息摘要';
-
-comment on column context.created_at is '创建时间';
-
-comment on column context.updated_at is '更新时间';
-
-comment on column context.deleted_at is '删除时间（逻辑删除）';
-
-alter table context
-    owner to postgres;
-
-create index idx_context_session_id
-    on context (session_id);
-
-create table models
-(
-    id          varchar(36) not null
-        primary key,
-    user_id     varchar(36),
-    provider_id varchar(36),
-    model_id    varchar(100),
-    name        varchar(255),
-    description text,
-    official    boolean default false,
-    type        varchar(50),
-    status      boolean default true,
-    created_at  timestamp   not null,
-    updated_at  timestamp   not null,
-    deleted_at  timestamp
+-- Agent 相关表结构
+CREATE TABLE agents (
+                        id VARCHAR(36) PRIMARY KEY,
+                        name VARCHAR(255) NOT NULL,
+                        avatar VARCHAR(255),
+                        description TEXT,
+                        system_prompt TEXT,
+                        welcome_message TEXT,
+                        published_version VARCHAR(36),
+                        enabled BOOLEAN DEFAULT TRUE,
+                        agent_type INTEGER DEFAULT 1,
+                        user_id VARCHAR(36) NOT NULL,
+                        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                        updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                        deleted_at TIMESTAMP
 );
 
-comment on table models is 'LLM模型表';
-
-comment on column models.id is '模型唯一ID';
-
-comment on column models.user_id is '所属用户ID';
-
-comment on column models.provider_id is '服务提供商ID';
-
-comment on column models.model_id is '模型标识符';
-
-comment on column models.name is '模型名称';
-
-comment on column models.description is '模型描述';
-
-comment on column models.official is '是否官方模型';
-
-comment on column models.type is '模型类型';
-
-comment on column models.status is '模型状态(是否激活)';
-
-comment on column models.created_at is '创建时间';
-
-comment on column models.updated_at is '更新时间';
-
-comment on column models.deleted_at is '删除时间（逻辑删除）';
-
-alter table models
-    owner to postgres;
-
-create index idx_models_provider_id
-    on models (provider_id);
-
-create index idx_models_user_id
-    on models (user_id);
-
-create index idx_models_status
-    on models (status);
-
-create table providers
-(
-    id          varchar(36)  not null
-        primary key,
-    user_id     varchar(36),
-    protocol    varchar(50),
-    name        varchar(255) not null,
-    description text,
-    config      text,
-    official    boolean default false,
-    status      boolean default true,
-    created_at  timestamp    not null,
-    updated_at  timestamp    not null,
-    deleted_at  timestamp
+-- Agent版本表
+CREATE TABLE agent_versions (
+                                id VARCHAR(36) PRIMARY KEY,
+                                agent_id VARCHAR(36) NOT NULL,
+                                name VARCHAR(255) NOT NULL,
+                                avatar VARCHAR(255),
+                                description TEXT,
+                                version_number VARCHAR(20) NOT NULL,
+                                system_prompt TEXT,
+                                welcome_message TEXT,
+                                tools TEXT,
+                                knowledge_base_ids TEXT,
+                                change_log TEXT,
+                                agent_type INTEGER DEFAULT 1,
+                                publish_status INTEGER DEFAULT 1,
+                                reject_reason TEXT,
+                                review_time TIMESTAMP,
+                                published_at TIMESTAMP,
+                                user_id VARCHAR(36) NOT NULL,
+                                created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                                updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                                deleted_at TIMESTAMP
 );
 
-comment on table providers is 'LLM服务提供商表';
-
-comment on column providers.id is '提供商唯一ID';
-
-comment on column providers.user_id is '所属用户ID';
-
-comment on column providers.protocol is '协议类型';
-
-comment on column providers.name is '提供商名称';
-
-comment on column providers.description is '提供商描述';
-
-comment on column providers.config is '提供商配置JSON';
-
-comment on column providers.official is '是否官方提供商';
-
-comment on column providers.status is '状态(是否激活)';
-
-comment on column providers.created_at is '创建时间';
-
-comment on column providers.updated_at is '更新时间';
-
-comment on column providers.deleted_at is '删除时间（逻辑删除）';
-
-alter table providers
-    owner to postgres;
-
-create index idx_providers_user_id
-    on providers (user_id);
-
-create index idx_providers_status
-    on providers (status);
-
-create index idx_providers_name
-    on providers (name);
-
-create table agents
-(
-    id                 varchar(36)  not null
-        primary key,
-    name               varchar(100) not null,
-    avatar             varchar(255),
-    description        text,
-    system_prompt      text,
-    welcome_message    text,
-    model_config       jsonb,
-    tools              jsonb,
-    knowledge_base_ids jsonb,
-    published_version  varchar(36),
-    enabled            boolean     default true,
-    agent_type         varchar(32) default 1,
-    user_id            varchar(36)  not null,
-    created_at         timestamp    not null,
-    updated_at         timestamp    not null,
-    deleted_at         timestamp
+-- Agent工作区表
+CREATE TABLE agent_workspace (
+                                 id VARCHAR(36) PRIMARY KEY,
+                                 agent_id VARCHAR(36) NOT NULL,
+                                 user_id VARCHAR(36) NOT NULL,
+                                 llm_model_config JSONB,
+                                 created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                                 updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                                 deleted_at TIMESTAMP
 );
 
-comment on table agents is 'Agent表，存储AI助手的基本信息和配置';
-
-comment on column agents.model_config is '模型配置，JSON格式，包含模型类型、温度等参数';
-
-comment on column agents.tools is 'Agent可使用的工具列表，JSON格式';
-
-comment on column agents.knowledge_base_ids is '关联的知识库ID列表，JSON格式';
-
-comment on column agents.published_version is '当前发布的版本ID';
-
-comment on column agents.enabled is 'Agent状态：false-禁用，true-启用';
-
-comment on column agents.agent_type is 'Agent类型：1-聊天助手, 2-功能性Agent';
-
-comment on column agents.deleted_at is '软删除标记，非空表示已删除';
-
-alter table agents
-    owner to postgres;
-
-create index idx_agents_user_id
-    on agents (user_id);
-
-create index idx_agents_enabled
-    on agents (enabled);
-
-create index idx_agents_name
-    on agents (name);
-
-create index idx_agents_agent_type
-    on agents (agent_type);
-
-create table agent_versions
-(
-    id                 varchar(36)  not null
-        primary key,
-    agent_id           varchar(36)  not null,
-    name               varchar(100) not null,
-    avatar             varchar(255),
-    description        text,
-    version_number     varchar(20)  not null,
-    system_prompt      text,
-    welcome_message    text,
-    model_config       jsonb,
-    tools              jsonb,
-    knowledge_base_ids jsonb,
-    change_log         text,
-    agent_type         smallint default 1,
-    publish_status     smallint default 1,
-    reject_reason      text,
-    review_time        timestamp,
-    published_at       timestamp,
-    user_id            varchar(36)  not null,
-    created_at         timestamp    not null,
-    updated_at         timestamp    not null,
-    deleted_at         timestamp
+-- 服务提供商表
+CREATE TABLE providers (
+                           id VARCHAR(36) PRIMARY KEY,
+                           user_id VARCHAR(36),
+                           protocol VARCHAR(50) NOT NULL,
+                           name VARCHAR(100) NOT NULL,
+                           description TEXT,
+                           config TEXT,
+                           is_official BOOLEAN DEFAULT FALSE,
+                           status BOOLEAN DEFAULT TRUE,
+                           created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                           updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                           deleted_at TIMESTAMP
 );
 
-comment on table agent_versions is 'Agent版本表，记录Agent的各个版本';
-
-comment on column agent_versions.version_number is '版本号，如1.0.0';
-
-comment on column agent_versions.change_log is '版本更新日志';
-
-comment on column agent_versions.publish_status is '发布状态：1-审核中, 2-已发布, 3-拒绝, 4-已下架';
-
-comment on column agent_versions.reject_reason is '审核拒绝原因';
-
-comment on column agent_versions.published_at is '发布时间';
-
-comment on column agent_versions.deleted_at is '软删除标记';
-
-alter table agent_versions
-    owner to postgres;
-
-create index idx_agent_versions_agent_id
-    on agent_versions (agent_id);
-
-create index idx_agent_versions_published_at
-    on agent_versions (published_at);
-
-create index idx_agent_versions_publish_status
-    on agent_versions (publish_status);
-
-create table agent_workspace
-(
-    id               varchar(36) not null
-        primary key,
-    agent_id         varchar(36) not null,
-    user_id          varchar(36) not null,
-    llm_model_config jsonb,
-    created_at       timestamp   not null,
-    updated_at       timestamp   not null,
-    deleted_at       timestamp,
-    unique (agent_id, user_id)
+-- 模型表
+CREATE TABLE models (
+                        id VARCHAR(36) PRIMARY KEY,
+                        user_id VARCHAR(36),
+                        provider_id VARCHAR(36) NOT NULL,
+                        model_id VARCHAR(100) NOT NULL,
+                        name VARCHAR(100) NOT NULL,
+                        description TEXT,
+                        is_official BOOLEAN DEFAULT FALSE,
+                        type VARCHAR(20) NOT NULL,
+                        status BOOLEAN DEFAULT TRUE,
+                        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                        updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                        deleted_at TIMESTAMP
 );
 
-comment on table agent_workspace is 'Agent工作区表，记录用户添加到工作区的Agent';
+-- 任务表
+CREATE TABLE agent_tasks (
+                             id VARCHAR(36) PRIMARY KEY,
+                             session_id VARCHAR(36) NOT NULL,
+                             user_id VARCHAR(36) NOT NULL,
+                             parent_task_id VARCHAR(36),
+                             task_name VARCHAR(255) NOT NULL,
+                             description TEXT,
+                             status VARCHAR(20),
+                             progress INTEGER DEFAULT 0,
+                             start_time TIMESTAMP,
+                             end_time TIMESTAMP,
+                             task_result TEXT,
+                             created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                             updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                             deleted_at TIMESTAMP
+);
 
-comment on column agent_workspace.llm_model_config is 'LLM模型配置';
+-- 创建索引
+CREATE INDEX idx_sessions_user_id ON sessions(user_id);
+CREATE INDEX idx_sessions_agent_id ON sessions(agent_id);
+CREATE INDEX idx_context_session_id ON context(session_id);
+CREATE INDEX idx_messages_session_id ON messages(session_id);
+CREATE INDEX idx_agent_tasks_session_id ON agent_tasks(session_id);
+CREATE INDEX idx_agent_tasks_user_id ON agent_tasks(user_id);
+CREATE INDEX idx_agent_tasks_parent_task_id ON agent_tasks(parent_task_id);
+CREATE INDEX idx_agents_user_id ON agents(user_id);
+CREATE INDEX idx_agent_workspace_agent_id ON agent_workspace(agent_id);
+CREATE INDEX idx_agent_workspace_user_id ON agent_workspace(user_id);
+CREATE INDEX idx_agent_versions_agent_id ON agent_versions(agent_id);
+CREATE INDEX idx_agent_versions_user_id ON agent_versions(user_id);
+CREATE INDEX idx_models_provider_id ON models(provider_id);
+CREATE INDEX idx_models_user_id ON models(user_id);
+CREATE INDEX idx_providers_user_id ON providers(user_id);
 
-alter table agent_workspace
-    owner to postgres;
+-- 添加表和列的注释
+COMMENT ON TABLE sessions IS '会话实体类，代表一个独立的对话会话/主题';
+COMMENT ON COLUMN sessions.id IS '会话唯一ID';
+COMMENT ON COLUMN sessions.title IS '会话标题';
+COMMENT ON COLUMN sessions.user_id IS '所属用户ID';
+COMMENT ON COLUMN sessions.agent_id IS '关联的Agent版本ID';
+COMMENT ON COLUMN sessions.description IS '会话描述';
+COMMENT ON COLUMN sessions.is_archived IS '是否归档';
+COMMENT ON COLUMN sessions.metadata IS '会话元数据，可存储其他自定义信息';
+COMMENT ON COLUMN sessions.created_at IS '创建时间';
+COMMENT ON COLUMN sessions.updated_at IS '更新时间';
+COMMENT ON COLUMN sessions.deleted_at IS '逻辑删除时间';
 
-create index idx_agent_workspace_user_id
-    on agent_workspace (user_id);
+COMMENT ON TABLE messages IS '消息实体类，代表对话中的一条消息';
+COMMENT ON COLUMN messages.id IS '消息唯一ID';
+COMMENT ON COLUMN messages.session_id IS '所属会话ID';
+COMMENT ON COLUMN messages.role IS '消息角色 (user, assistant, system)';
+COMMENT ON COLUMN messages.content IS '消息内容';
+COMMENT ON COLUMN messages.message_type IS '消息类型';
+COMMENT ON COLUMN messages.token_count IS 'Token数量';
+COMMENT ON COLUMN messages.provider IS '服务提供商';
+COMMENT ON COLUMN messages.model IS '使用的模型';
+COMMENT ON COLUMN messages.metadata IS '消息元数据';
+COMMENT ON COLUMN messages.created_at IS '创建时间';
+COMMENT ON COLUMN messages.updated_at IS '更新时间';
+COMMENT ON COLUMN messages.deleted_at IS '逻辑删除时间';
 
-create index idx_agent_workspace_agent_id
-    on agent_workspace (agent_id);
+COMMENT ON TABLE context IS '上下文实体类，管理会话的上下文窗口';
+COMMENT ON COLUMN context.id IS '上下文唯一ID';
+COMMENT ON COLUMN context.session_id IS '所属会话ID';
+COMMENT ON COLUMN context.active_messages IS '活跃消息ID列表，JSON数组格式';
+COMMENT ON COLUMN context.summary IS '历史消息摘要';
+COMMENT ON COLUMN context.created_at IS '创建时间';
+COMMENT ON COLUMN context.updated_at IS '更新时间';
+COMMENT ON COLUMN context.deleted_at IS '逻辑删除时间';
 
+COMMENT ON TABLE agents IS 'Agent实体类，代表一个AI助手';
+COMMENT ON COLUMN agents.id IS 'Agent唯一ID';
+COMMENT ON COLUMN agents.name IS 'Agent名称';
+COMMENT ON COLUMN agents.avatar IS 'Agent头像URL';
+COMMENT ON COLUMN agents.description IS 'Agent描述';
+COMMENT ON COLUMN agents.system_prompt IS 'Agent系统提示词';
+COMMENT ON COLUMN agents.welcome_message IS '欢迎消息';
+COMMENT ON COLUMN agents.published_version IS '当前发布的版本ID';
+COMMENT ON COLUMN agents.enabled IS 'Agent状态：TRUE-启用，FALSE-禁用';
+COMMENT ON COLUMN agents.agent_type IS 'Agent类型：1-聊天助手, 2-功能性Agent';
+COMMENT ON COLUMN agents.user_id IS '创建者用户ID';
+COMMENT ON COLUMN agents.created_at IS '创建时间';
+COMMENT ON COLUMN agents.updated_at IS '更新时间';
+COMMENT ON COLUMN agents.deleted_at IS '逻辑删除时间';
+
+COMMENT ON TABLE agent_versions IS 'Agent版本实体类，代表一个Agent的发布版本';
+COMMENT ON COLUMN agent_versions.id IS '版本唯一ID';
+COMMENT ON COLUMN agent_versions.agent_id IS '关联的Agent ID';
+COMMENT ON COLUMN agent_versions.name IS 'Agent名称';
+COMMENT ON COLUMN agent_versions.avatar IS 'Agent头像URL';
+COMMENT ON COLUMN agent_versions.description IS 'Agent描述';
+COMMENT ON COLUMN agent_versions.version_number IS '版本号，如1.0.0';
+COMMENT ON COLUMN agent_versions.system_prompt IS 'Agent系统提示词';
+COMMENT ON COLUMN agent_versions.welcome_message IS '欢迎消息';
+COMMENT ON COLUMN agent_versions.tools IS 'Agent可使用的工具列表，JSON数组格式';
+COMMENT ON COLUMN agent_versions.knowledge_base_ids IS '关联的知识库ID列表，JSON数组格式';
+COMMENT ON COLUMN agent_versions.change_log IS '版本更新日志';
+COMMENT ON COLUMN agent_versions.agent_type IS 'Agent类型：1-聊天助手, 2-功能性Agent';
+COMMENT ON COLUMN agent_versions.publish_status IS '发布状态：1-审核中, 2-已发布, 3-拒绝, 4-已下架';
+COMMENT ON COLUMN agent_versions.reject_reason IS '审核拒绝原因';
+COMMENT ON COLUMN agent_versions.review_time IS '审核时间';
+COMMENT ON COLUMN agent_versions.published_at IS '发布时间';
+COMMENT ON COLUMN agent_versions.user_id IS '创建者用户ID';
+COMMENT ON COLUMN agent_versions.created_at IS '创建时间';
+COMMENT ON COLUMN agent_versions.updated_at IS '更新时间';
+COMMENT ON COLUMN agent_versions.deleted_at IS '逻辑删除时间';
+
+COMMENT ON TABLE agent_workspace IS 'Agent工作区实体类，用于记录用户添加到工作区的Agent';
+COMMENT ON COLUMN agent_workspace.id IS '主键ID';
+COMMENT ON COLUMN agent_workspace.agent_id IS 'Agent ID';
+COMMENT ON COLUMN agent_workspace.user_id IS '用户ID';
+COMMENT ON COLUMN agent_workspace.llm_model_config IS '模型配置，JSON格式';
+COMMENT ON COLUMN agent_workspace.created_at IS '创建时间';
+COMMENT ON COLUMN agent_workspace.updated_at IS '更新时间';
+COMMENT ON COLUMN agent_workspace.deleted_at IS '逻辑删除时间';
+
+COMMENT ON TABLE providers IS '服务提供商领域模型';
+COMMENT ON COLUMN providers.id IS '服务提供商ID';
+COMMENT ON COLUMN providers.user_id IS '用户ID';
+COMMENT ON COLUMN providers.protocol IS '协议类型';
+COMMENT ON COLUMN providers.name IS '服务提供商名称';
+COMMENT ON COLUMN providers.description IS '服务提供商描述';
+COMMENT ON COLUMN providers.config IS '服务提供商配置，JSON格式';
+COMMENT ON COLUMN providers.is_official IS '是否官方服务提供商';
+COMMENT ON COLUMN providers.status IS '服务提供商状态';
+COMMENT ON COLUMN providers.created_at IS '创建时间';
+COMMENT ON COLUMN providers.updated_at IS '更新时间';
+COMMENT ON COLUMN providers.deleted_at IS '逻辑删除时间';
+
+COMMENT ON TABLE models IS '模型领域模型';
+COMMENT ON COLUMN models.id IS '模型ID';
+COMMENT ON COLUMN models.user_id IS '用户ID';
+COMMENT ON COLUMN models.provider_id IS '服务提供商ID';
+COMMENT ON COLUMN models.model_id IS '模型ID标识';
+COMMENT ON COLUMN models.name IS '模型名称';
+COMMENT ON COLUMN models.description IS '模型描述';
+COMMENT ON COLUMN models.is_official IS '是否官方模型';
+COMMENT ON COLUMN models.type IS '模型类型';
+COMMENT ON COLUMN models.status IS '模型状态';
+COMMENT ON COLUMN models.created_at IS '创建时间';
+COMMENT ON COLUMN models.updated_at IS '更新时间';
+COMMENT ON COLUMN models.deleted_at IS '逻辑删除时间';
+
+COMMENT ON TABLE agent_tasks IS '任务实体类';
+COMMENT ON COLUMN agent_tasks.id IS '任务ID';
+COMMENT ON COLUMN agent_tasks.session_id IS '所属会话ID';
+COMMENT ON COLUMN agent_tasks.user_id IS '用户ID';
+COMMENT ON COLUMN agent_tasks.parent_task_id IS '父任务ID';
+COMMENT ON COLUMN agent_tasks.task_name IS '任务名称';
+COMMENT ON COLUMN agent_tasks.description IS '任务描述';
+COMMENT ON COLUMN agent_tasks.status IS '任务状态';
+COMMENT ON COLUMN agent_tasks.progress IS '任务进度,存放父任务中';
+COMMENT ON COLUMN agent_tasks.start_time IS '开始时间';
+COMMENT ON COLUMN agent_tasks.end_time IS '结束时间';
+COMMENT ON COLUMN agent_tasks.task_result IS '任务结果';
+COMMENT ON COLUMN agent_tasks.created_at IS '创建时间';
+COMMENT ON COLUMN agent_tasks.updated_at IS '更新时间';
+COMMENT ON COLUMN agent_tasks.deleted_at IS '逻辑删除时间';

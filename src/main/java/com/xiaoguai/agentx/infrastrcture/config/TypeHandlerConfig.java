@@ -2,10 +2,12 @@ package com.xiaoguai.agentx.infrastrcture.config;
 
 
 import com.xiaoguai.agentx.domain.agent.constant.AgentType;
+import com.xiaoguai.agentx.domain.conversation.constants.MessageType;
 import com.xiaoguai.agentx.domain.conversation.constants.Role;
 import com.xiaoguai.agentx.domain.llm.model.config.LlmModelConfig;
 import com.xiaoguai.agentx.domain.llm.model.config.ProviderConfig;
 import com.xiaoguai.agentx.domain.llm.model.enums.ModelType;
+import com.xiaoguai.agentx.domain.task.constants.TaskStatus;
 import com.xiaoguai.agentx.infrastrcture.converter.*;
 import com.xiaoguai.agentx.infrastrcture.llm.protocol.enums.ProviderProtocol;
 import jakarta.annotation.PostConstruct;
@@ -47,6 +49,8 @@ public class TypeHandlerConfig {
         typeHandlerRegistry.register(ModelType.class, new ModelTypeConverter());
         typeHandlerRegistry.register(ProviderProtocol.class, new ProviderProtocolConverter());
         typeHandlerRegistry.register(Role.class, new RoleConverter());
+        typeHandlerRegistry.register(MessageType.class, new MessageTypeConverter());
+        typeHandlerRegistry.register(TaskStatus.class, new TaskStatusConverter());
 
         logger.info("手动注册类型处理器：ProviderConfigConverter");
 

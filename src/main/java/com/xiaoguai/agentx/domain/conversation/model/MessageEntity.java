@@ -4,7 +4,10 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.xiaoguai.agentx.domain.conversation.constants.MessageType;
 import com.xiaoguai.agentx.domain.conversation.constants.Role;
+import com.xiaoguai.agentx.infrastrcture.converter.MessageTypeConverter;
+import com.xiaoguai.agentx.infrastrcture.converter.RoleConverter;
 import com.xiaoguai.agentx.infrastrcture.entity.BaseEntity;
 
 /**
@@ -28,7 +31,7 @@ public class MessageEntity extends BaseEntity {
     /**
      * 消息角色 (user, assistant, system)
      */
-    @TableField("role")
+    @TableField(value = "role", typeHandler = RoleConverter.class)
     private Role role;
 
     /**
@@ -37,6 +40,11 @@ public class MessageEntity extends BaseEntity {
     @TableField("content")
     private String content;
 
+    /**
+     * 消息类型
+     */
+    @TableField(value = "message_type", typeHandler = MessageTypeConverter.class)
+    private MessageType messageType = MessageType.TEXT;
     /**
      * Token数量
      */
@@ -132,4 +140,11 @@ public class MessageEntity extends BaseEntity {
         this.metadata = metadata;
     }
 
+    public MessageType getMessageType() {
+        return messageType;
+    }
+
+    public void setMessageType(MessageType messageType) {
+        this.messageType = messageType;
+    }
 }
