@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
+import { api } from "@/lib/api"
 import { Server, Settings, Plus, Search, Edit, Trash2, CheckCircle, XCircle, AlertCircle } from "lucide-react"
 import { ProvidersPageSkeleton } from "@/components/ui/page-skeleton"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
@@ -80,8 +81,7 @@ export default function ProvidersPage() {
   // 加载筛选条件
   async function loadFilterTypes() {
     try {
-      const res = await fetch('/api/llm/providers/types', { cache: 'no-store' })
-      const result = await res.json()
+      const result = await api.getProviderTypes()
       if (result.code === 200 && Array.isArray(result.data)) {
         setFilterTypes(result.data)
       }
@@ -188,15 +188,9 @@ export default function ProvidersPage() {
         status: editForm.status
       }
 
-      const res = await fetch('/api/llm/providers', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      })
+      const result = await api.createProvider(payload)
 
-      const result = await res.json().catch(() => null)
-
-      if (res.ok && result?.code === 200) {
+      if (result?.code === 200) {
         // 更新本地状态
         setProviders(prev => prev.map(provider => 
           provider.id === editingProvider.id 

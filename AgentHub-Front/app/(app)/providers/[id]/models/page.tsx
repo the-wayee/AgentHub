@@ -14,6 +14,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ArrowLeft, ExternalLink, Trash2, Plus } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { api } from "@/lib/api"
 
 type Model = {
   id: string
@@ -66,8 +67,7 @@ export default function ProviderModelsPage() {
     setLoading(true)
     try {
       // 通过Next.js API代理获取服务商信息
-      const res = await fetch('/api/llm/providers', { cache: 'no-store' })
-      const result = await res.json()
+      const result = await api.getProviders()
       
       if (result.code === 200 && Array.isArray(result.data)) {
         const currentProvider = result.data.find((p: any) => p.id === providerId)

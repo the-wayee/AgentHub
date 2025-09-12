@@ -116,6 +116,15 @@ export const api = {
     return apiFetch(`/api/llm/providers`);
   },
   
+  // 创建LLM provider
+  createProvider: (provider: any) => {
+    return apiFetch(`/api/llm/providers`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(provider),
+    });
+  },
+  
   // 获取用户providers
   getUserProviders: () => {
     return apiFetch(`/api/llm/providers/user`);
@@ -126,9 +135,19 @@ export const api = {
     return apiFetch(`/api/llm/providers/protocols`);
   },
   
+  // 获取provider types
+  getProviderTypes: () => {
+    return apiFetch(`/api/llm/providers/types`);
+  },
+  
   // 获取模型列表
   getModels: () => {
     return apiFetch(`/api/llm/models`);
+  },
+  
+  // 获取活跃模型列表
+  getActiveModels: () => {
+    return apiFetch(`/api/llm/models/active`);
   },
   
   // 根据provider获取模型
@@ -139,6 +158,31 @@ export const api = {
   // 获取admin providers
   getAdminProviders: () => {
     return apiFetch(`/api/admin/llm/providers`);
+  },
+  
+  // 创建admin provider
+  createAdminProvider: (provider: any) => {
+    return apiFetch(`/api/admin/llm/providers`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(provider),
+    });
+  },
+  
+  // 更新admin provider
+  updateAdminProvider: (providerId: string, provider: any) => {
+    return apiFetch(`/api/admin/llm/providers`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: providerId, ...provider }),
+    });
+  },
+  
+  // 删除admin provider
+  deleteAdminProvider: (providerId: string) => {
+    return apiFetch(`/api/admin/llm/providers/${providerId}`, {
+      method: "DELETE",
+    });
   },
   
   // 获取agent配置

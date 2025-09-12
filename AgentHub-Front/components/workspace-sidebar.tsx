@@ -269,11 +269,11 @@ export function WorkspaceSidebar({
               className="bg-destructive text-white hover:bg-destructive/90"
               onClick={async () => {
                 if (!confirmDeleteId) return
-                const r = await fetch(`/api/session/${confirmDeleteId}`, { method: "DELETE" })
-                if (r.ok) {
+                try {
+                  await api.deleteSession(confirmDeleteId)
                   await reloadSessions()
                   toast({ title: '已删除会话' })
-                } else {
+                } catch (error) {
                   toast({ title: '删除失败', description: '请稍后重试' })
                 }
                 setConfirmDeleteId(null)

@@ -15,6 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import type { Agent } from "@/lib/types"
 import { useAgentCatalog } from "@/lib/stores"
 import { useToast } from "@/hooks/use-toast"
+import { api } from "@/lib/api"
 
 type Props = {
   open: boolean
@@ -63,13 +64,10 @@ export function AgentQuickSettings({ open, onOpenChange, agent }: Props) {
     ;(async () => {
       try {
         // 并行请求模型列表和Agent配置
-        const [modelsRes, configRes] = await Promise.all([
-          fetch('/api/llm/models/active', { cache: 'no-store' }),
-          fetch(`/api/agent/workspace/config/${agent.id}`, { cache: 'no-store' })
+        const [modelsJson, configJson] = await Promise.all([
+          api.getActiveModels(),
+          api.getAgentConfig(agent.id)
         ])
-
-        const modelsJson = await modelsRes.json()
-        const configJson = await configRes.json()
         
         const list = Array.isArray(modelsJson) ? modelsJson : (modelsJson?.data ?? [])
         const currentConfig = configJson?.data || {}
@@ -164,34 +162,18 @@ export function AgentQuickSettings({ open, onOpenChange, agent }: Props) {
       }
 
       // 调用后端接口更新模型配置
-      const modelConfigResponse = await fetch(`/api/agent/workspace/${agent.id}/model/config`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          modelId: selectedModelId,
-          temperature: temperature,
-          topP: topP,
-          topK: topK,
-          maxTokens: maxTokens,
-          strategyType: strategyType,
-          reserveRatio: reserveRatio,
-          summaryThreshold: summaryThreshold,
-        }),
+      const modelConfigResult = await api.updateAgentModelConfig(agent.id, {
+        modelId: selectedModelId,
+        temperature: temperature,
+        topP: topP,
+        topK: topK,
+        maxTokens: maxTokens,
+        strategyType: strategyType,
+        reserveRatio: reserveRatio,
+        summaryThreshold: summaryThreshold,
       })
 
-      if (!modelConfigResponse.ok) {
-        toast({
-          title: "保存失败",
-          description: "无法保存模型配置，请稍后重试",
-          variant: "destructive",
-        })
-        return
-      }
-
       // 检查响应状态
-      const modelConfigResult = await modelConfigResponse.json()
       if (modelConfigResult.code !== 200) {
         toast({
           title: "保存失败",

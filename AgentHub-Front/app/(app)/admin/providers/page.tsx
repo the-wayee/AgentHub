@@ -14,6 +14,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { AdminProvidersSkeleton } from "@/components/ui/page-skeleton"
 import { Server, Eye, EyeOff, Plus, Edit, Trash2, Search, Settings } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { api } from "@/lib/api"
 
 interface ProviderConfig {
   apiKey?: string
@@ -101,8 +102,7 @@ export default function AdminProvidersPage() {
   async function loadProviders() {
     setLoading(true)
     try {
-      const res = await fetch('/api/admin/llm/providers', { cache: 'no-store' })
-      const result = await res.json()
+      const result = await api.getAdminProviders()
       
       // 处理后端响应格式：支持 {success, data} 和 {code, data} 两种格式
       const data = result.data || result
@@ -130,8 +130,7 @@ export default function AdminProvidersPage() {
   // 加载协议类型列表
   async function loadProtocols() {
     try {
-      const res = await fetch('/api/llm/providers/protocols', { cache: 'no-store' })
-      const result = await res.json()
+      const result = await api.getProviderProtocols()
       
       if ((result.success || result.code === 200) && Array.isArray(result.data)) {
         setProtocols(result.data)
@@ -158,15 +157,9 @@ export default function AdminProvidersPage() {
         }
       }
 
-      const res = await fetch('/api/admin/llm/providers', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      })
+      const result = await api.createAdminProvider(payload)
 
-      const result = await res.json()
-
-      if (res.ok && (result.success || result.code === 200)) {
+      if (result.success || result.code === 200) {
         toast({
           title: "创建成功",
           description: "服务商已成功创建"
@@ -210,15 +203,9 @@ export default function AdminProvidersPage() {
         status: editForm.status
       }
 
-      const res = await fetch('/api/admin/llm/providers', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      })
+      const result = await api.updateAdminProvider(editingProvider.id, payload)
 
-      const result = await res.json()
-
-      if (res.ok && (result.success || result.code === 200)) {
+      if (result.success || result.code === 200) {
         toast({
           title: "更新成功",
           description: "服务商信息已更新"
@@ -245,13 +232,9 @@ export default function AdminProvidersPage() {
   // 删除服务商
   async function deleteProvider(provider: Provider) {
     try {
-      const res = await fetch(`/api/admin/llm/providers/${provider.id}`, {
-        method: 'DELETE'
-      })
+      const result = await api.deleteAdminProvider(provider.id)
 
-      const result = await res.json()
-
-      if (res.ok && (result.success || result.code === 200)) {
+      if (result.success || result.code === 200) {
         setProviderAggregates(prev => prev.filter(agg => agg.provider.id !== provider.id))
         toast({
           title: "删除成功",

@@ -51,8 +51,7 @@ export function ChatShell({ agentId }: { agentId: string }) {
     setLatestLoading(true)
     ;(async () => {
       try {
-        const r = await fetch(`/api/agent/${encodeURIComponent(agent.id)}/versions/latest`, { cache: "no-store" })
-        const j = await r.json().catch(() => ({}))
+        const j = await api.getLatestVersion(agent.id)
         if (!cancelled) setLatest(j?.data ?? j ?? null)
       } catch {
         if (!cancelled) setLatest(null)

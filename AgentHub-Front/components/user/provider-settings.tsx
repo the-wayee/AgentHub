@@ -10,6 +10,7 @@ import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useProviderStore, type ProviderConfig } from "@/lib/stores"
 import { useToast } from "@/hooks/use-toast"
+import { api } from "@/lib/api"
 // no extra tag badges
 
 export function ProviderSettings() {
@@ -28,8 +29,7 @@ export function ProviderSettings() {
     const onOpen = async () => {
       setOpen(true)
       try {
-        const r = await fetch('/api/llm/providers/user', { cache: 'no-store' })
-        const response = await r.json()
+        const response = await api.getUserProviders()
         
         // 处理不同的数据格式
         let list = response
@@ -75,8 +75,7 @@ export function ProviderSettings() {
     setLoading(true)
     ;(async () => {
       try {
-        const r = await fetch('/api/llm/providers/protocols', { cache: 'no-store' })
-        const response = await r.json()
+        const response = await api.getProviderProtocols()
         
         // 处理不同的数据格式
         let result = response
@@ -284,17 +283,13 @@ export function ProviderSettings() {
                   config: { apiKey: p.apiKey || "", baseUrl: p.baseUrl || "" },
                   status: p.enabled ?? true,
                 }
-                const r = await fetch('/api/llm/providers', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify(payload),
-                })
-                if (r.ok) {
+                try {
+                  await api.createProvider(payload)
                   toast({ title: "已保存服务商" })
                   setOpen(false)
                   // 触发事件通知服务商页面刷新数据
                   window.dispatchEvent(new CustomEvent('provider-saved'))
-                } else {
+                } catch (error) {
                   toast({ title: "保存失败", description: "请稍后再试" })
                 }
               }}
