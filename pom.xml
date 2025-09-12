@@ -9,7 +9,7 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.xiaoguai</groupId>
-    <artifactId>AgentX</artifactId>
+    <artifactId>AgentHub</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>AgentX</name>
     <description>AgentX</description>

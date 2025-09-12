@@ -1,0 +1,40 @@
+version: "3"
+
+services:
+  AgentHub-App:
+    build: .
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/agenthub
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+    networks:
+      - AgentHub-Network
+
+  db:
+    image: postgres:15
+    container_name: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: agenthub
+    ports:
+      - "5432:5432"
+    volumes:
+      # 把 init.sql 挂载到 Postgres 的自动执行目录
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      # 数据持久化
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - AgentHub-Network
+
+volumes:
+  pgdata:
+
+networks:
+  AgentHub-Network:
+    driver: bridge
