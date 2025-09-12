@@ -122,7 +122,7 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <version>2.7.15</version>
                 <configuration>
-                    <mainClass>com.xiaoguai.agentx.AgentXApplication</mainClass>
+                    <mainClass>com.xiaoguai.agentx.AgentHubApplication</mainClass>
                     <layout>JAR</layout>
                 </configuration>
                 <executions>

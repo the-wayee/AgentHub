@@ -74,7 +74,7 @@ export function AgentBuilder({ agent, onSave, showTitle = true, onCancel }: { ag
 
       // if it has an id other than "custom", treat as update, else create
       if (draft.id && draft.id !== "custom") {
-        await fetch(`/api/agents/${encodeURIComponent(draft.id)}`, {
+        await fetch(`/api/agent/${encodeURIComponent(draft.id)}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -90,7 +90,7 @@ export function AgentBuilder({ agent, onSave, showTitle = true, onCancel }: { ag
           }),
         })
       } else {
-        const res = await fetch(`/api/agents`, {
+        const res = await fetch(`/api/agent`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),

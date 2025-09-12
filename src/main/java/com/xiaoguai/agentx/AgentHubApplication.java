@@ -4,9 +4,9 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class AgentXApplication {
+public class AgentHubApplication {
     public static void main(String[] args) {
-        SpringApplication.run(AgentXApplication.class, args);
+        SpringApplication.run(AgentHubApplication.class, args);
     }
 
 }

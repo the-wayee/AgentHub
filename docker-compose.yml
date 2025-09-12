@@ -1,8 +1,11 @@
-version: "3"
 
 services:
-  agenthub-app:
-    build: .
+  #后端项目
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: AgentHub-back
     ports:
       - "8080:8080"
     depends_on:
@@ -12,8 +15,24 @@ services:
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
     networks:
-      - AgentHub-Network
+      - app-network
 
+  #前端项目
+  frontend:
+    build:
+      context: ./AgentHub-Front
+      dockerfile: Dockerfile
+    container_name: AgentHub-front
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    environment:
+      # 这里传给 Next.js 的后端 API 地址（注意：容器内用服务名访问）
+      NEXT_PUBLIC_API_URL: http://backend:8080
+    networks:
+      - app-network
+  # 数据库
   db:
     image: postgres:15
     container_name: postgres
@@ -30,11 +49,11 @@ services:
       # 数据持久化
       - pgdata:/var/lib/postgresql/data
     networks:
-      - AgentHub-Network
+      - app-network
 
 volumes:
   pgdata:
 
 networks:
-  AgentHub-Network:
+  app-network:
     driver: bridge

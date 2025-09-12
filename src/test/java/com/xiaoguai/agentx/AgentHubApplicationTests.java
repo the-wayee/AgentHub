@@ -3,12 +3,10 @@ package com.xiaoguai.agentx;
 import dev.langchain4j.community.model.dashscope.QwenChatModel;
 import dev.langchain4j.community.model.dashscope.QwenChatRequestParameters;
 import dev.langchain4j.community.model.dashscope.QwenStreamingChatModel;
-import dev.langchain4j.community.model.zhipu.ZhipuAiStreamingChatModel;
 import dev.langchain4j.data.message.UserMessage;
 import dev.langchain4j.model.chat.StreamingChatModel;
 import dev.langchain4j.model.chat.request.ChatRequest;
 import dev.langchain4j.model.chat.request.ChatRequestParameters;
-import dev.langchain4j.model.chat.request.DefaultChatRequestParameters;
 import dev.langchain4j.model.chat.response.ChatResponse;
 import dev.langchain4j.model.chat.response.PartialThinking;
 import dev.langchain4j.model.chat.response.StreamingChatResponseHandler;
@@ -24,9 +22,9 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
 @SpringBootTest
-class AgentXApplicationTests {
+class AgentHubApplicationTests {
 
-    private static final Logger logger = LoggerFactory.getLogger(AgentXApplicationTests.class);
+    private static final Logger logger = LoggerFactory.getLogger(AgentHubApplicationTests.class);
 
     @Test
     void contextLoads() throws InterruptedException {

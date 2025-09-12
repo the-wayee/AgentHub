@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Plus } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { StudioPageSkeleton } from "@/components/ui/page-skeleton"
+import { api } from "@/lib/api"
 
 function PublishDialog({ agentId, onPublished }: { agentId: string; onPublished?: () => void }) {
   const [open, setOpen] = useState(false)
@@ -20,15 +21,9 @@ function PublishDialog({ agentId, onPublished }: { agentId: string; onPublished?
     if (!versionNumber.trim()) return
     setSubmitting(true)
     try {
-      const r = await fetch(`/api/agents/${agentId}/publish`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ versionNumber, changeLog }),
-      })
-      if (r.ok) {
-        onPublished?.()
-        setOpen(false)
-      }
+      await api.publishAgent(agentId, versionNumber, changeLog)
+      onPublished?.()
+      setOpen(false)
     } finally {
       setSubmitting(false)
     }
@@ -79,12 +74,10 @@ export default function StudioPage() {
       const params = new URLSearchParams()
       if (q.trim()) params.set("name", q.trim())
       if (enabled !== "all") params.set("enable", enabled)
-      const url = `/api/agents${params.toString() ? `?${params.toString()}` : ""}`
-      const r = await fetch(url, { cache: "no-store" })
-      const list = await r.json()
+      const response = await api.getAgents(params)
+      const list = Array.isArray(response) ? response : (response?.data || [])
       if (Array.isArray(list)) setMyAgents(list)
     } catch (error) {
-      console.error('Failed to load agents:', error)
     } finally {
       setLoading(false)
     }
@@ -135,7 +128,7 @@ export default function StudioPage() {
         {myAgents.map((a) => (
           <div key={a.id} className="relative">
             <MyAgentCard agent={a} onEdit={() => { setSelectedAgent(a); setOpenCreate(true) }} onDelete={async ()=>{
-              await fetch(`/api/agents/${encodeURIComponent(a.id)}`, { method: 'DELETE' })
+              await api.deleteAgent(a.id)
               reload()
             }} onToggle={() => reload()} onPublish={() => {
               const trigger = document.getElementById(`publish-${a.id}`)

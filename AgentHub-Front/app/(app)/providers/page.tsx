@@ -86,7 +86,6 @@ export default function ProvidersPage() {
         setFilterTypes(result.data)
       }
     } catch (error) {
-      console.error('Failed to load filter types:', error)
     }
   }
 
@@ -315,10 +314,7 @@ export default function ProvidersPage() {
         <Button 
           className="bg-black text-white hover:bg-black/90 cursor-pointer"
           onClick={() => {
-            console.log('Providers page: Add provider button clicked')
-            console.log('Providers page: Dispatching open-provider-settings event')
             window.dispatchEvent(new CustomEvent('open-provider-settings'))
-            console.log('Providers page: Event dispatched')
           }}
         >
           <Plus className="w-4 h-4 mr-2" />
@@ -526,7 +522,7 @@ export default function ProvidersPage() {
                 onClick={async () => {
                   try {
                     // 直接调用后端接口加载模型列表
-                    const res = await fetch(`http://localhost:8080/api/llm/models/${provider.id}`, { 
+                    const res = await fetch(`/api/llm/models/by-provider/${provider.id}`, { 
                       cache: 'no-store' 
                     })
                     const result = await res.json()

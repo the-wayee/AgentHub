@@ -42,7 +42,7 @@ export function MyAgentCard({
   const [latest, setLatest] = useState<any | null>(null)
   async function loadVersions() {
     try {
-      const r = await fetch(`/api/agents/${encodeURIComponent(agent.id)}/versions`, { cache: "no-store" })
+      const r = await fetch(`/api/agent/${encodeURIComponent(agent.id)}/versions`, { cache: "no-store" })
       const list = await r.json()
       setVersions(Array.isArray(list) ? list : list?.data ?? [])
     } catch {
@@ -51,7 +51,7 @@ export function MyAgentCard({
   }
   async function loadLatest() {
     try {
-      const r = await fetch(`/api/agents/${encodeURIComponent(agent.id)}/versions/latest`, { cache: "no-store" })
+      const r = await fetch(`/api/agent/${encodeURIComponent(agent.id)}/versions/latest`, { cache: "no-store" })
       const j = await r.json().catch(() => ({}))
       setLatest(j?.data ?? j ?? null)
     } catch {
@@ -100,7 +100,7 @@ export function MyAgentCard({
                   className="cursor-pointer"
                   onClick={async () => {
                     try {
-                      await fetch(`/api/agents/${encodeURIComponent(agent.id)}/toggle-status`, { cache: "no-store" })
+                      await fetch(`/api/agent/${encodeURIComponent(agent.id)}/toggle-status`, { cache: "no-store" })
                     } finally {
                       onToggle?.()
                     }

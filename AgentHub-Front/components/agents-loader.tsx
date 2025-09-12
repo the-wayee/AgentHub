@@ -4,6 +4,7 @@ import { useEffect } from "react"
 import { useAgentCatalog } from "@/lib/stores"
 import type { Agent } from "@/lib/types"
 import { usePathname } from "next/navigation"
+import { api } from "@/lib/api"
 
 type AgentDTO = {
   id: string
@@ -66,8 +67,7 @@ export function AgentsLoader() {
       try {
         setLoading(true)
         // always refetch on mount to restore home data
-        const res = await fetch("/api/agents", { cache: "no-store" })
-        const json = await res.json()
+        const json = await api.getAgents()
         const list: AgentDTO[] = Array.isArray(json) ? json : json?.data ?? []
         if (!cancelled && Array.isArray(list)) {
           const mapped = list.map(mapDtoToAgent)

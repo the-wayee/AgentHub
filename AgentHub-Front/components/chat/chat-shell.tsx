@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card"
 import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
 import { useAgentCatalog, useConvoStore, useKnowledgeStore, useWorkspaceStore } from "@/lib/stores"
+import { api } from "@/lib/api"
 import { Paperclip, Send, Gift, Grid2X2, Languages, Square } from "lucide-react"
 import { Switch } from "@/components/ui/switch"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
@@ -50,7 +51,7 @@ export function ChatShell({ agentId }: { agentId: string }) {
     setLatestLoading(true)
     ;(async () => {
       try {
-        const r = await fetch(`/api/agents/${encodeURIComponent(agent.id)}/versions/latest`, { cache: "no-store" })
+        const r = await fetch(`/api/agent/${encodeURIComponent(agent.id)}/versions/latest`, { cache: "no-store" })
         const j = await r.json().catch(() => ({}))
         if (!cancelled) setLatest(j?.data ?? j ?? null)
       } catch {
@@ -69,15 +70,19 @@ export function ChatShell({ agentId }: { agentId: string }) {
   const derivedActiveConvo = useMemo(() => {
     if (!agent) return undefined
     const active = conversations.find((c) => c.id === activeId && c.agentId === agent.id)
-    return active || convosForAgent[0]
+    const result = active || convosForAgent[0]
+    return result
   }, [conversations, activeId, agent, convosForAgent])
 
   // Ensure a conversation exists via effect (safe setState outside render).
   useEffect(() => {
     if (!agent) return
     if (!derivedActiveConvo) {
-      const c = createConversation({ agentId: agent.id })
-      setActive(c.id)
+      createConversation({ agentId: agent.id }).then((c) => {
+        setActive(c.id)
+      }).catch((error) => {
+        // 不创建假会话，让用户手动创建
+      })
     }
   }, [agent, derivedActiveConvo, createConversation, setActive])
 
@@ -97,17 +102,30 @@ export function ChatShell({ agentId }: { agentId: string }) {
   // Load messages when conversation changes OR when its messages become empty
   useEffect(() => {
     if (!derivedActiveConvo) return
-    if (derivedActiveConvo.messages.length > 0) return
+    
+    // 检查是否是后端会话（32位hex ID），如果是则总是从后端加载消息
+    const HEX_32 = /^[a-f0-9]{32}$/i
+    const isBackendSession = HEX_32.test(derivedActiveConvo.id)
+    
+    if (!isBackendSession && derivedActiveConvo.messages.length > 0) {
+      return
+    }
+    
     let cancelled = false
     ;(async () => {
       try {
-        const res = await fetch(`/api/messages/${derivedActiveConvo.id}`, { cache: "no-store" })
-        const list = await res.json()
+        const list = await api.getMessages(derivedActiveConvo.id)
         if (!cancelled && Array.isArray(list)) {
-          const mapped = list.map((m: any) => ({ id: m.id, role: m.role, content: m.content, createdAt: m.createdAt }))
+          const mapped = list.map((m: any) => ({ 
+            id: m.id, 
+            role: (m.role?.toLowerCase() === 'user' ? 'user' : (m.role?.toLowerCase() === 'assistant' ? 'assistant' : 'system')) as "user" | "assistant" | "system", 
+            content: m.content, 
+            createdAt: m.createdAt 
+          }))
           replaceMessages(derivedActiveConvo.id, mapped)
         }
-      } catch {}
+      } catch (error) {
+      }
     })()
     return () => {
       cancelled = true
@@ -142,12 +160,7 @@ export function ChatShell({ agentId }: { agentId: string }) {
       const controller = new AbortController()
       abortRef.current = controller
       setIsStreaming(true)
-      const res = await fetch(`/api/agent/session/chat`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "text/event-stream" },
-        body: JSON.stringify({ message: text, sessionId: convoId, enableThink }),
-        signal: controller.signal,
-      })
+      const res = await api.chat(text, convoId, enableThink, controller.signal)
 
       if (!res.body) {
         appendMessage(convoId, { role: "assistant", content: "（无响应）" })

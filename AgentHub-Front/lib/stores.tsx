@@ -4,6 +4,7 @@ import { create } from "zustand"
 import { persist } from "zustand/middleware"
 import { nanoid } from "nanoid"
 import type { Agent, Workspace } from "./types"
+import { api } from "./api"
 
 /* Conversations */
 type Msg = {
@@ -19,11 +20,11 @@ type ConvoState = {
   conversations: Conversation[]
   activeId?: string
   rehydrated?: boolean
-  createConversation: (opts: { agentId: string }) => Conversation
+  createConversation: (opts: { agentId: string }) => Promise<Conversation>
   addConversation: (c: { id: string; agentId: string; title?: string; createdAt?: string | number }) => Conversation
   setActive: (id: string) => void
   appendMessage: (convoId: string, m: { role: "user" | "assistant" | "system"; content: string }) => void
-  ensureActiveForAgent: (agentId: string) => Conversation
+  ensureActiveForAgent: (agentId: string) => Promise<Conversation | null>
   replaceConversationsForAgent: (agentId: string, sessions: { id: string; title?: string; createdAt?: string | number }[]) => void
   replaceMessages: (
     convoId: string,
@@ -43,16 +44,35 @@ export const useConvoStore = create<ConvoState>()(
       conversations: [],
       activeId: undefined,
       rehydrated: false,
-      createConversation: ({ agentId }) => {
-        const c: Conversation = {
-          id: nanoid(),
-          agentId,
-          title: "新会话",
-          createdAt: Date.now(),
-          messages: [],
+      createConversation: async ({ agentId }) => {
+        try {
+          // 调用后端API创建真实的会话
+          const data = await api.createSession(agentId)
+          
+          // 处理不同的响应格式
+          const sessionId = data?.id || data?.data?.id || data?.sessionId
+          const title = data?.title || data?.data?.title || "新会话"
+          const createdAt = data?.createdAt || data?.data?.createdAt || Date.now()
+          
+          if (sessionId) {
+            // 使用后端返回的真实sessionId
+            const c: Conversation = {
+              id: sessionId,
+              agentId,
+              title: title,
+              createdAt: typeof createdAt === "string" ? Date.parse(createdAt) : createdAt,
+              messages: [],
+            }
+            set((s) => ({ conversations: [c, ...s.conversations] }))
+            return c
+          } else {
+            // 后端创建成功但没有返回sessionId
+            throw new Error(`Session created but no ID returned: ${JSON.stringify(data)}`)
+          }
+        } catch (error) {
+          // 网络错误或其他错误
+          throw error
         }
-        set((s) => ({ conversations: [c, ...s.conversations] }))
-        return c
       },
       addConversation: (c0) => {
         const c: Conversation = {
@@ -78,7 +98,7 @@ export const useConvoStore = create<ConvoState>()(
               : c,
           ),
         })),
-      ensureActiveForAgent: (agentId) => {
+      ensureActiveForAgent: async (agentId) => {
         const s = get()
         const active = s.conversations.find((c) => c.id === s.activeId && c.agentId === agentId)
         if (active) return active
@@ -87,9 +107,31 @@ export const useConvoStore = create<ConvoState>()(
           set({ activeId: existing.id })
           return existing
         }
-        const created = s.createConversation({ agentId })
-        set({ activeId: created.id })
-        return created
+        
+        // 先尝试从后端获取现有会话
+        try {
+          const res = await fetch(`/api/agent/session/${agentId}`, { cache: "no-store" })
+          const data = await res.json()
+          
+          if (res.ok && Array.isArray(data) && data.length > 0) {
+            // 使用第一个现有会话
+            const existingSession = data[0]
+            const c: Conversation = {
+              id: existingSession.id,
+              agentId,
+              title: existingSession.title || "新会话",
+              createdAt: typeof existingSession.createdAt === "string" ? Date.parse(existingSession.createdAt) : existingSession.createdAt || Date.now(),
+              messages: [],
+            }
+            set((s) => ({ conversations: [c, ...s.conversations], activeId: c.id }))
+            return c
+          }
+        } catch (error) {
+          // 忽略错误，继续执行
+        }
+        
+        // 如果没有现有会话，返回null而不是创建新的
+        return null
       },
       replaceConversationsForAgent: (agentId, sessions) =>
         set((s) => {

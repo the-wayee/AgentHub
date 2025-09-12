@@ -134,7 +134,6 @@ export function AgentQuickSettings({ open, onOpenChange, agent }: Props) {
         const firstModelId = models[0]?.id || ""
         setSelectedModelId(firstModelId)
       } catch (error) {
-        console.error('Failed to load agent config or models:', error)
       }
     })()
     return () => { cancelled = true }
@@ -161,7 +160,6 @@ export function AgentQuickSettings({ open, onOpenChange, agent }: Props) {
         ?.models?.find(m => m.id === selectedModelId)
 
       if (!selectedModel) {
-        console.error('No model selected')
         return
       }
 
@@ -184,7 +182,6 @@ export function AgentQuickSettings({ open, onOpenChange, agent }: Props) {
       })
 
       if (!modelConfigResponse.ok) {
-        console.error('Failed to save model config:', await modelConfigResponse.text())
         toast({
           title: "保存失败",
           description: "无法保存模型配置，请稍后重试",
@@ -196,7 +193,6 @@ export function AgentQuickSettings({ open, onOpenChange, agent }: Props) {
       // 检查响应状态
       const modelConfigResult = await modelConfigResponse.json()
       if (modelConfigResult.code !== 200) {
-        console.error('Failed to save model config:', modelConfigResult.message)
         toast({
           title: "保存失败",
           description: modelConfigResult.message || "无法保存模型配置，请稍后重试",
@@ -214,7 +210,7 @@ export function AgentQuickSettings({ open, onOpenChange, agent }: Props) {
         currentTools.http !== newTools.http
 
       if (toolsChanged) {
-        const toolsResponse = await fetch(`/api/agents/${agent.id}`, {
+        const toolsResponse = await fetch(`/api/agent/${agent.id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -225,7 +221,6 @@ export function AgentQuickSettings({ open, onOpenChange, agent }: Props) {
         })
 
         if (!toolsResponse.ok) {
-          console.error('Failed to save tools config:', await toolsResponse.text())
           toast({
             title: "部分保存失败",
             description: "模型配置已保存，但工具配置保存失败",
@@ -237,7 +232,6 @@ export function AgentQuickSettings({ open, onOpenChange, agent }: Props) {
         // 检查工具配置响应状态
         const toolsResult = await toolsResponse.json()
         if (toolsResult.code !== 200 && toolsResult.code !== undefined) {
-          console.error('Failed to save tools config:', toolsResult.message)
           toast({
             title: "部分保存失败",
             description: toolsResult.message || "模型配置已保存，但工具配置保存失败",
@@ -266,7 +260,6 @@ export function AgentQuickSettings({ open, onOpenChange, agent }: Props) {
       
       onOpenChange(false)
     } catch (error) {
-      console.error('Error saving agent settings:', error)
       
       // 显示网络错误提示
       toast({

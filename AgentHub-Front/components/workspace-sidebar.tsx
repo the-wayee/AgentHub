@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { useEffect, useMemo, useState, useRef } from "react"
 import { useConvoStore, useAgentCatalog, useWorkspaceStore } from "@/lib/stores"
+import { api } from "@/lib/api"
 import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
 import { WorkspaceSwitcher } from "./workspace-switcher"
@@ -61,13 +62,14 @@ export function WorkspaceSidebar({
   async function reloadSessions() {
     if (!agent?.id) return
     try {
-      const res = await fetch(`/api/sessions/${agent.id}`, { cache: "no-store" })
-      const list = await res.json()
+      const response = await api.getSessions(agent.id)
+      const list = Array.isArray(response) ? response : response?.data ?? []
       if (Array.isArray(list)) {
         const mapped = list.map((s: any) => ({ id: s.id, title: s.title, createdAt: s.createdAt }))
         replaceConversationsForAgent(agent.id, mapped)
       }
-    } catch {}
+    } catch (error) {
+    }
   }
 
   // Fetch sessions when agent changes
@@ -75,27 +77,13 @@ export function WorkspaceSidebar({
   const lastFetchedRef = useRef<string | null>(null)
   useEffect(() => {
     if (!agent?.id) return
-    if (agent.id === "demo") return
-    // 仅当不存在“后端会话”时才拉取。后端会话 id 通常为 32 位 hex
-    const HEX_32 = /^[a-f0-9]{32}$/i
-    const hasRemote = filteredConvos.some((c) => HEX_32.test(c.id))
-    if (lastFetchedRef.current === agent.id || hasRemote) return
+    // 如果已经为这个agent获取过会话，就不再重复获取
+    if (lastFetchedRef.current === agent.id) return
     lastFetchedRef.current = agent.id
-    let cancelled = false
-    ;(async () => {
-      try {
-        const res = await fetch(`/api/sessions/${agent.id}`, { cache: "no-store" })
-        const list = await res.json()
-        if (!cancelled && Array.isArray(list)) {
-          const mapped = list.map((s: any) => ({ id: s.id, title: s.title, createdAt: s.createdAt }))
-          replaceConversationsForAgent(agent.id, mapped)
-        }
-      } catch {}
-    })()
-    return () => {
-      cancelled = true
-    }
-  }, [agent?.id, replaceConversationsForAgent])
+    
+    // 使用 reloadSessions 函数来保持一致性
+    reloadSessions()
+  }, [agent?.id])
 
   return (
     <div className="h-full flex flex-col overflow-hidden">
@@ -119,15 +107,12 @@ export function WorkspaceSidebar({
                   setActive(j.id)
                   toast({ title: '已新建会话' })
                 } else {
-                  // fallback to local create if backend not ready
-                  const c = createConversation({ agentId: agent.id })
-                  setActive(c.id)
-                  toast({ title: '已新建会话（本地）' })
+                  // 后端创建失败，显示错误信息
+                  toast({ title: '创建会话失败', description: j?.message || '请稍后重试' })
                 }
-              } catch {
-                const c = createConversation({ agentId: agent.id })
-                setActive(c.id)
-                toast({ title: '已新建会话（本地）' })
+              } catch (error) {
+                // 网络错误，显示错误信息
+                toast({ title: '创建会话失败', description: '网络错误，请稍后重试' })
               }
             }}
             title="新建会话"
@@ -146,10 +131,7 @@ export function WorkspaceSidebar({
               if (convos.length>0) {
                 setActive(convos[0].id)
               } else {
-                // 先本地创建会话并选中
-                const c = createConversation({ agentId: v })
-                setActive(c.id)
-                // 异步尝试从后端拉一个会话（如果有）并替换本地
+                // 直接从后端拉取会话，不创建假会话
                 fetch(`/api/sessions/${v}`, { cache: 'no-store' })
                   .then(r=>r.json())
                   .then(list=>{

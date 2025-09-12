@@ -51,7 +51,6 @@ export default function AdminPage() {
       })
       setLoading(false)
     } catch (error) {
-      console.error('Failed to load all counts:', error)
       setLoading(false)
     }
   }
@@ -71,7 +70,6 @@ export default function AdminPage() {
         ...(status === 3 && { rejected: currentCount })
       }))
     } catch (error) {
-      console.error('Failed to load counts:', error)
     }
   }
 

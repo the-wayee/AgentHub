@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { AgentCard } from "@/components/agent/agent-card"
 import { useAgentCatalog } from "@/lib/stores"
+import { api } from "@/lib/api"
 import { ExplorePageSkeleton } from "@/components/ui/page-skeleton"
 
 export default function ExplorePage() {
@@ -21,8 +22,7 @@ export default function ExplorePage() {
       try {
         const params = new URLSearchParams()
         if (q.trim()) params.set("name", q.trim())
-        const r = await fetch(`/api/published${params.toString() ? `?${params.toString()}` : ""}`, { cache: "no-store" })
-        const list = await r.json()
+        const list = await api.getPublishedAgents(params)
         if (!cancelled && Array.isArray(list)) {
           setAgents(list)
           setAll(list)

@@ -26,14 +26,10 @@ export function ProviderSettings() {
 
   useEffect(() => {
     const onOpen = async () => {
-      console.log('ProviderSettings: onOpen event received')
       setOpen(true)
-      console.log('ProviderSettings: setOpen(true) called')
       try {
-        console.log('ProviderSettings: Loading user providers...')
         const r = await fetch('/api/llm/providers/user', { cache: 'no-store' })
         const response = await r.json()
-        console.log('ProviderSettings: User providers response:', response)
         
         // 处理不同的数据格式
         let list = response
@@ -44,8 +40,6 @@ export function ProviderSettings() {
         } else {
           list = []
         }
-        
-        console.log('ProviderSettings: Processed list:', list)
         
         if (Array.isArray(list)) {
           const mapped = list.map((srv: any) => ({
@@ -58,23 +52,18 @@ export function ProviderSettings() {
             baseUrl: srv.config?.baseUrl || '',
             description: srv.description || '',
           }))
-          console.log('ProviderSettings: Mapped providers:', mapped)
           setAllProviders(mapped as any)
         } else {
-          console.log('ProviderSettings: No providers found, setting empty array')
           setAllProviders([])
         }
       } catch (error) {
-        console.error('ProviderSettings: Failed to load providers:', error)
         setAllProviders([])
       }
     }
     
-    console.log('ProviderSettings: Adding event listener')
     window.addEventListener("open-provider-settings", onOpen as any)
     
     return () => {
-      console.log('ProviderSettings: Removing event listener')
       window.removeEventListener("open-provider-settings", onOpen as any)
     }
   }, [setAllProviders])
@@ -86,10 +75,8 @@ export function ProviderSettings() {
     setLoading(true)
     ;(async () => {
       try {
-        console.log('Loading protocols...')
         const r = await fetch('/api/llm/providers/protocols', { cache: 'no-store' })
         const response = await r.json()
-        console.log('Protocols result:', response)
         
         // 处理不同的数据格式
         let result = response
@@ -103,14 +90,11 @@ export function ProviderSettings() {
         
         if (!cancelled && Array.isArray(result)) {
           setProtocols(result)
-          console.log('Set protocols:', result)
         } else {
           // 如果API调用失败，使用默认协议列表
-          console.log('Using default protocols due to API failure')
           setProtocols(defaultProtocols)
         }
       } catch (error) {
-        console.error('Failed to load protocols:', error)
         // 如果API调用失败，使用默认协议列表
         if (!cancelled) {
           setProtocols(defaultProtocols)
@@ -126,10 +110,8 @@ export function ProviderSettings() {
 
   // Build tab providers purely from backend protocols to reflect real data order
   const tabProviders = useMemo(() => {
-    console.log('Building tabProviders with protocols:', protocols, 'providers:', providers)
     // 如果协议列表为空，使用默认协议列表
     const protocolsToUse = protocols.length > 0 ? protocols : defaultProtocols
-    console.log('Using protocols:', protocolsToUse)
     
     // Build purely from backend protocols. No mapping or seeded list.
     const result = protocolsToUse.map((proto) => {
@@ -146,7 +128,6 @@ export function ProviderSettings() {
         description: ""
       }
     })
-    console.log('Built tabProviders:', result)
     return result
   }, [protocols, providers])
 

@@ -11,10 +11,13 @@ const nextConfig = {
   },
   reactStrictMode: false,
   async rewrites() {
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'
+    
     return [
+      // 代理所有API路径到后端
       {
-        source: '/api/agent/workspace/:path*',
-        destination: 'http://localhost:8080/api/agent/workspace/:path*',
+        source: '/api/:path*',
+        destination: `${API_URL}/api/:path*`,
       },
     ]
   },

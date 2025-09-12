@@ -65,8 +65,8 @@ export default function ProviderModelsPage() {
   async function loadProviderAndModels() {
     setLoading(true)
     try {
-      // 直接调用API获取服务商信息
-      const res = await fetch('http://localhost:8080/api/llm/providers', { cache: 'no-store' })
+      // 通过Next.js API代理获取服务商信息
+      const res = await fetch('/api/llm/providers', { cache: 'no-store' })
       const result = await res.json()
       
       if (result.code === 200 && Array.isArray(result.data)) {
@@ -103,7 +103,7 @@ export default function ProviderModelsPage() {
   // 专门获取模型列表的函数
   async function loadModels() {
     try {
-      const res = await fetch(`http://localhost:8080/api/llm/models/${providerId}`, { 
+      const res = await fetch(`/api/llm/models/by-provider/${providerId}`, { 
         cache: 'no-store' 
       })
       const result = await res.json()
@@ -125,18 +125,16 @@ export default function ProviderModelsPage() {
   async function loadModelTypes() {
     setModelTypesLoading(true)
     try {
-      const res = await fetch('http://localhost:8080/api/llm/models/types', { cache: 'no-store' })
+      const res = await fetch('/api/llm/models/types', { cache: 'no-store' })
       const result = await res.json()
       
       if (result.code === 200 && Array.isArray(result.data)) {
         setModelTypes(result.data)
         return result.data // 返回加载的类型数据
       } else {
-        console.warn('Failed to load model types:', result.message)
         return ["NORMAL"] // 返回默认值
       }
     } catch (error) {
-      console.warn('Failed to load model types:', error)
       return ["NORMAL"] // 返回默认值，不显示错误提示，避免影响用户体验
     } finally {
       setModelTypesLoading(false)
@@ -154,7 +152,7 @@ export default function ProviderModelsPage() {
     }
 
     try {
-      const res = await fetch('http://localhost:8080/api/llm/models', {
+      const res = await fetch('/api/llm/models', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -234,7 +232,7 @@ export default function ProviderModelsPage() {
 
   async function toggleModel(modelId: string, currentStatus: boolean) {
     try {
-      const res = await fetch(`http://localhost:8080/api/llm/models/${modelId}/toggle-status`, {
+      const res = await fetch(`/api/llm/models/${modelId}/toggle-status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' }
       })
@@ -338,7 +336,6 @@ export default function ProviderModelsPage() {
             if (url) {
               window.open(url, '_blank')
             } else {
-              console.warn(`No URL found for protocol: ${provider.protocol}`)
             }
           }}
         >

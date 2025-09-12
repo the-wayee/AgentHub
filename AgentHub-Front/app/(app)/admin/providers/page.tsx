@@ -104,8 +104,10 @@ export default function AdminProvidersPage() {
       const res = await fetch('/api/admin/llm/providers', { cache: 'no-store' })
       const result = await res.json()
       
-      if (result.success && Array.isArray(result.data)) {
-        setProviderAggregates(result.data)
+      // 处理后端响应格式：支持 {success, data} 和 {code, data} 两种格式
+      const data = result.data || result
+      if (((result.success || result.code === 200) || result.code === 200) && Array.isArray(data)) {
+        setProviderAggregates(data)
       } else {
         throw new Error(result.message || "API返回错误")
       }
@@ -131,15 +133,13 @@ export default function AdminProvidersPage() {
       const res = await fetch('/api/llm/providers/protocols', { cache: 'no-store' })
       const result = await res.json()
       
-      if (result.success && Array.isArray(result.data)) {
+      if ((result.success || result.code === 200) && Array.isArray(result.data)) {
         setProtocols(result.data)
       } else {
-        console.error("Failed to load protocols:", result.message)
         // 使用默认协议列表作为后备
         setProtocols(["OPENAI", "DASHSCOPE", "ZHIPU"])
       }
     } catch (error) {
-      console.error("Error loading protocols:", error)
       // 使用默认协议列表作为后备
       setProtocols(["OPENAI", "DASHSCOPE", "ZHIPU"])
     }
@@ -166,7 +166,7 @@ export default function AdminProvidersPage() {
 
       const result = await res.json()
 
-      if (res.ok && result.success) {
+      if (res.ok && (result.success || result.code === 200)) {
         toast({
           title: "创建成功",
           description: "服务商已成功创建"
@@ -218,7 +218,7 @@ export default function AdminProvidersPage() {
 
       const result = await res.json()
 
-      if (res.ok && result.success) {
+      if (res.ok && (result.success || result.code === 200)) {
         toast({
           title: "更新成功",
           description: "服务商信息已更新"
@@ -251,7 +251,7 @@ export default function AdminProvidersPage() {
 
       const result = await res.json()
 
-      if (res.ok && result.success) {
+      if (res.ok && (result.success || result.code === 200)) {
         setProviderAggregates(prev => prev.filter(agg => agg.provider.id !== provider.id))
         toast({
           title: "删除成功",
@@ -284,7 +284,7 @@ export default function AdminProvidersPage() {
 
       const result = await res.json()
 
-      if (res.ok && result.success) {
+      if (res.ok && (result.success || result.code === 200)) {
         setProviderAggregates(prev => prev.map(agg => 
           agg.provider.id === providerId 
             ? { ...agg, provider: { ...agg.provider, status } }
