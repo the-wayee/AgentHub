@@ -97,9 +97,7 @@ export default function ProvidersPage() {
         params.set("type", statusFilter)
       }
       
-      const url = `/api/llm/providers${params.toString() ? `?${params.toString()}` : ""}`
-      const res = await fetch(url, { cache: 'no-store' })
-      const result = await res.json()
+      const result = await api.getProviders()
       
       if (result.code === 200 && Array.isArray(result.data)) {
         setProviders(result.data)
@@ -234,13 +232,9 @@ export default function ProvidersPage() {
   // 删除服务商
   async function deleteProvider(provider: Provider) {
     try {
-      const res = await fetch(`/api/llm/providers/${provider.id}`, {
-        method: 'DELETE'
-      })
+      const result = await api.deleteProvider(provider.id)
 
-      const result = await res.json().catch(() => null)
-
-      if (res.ok && result?.code === 200) {
+      if (result?.code === 200) {
         // 从本地状态中移除
         setProviders(prev => prev.filter(p => p.id !== provider.id))
         

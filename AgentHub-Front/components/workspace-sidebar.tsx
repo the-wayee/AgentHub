@@ -99,9 +99,8 @@ export function WorkspaceSidebar({
             onClick={async () => {
               if (!agent?.id) return
               try {
-                const r = await fetch(`/api/sessions/${agent.id}`, { method: 'POST' })
-                const j = await r.json().catch(() => ({}))
-                if (r.ok && j?.id) {
+                const j = await api.createSession(agent.id)
+                if (j?.id) {
                   // insert locally without reloading
                   addConversation({ id: j.id, agentId: agent.id, title: j.title, createdAt: j.createdAt })
                   setActive(j.id)

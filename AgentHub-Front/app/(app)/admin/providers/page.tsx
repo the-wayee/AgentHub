@@ -260,14 +260,9 @@ export default function AdminProvidersPage() {
   // 切换服务商状态
   async function toggleProviderStatus(providerId: string, status: boolean) {
     try {
-      const res = await fetch(`/api/llm/providers/${providerId}/toggle-status`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' }
-      })
+      const result = await api.toggleProviderStatus(providerId)
 
-      const result = await res.json()
-
-      if (res.ok && (result.success || result.code === 200)) {
+      if (result.success || result.code === 200) {
         setProviderAggregates(prev => prev.map(agg => 
           agg.provider.id === providerId 
             ? { ...agg, provider: { ...agg.provider, status } }

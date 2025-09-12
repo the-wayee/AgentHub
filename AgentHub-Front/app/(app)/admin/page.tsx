@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { PublishStatusLabel, type AgentVersion, type PublishStatusCode } from "@/lib/admin-types"
 import { CheckCircle2, Clock, XCircle } from "lucide-react"
 import { AdminPageSkeleton } from "@/components/ui/page-skeleton"
+import { api } from "@/lib/api"
 
 export default function AdminPage() {
   const [status, setStatus] = useState<PublishStatusCode>(1)
@@ -19,8 +20,7 @@ export default function AdminPage() {
   const [count, setCount] = useState({ reviewing: 0, published: 0, rejected: 0 })
 
   async function fetchList(s: PublishStatusCode) {
-    const r = await fetch(`/api/admin/agent/versions?status=${s}`, { cache: "no-store" })
-    const list = await r.json()
+    const list = await api.getAdminAgentVersions(s)
     return (Array.isArray(list) ? list : list?.data) as AgentVersion[]
   }
 
@@ -89,16 +89,14 @@ export default function AdminPage() {
   }, [])
 
   async function updateStatus(versionId: string, next: PublishStatusCode) {
-    const qs = new URLSearchParams({ status: String(next) })
-    if (next === 3 && reason.trim()) qs.set("reason", reason.trim())
-    const r = await fetch(`/api/admin/agent/versions/${encodeURIComponent(versionId)}/status?${qs.toString()}`, {
-      method: "POST",
-    })
-    if (r.ok) {
+    try {
+      await api.updateAdminAgentVersionStatus(versionId, next, reason)
       setSelected(null)
       setReason("")
       // 更新操作后，重新加载当前列表和统计数据
       await Promise.all([reload(), loadCounts()])
+    } catch (error) {
+      console.error('更新状态失败:', error)
     }
   }
 

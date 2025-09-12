@@ -49,6 +49,14 @@ export const api = {
     });
   },
   
+  // 创建新会话 (sessions接口)
+  createNewSession: (agentId: string) => {
+    return apiFetch(`/api/sessions/${agentId}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+    });
+  },
+  
   // 获取消息列表
   getMessages: (sessionId: string) => {
     return apiFetch(`/api/agent/session/${sessionId}/messages`);
@@ -125,6 +133,21 @@ export const api = {
     });
   },
   
+  // 删除LLM provider
+  deleteProvider: (providerId: string) => {
+    return apiFetch(`/api/llm/providers/${providerId}`, {
+      method: "DELETE",
+    });
+  },
+  
+  // 切换LLM provider状态
+  toggleProviderStatus: (providerId: string) => {
+    return apiFetch(`/api/llm/providers/${providerId}/toggle-status`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+    });
+  },
+  
   // 获取用户providers
   getUserProviders: () => {
     return apiFetch(`/api/llm/providers/user`);
@@ -182,6 +205,23 @@ export const api = {
   deleteAdminProvider: (providerId: string) => {
     return apiFetch(`/api/admin/llm/providers/${providerId}`, {
       method: "DELETE",
+    });
+  },
+  
+  // 获取admin agent versions
+  getAdminAgentVersions: (status?: number) => {
+    const params = status !== undefined ? `?status=${status}` : '';
+    return apiFetch(`/api/admin/agent/versions${params}`);
+  },
+  
+  // 更新admin agent version状态
+  updateAdminAgentVersionStatus: (versionId: string, status: number, reason?: string) => {
+    const params = new URLSearchParams({ status: String(status) });
+    if (reason && reason.trim()) {
+      params.set("reason", reason.trim());
+    }
+    return apiFetch(`/api/admin/agent/versions/${encodeURIComponent(versionId)}/status?${params.toString()}`, {
+      method: "POST",
     });
   },
   
