@@ -113,7 +113,11 @@ export function ChatShell({ agentId }: { agentId: string }) {
     let cancelled = false
     ;(async () => {
       try {
-        const list = await api.getMessages(derivedActiveConvo.id)
+        const response = await api.getMessages(derivedActiveConvo.id)
+        console.log('Messages API response:', response)
+        
+        // API返回格式: { code: 200, message: "操作成功", data: [...] }
+        const list = response?.data || response
         if (!cancelled && Array.isArray(list)) {
           const mapped = list.map((m: any) => ({ 
             id: m.id, 
@@ -121,9 +125,11 @@ export function ChatShell({ agentId }: { agentId: string }) {
             content: m.content, 
             createdAt: m.createdAt 
           }))
+          console.log('Mapped messages:', mapped)
           replaceMessages(derivedActiveConvo.id, mapped)
         }
       } catch (error) {
+        console.error('Failed to load messages:', error)
       }
     })()
     return () => {
