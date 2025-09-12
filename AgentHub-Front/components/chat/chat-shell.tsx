@@ -114,7 +114,6 @@ export function ChatShell({ agentId }: { agentId: string }) {
     ;(async () => {
       try {
         const response = await api.getMessages(derivedActiveConvo.id)
-        console.log('Messages API response:', response)
         
         // API返回格式: { code: 200, message: "操作成功", data: [...] }
         const list = response?.data || response
@@ -125,7 +124,6 @@ export function ChatShell({ agentId }: { agentId: string }) {
             content: m.content, 
             createdAt: m.createdAt 
           }))
-          console.log('Mapped messages:', mapped)
           replaceMessages(derivedActiveConvo.id, mapped)
         }
       } catch (error) {
