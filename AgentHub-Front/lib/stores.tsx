@@ -136,13 +136,17 @@ export const useConvoStore = create<ConvoState>()(
       replaceConversationsForAgent: (agentId, sessions) =>
         set((s) => {
           const others = s.conversations.filter((c) => c.agentId !== agentId)
-          const mapped: Conversation[] = sessions.map((sess) => ({
-            id: sess.id,
-            agentId,
-            title: sess.title || "新会话",
-            createdAt: typeof sess.createdAt === "string" ? Date.parse(sess.createdAt) : sess.createdAt || Date.now(),
-            messages: [],
-          }))
+          const mapped: Conversation[] = sessions.map((sess) => {
+            // 查找现有会话，保留其消息
+            const existing = s.conversations.find((c) => c.id === sess.id)
+            return {
+              id: sess.id,
+              agentId,
+              title: sess.title || "新会话",
+              createdAt: typeof sess.createdAt === "string" ? Date.parse(sess.createdAt) : sess.createdAt || Date.now(),
+              messages: existing?.messages || [], // 保留现有消息，避免重复加载
+            }
+          })
           const next = [...mapped, ...others]
           const activeStillExists = next.some((c) => c.id === s.activeId)
           return { conversations: next, activeId: activeStillExists ? s.activeId : mapped[0]?.id }

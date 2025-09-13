@@ -98,7 +98,10 @@ export function ChatShell({ agentId }: { agentId: string }) {
     }
   }, [derivedActiveConvo?.messages.length])
 
-  // Load messages when conversation changes OR when its messages become empty
+  // Load messages when conversation changes, but avoid reloading when messages are being added
+  const lastLoadedSessionId = useRef<string | null>(null)
+  const isLoadingMessages = useRef<boolean>(false)
+  
   useEffect(() => {
     if (!derivedActiveConvo) return
     
@@ -106,11 +109,25 @@ export function ChatShell({ agentId }: { agentId: string }) {
     const HEX_32 = /^[a-f0-9]{32}$/i
     const isBackendSession = HEX_32.test(derivedActiveConvo.id)
     
+    // 如果已经为这个会话加载过消息，且不是后端会话，则不再重复加载
+    if (lastLoadedSessionId.current === derivedActiveConvo.id && !isBackendSession) {
+      return
+    }
+    
+    // 如果正在加载消息，避免重复请求
+    if (isLoadingMessages.current) {
+      return
+    }
+    
+    // 对于非后端会话，如果已有消息则不加载
     if (!isBackendSession && derivedActiveConvo.messages.length > 0) {
+      lastLoadedSessionId.current = derivedActiveConvo.id
       return
     }
     
     let cancelled = false
+    isLoadingMessages.current = true
+    
     ;(async () => {
       try {
         const response = await api.getMessages(derivedActiveConvo.id)
@@ -125,15 +142,20 @@ export function ChatShell({ agentId }: { agentId: string }) {
             createdAt: m.createdAt 
           }))
           replaceMessages(derivedActiveConvo.id, mapped)
+          lastLoadedSessionId.current = derivedActiveConvo.id
         }
       } catch (error) {
         console.error('Failed to load messages:', error)
+      } finally {
+        isLoadingMessages.current = false
       }
     })()
+    
     return () => {
       cancelled = true
+      isLoadingMessages.current = false
     }
-  }, [derivedActiveConvo?.id, derivedActiveConvo?.messages.length])
+  }, [derivedActiveConvo?.id]) // 移除 messages.length 依赖，避免消息变化时重复加载
 
   if (!agent) {
     return (

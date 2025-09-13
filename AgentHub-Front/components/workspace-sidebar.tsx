@@ -131,11 +131,11 @@ export function WorkspaceSidebar({
                 setActive(convos[0].id)
               } else {
                 // 直接从后端拉取会话，不创建假会话
-                fetch(`/api/sessions/${v}`, { cache: 'no-store' })
-                  .then(r=>r.json())
+                api.getSessions(v)
                   .then(list=>{
-                    if (Array.isArray(list) && list.length>0) {
-                      const mapped = list.map((s: any) => ({ id: s.id, title: s.title, createdAt: s.createdAt }))
+                    const sessionList = Array.isArray(list) ? list : list?.data ?? []
+                    if (Array.isArray(sessionList) && sessionList.length>0) {
+                      const mapped = sessionList.map((s: any) => ({ id: s.id, title: s.title, createdAt: s.createdAt }))
                       replaceConversationsForAgent(v, mapped)
                       setActive(mapped[0].id)
                     }
