@@ -2,6 +2,36 @@
 
 AgentHub是一个基于Spring Boot和Next.js构建的AI智能体管理平台，支持创建、管理和部署各种类型的AI助手。
 
+## 代码提交规范
+
+- feat: 新功能 (feature)
+
+- fix: 修复 bug
+
+- docs: 文档修改 (比如 README)
+
+- style: 代码格式修改（不影响功能，如空格、分号）
+
+- refactor: 重构（既不是新增功能，也不是 bug 修复）
+
+- perf: 性能优化
+
+- test: 添加或修改测试
+
+- chore: 构建过程或辅助工具的变动（如依赖升级）
+
+- ci: CI/CD 配置变动（GitHub Actions, Jenkins 等）
+
+- build: 构建系统或依赖相关的变动（如 Maven、npm 依赖）
+
+- revert: 回滚 commit
+
+例如：
+
+feat(back): 开发xxx功能
+
+fix(front): 修复监听触发逻辑
+
 ## 🚀 项目特性
 
 - **智能体管理**: 创建、编辑、版本控制和发布AI智能体
@@ -14,6 +44,7 @@ AgentHub是一个基于Spring Boot和Next.js构建的AI智能体管理平台，�
 ## 🏗️ 技术栈
 
 ### 后端
+
 - **Java 17** + **Spring Boot 3.5.3**
 - **MyBatis-Plus** - 数据库ORM
 - **PostgreSQL** - 主数据库
@@ -21,6 +52,7 @@ AgentHub是一个基于Spring Boot和Next.js构建的AI智能体管理平台，�
 - **Maven** - 依赖管理
 
 ### 前端
+
 - **Next.js 15** + **React 19**
 - **TypeScript** - 类型安全
 - **Tailwind CSS** - 样式框架
@@ -28,6 +60,7 @@ AgentHub是一个基于Spring Boot和Next.js构建的AI智能体管理平台，�
 - **Zustand** - 状态管理
 
 ### 基础设施
+
 - **Docker** + **Docker Compose**
 - **PostgreSQL 15** - 数据库
 - **Maven** - 构建工具
@@ -88,6 +121,7 @@ AgentHub/
 项目支持通过环境变量进行配置，主要配置项包括：
 
 #### 数据库配置
+
 - `DB_HOST`: 数据库主机地址（默认：localhost）
 - `DB_PORT`: 数据库端口（默认：5432）
 - `DB_NAME`: 数据库名称（默认：agenthub）
@@ -95,6 +129,7 @@ AgentHub/
 - `DB_PASSWORD`: 数据库密码（默认：postgres）
 
 #### LLM服务配置
+
 - `LLM_DEFAULT_PROVIDER`: 默认LLM提供商（默认：siliconflow）
 - `SILICONFLOW_API_URL`: SiliconFlow API地址
 - `SILICONFLOW_API_KEY`: SiliconFlow API密钥
@@ -143,6 +178,7 @@ AgentHub/
 如需在本地开发环境运行：
 
 #### 后端开发
+
 ```bash
 # 确保PostgreSQL运行在localhost:5432
 # 安装Java 17和Maven
@@ -150,6 +186,7 @@ mvn spring-boot:run
 ```
 
 #### 前端开发
+
 ```bash
 cd AgentHub-Front
 npm install
