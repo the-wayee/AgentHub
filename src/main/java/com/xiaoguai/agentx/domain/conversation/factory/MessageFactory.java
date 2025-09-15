@@ -2,7 +2,7 @@ package com.xiaoguai.agentx.domain.conversation.factory;
 
 
 import com.xiaoguai.agentx.domain.conversation.constants.Role;
-import com.xiaoguai.agentx.domain.conversation.handler.ChatEnvironment;
+import com.xiaoguai.agentx.application.conversation.service.ChatContext;
 import com.xiaoguai.agentx.domain.conversation.model.MessageEntity;
 
 /**
@@ -17,7 +17,7 @@ public class MessageFactory {
      * 创建用户消息
      * @param environment 对话环境
      */
-    public static MessageEntity createUserMessage(ChatEnvironment environment) {
+    public static MessageEntity createUserMessage(ChatContext environment) {
         MessageEntity messageEntity = new MessageEntity();
         messageEntity.setSessionId(environment.getSessionId());
         messageEntity.setContent(environment.getUserMessage());
@@ -29,7 +29,7 @@ public class MessageFactory {
      * 创建助理消息
      * @param environment 对话环境
      */
-    public static MessageEntity createAssistMessage(ChatEnvironment environment) {
+    public static MessageEntity createAssistMessage(ChatContext environment) {
         MessageEntity messageEntity = new MessageEntity();
         messageEntity.setSessionId(environment.getSessionId());
         messageEntity.setProvider(environment.getProviderEntity().getId());

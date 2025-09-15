@@ -1,4 +1,4 @@
-package com.xiaoguai.agentx.domain.conversation.handler;
+package com.xiaoguai.agentx.application.conversation.service;
 
 
 import com.xiaoguai.agentx.domain.agent.model.AgentEntity;
@@ -16,7 +16,7 @@ import java.util.List;
  * @Date: 2025-08-18 10:22
  * @Description: 对话环境
  */
-public class ChatEnvironment {
+public class ChatContext {
 
     /**
      * 会话Id

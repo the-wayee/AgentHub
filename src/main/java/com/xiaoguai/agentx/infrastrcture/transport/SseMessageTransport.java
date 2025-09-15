@@ -64,6 +64,17 @@ public class SseMessageTransport implements MessageTransport<SseEmitter>{
     }
 
     @Override
+    public void sendEndMessage(SseEmitter connection, AgentChatResponse response) {
+        try {
+            connection.send(response);
+        } catch (Exception e) {
+            logger.error("消息发送失败: {}", e.getMessage());
+        } finally {
+            connection.complete();
+        }
+    }
+
+    @Override
     public void completeConnection(SseEmitter connection) {
         connection.complete();
     }

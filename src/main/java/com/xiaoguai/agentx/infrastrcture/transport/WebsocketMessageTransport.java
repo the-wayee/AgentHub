@@ -21,6 +21,11 @@ public class WebsocketMessageTransport implements MessageTransport {
     }
 
     @Override
+    public void sendEndMessage(Object connection, AgentChatResponse response) {
+
+    }
+
+    @Override
     public void completeConnection(Object connection) {
 
     }

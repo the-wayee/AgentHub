@@ -1,4 +1,4 @@
-package com.xiaoguai.agentx.domain.conversation.handler;
+package com.xiaoguai.agentx.application.conversation.service;
 
 
 import com.xiaoguai.agentx.infrastrcture.transport.MessageTransport;
@@ -15,9 +15,9 @@ public interface MessageHandler {
     /**
      * 处理聊天
      *
-     * @param environment 对话环境
+     * @param chatContext 对话环境
      * @param transport   传输对象
      * @return 连接类型
      */
-    <T> T handleChat(ChatEnvironment environment, MessageTransport<T> transport);
+    <T> T handleChat(ChatContext chatContext, MessageTransport<T> transport);
 }

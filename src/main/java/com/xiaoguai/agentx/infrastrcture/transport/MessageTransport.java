@@ -24,6 +24,8 @@ public interface MessageTransport<T>{
      */
     void sendMessage(T connection, AgentChatResponse response);
 
+    void sendEndMessage(T connection, AgentChatResponse response);
+
     /**
      * 连接完成
      * @param connection 连接对象

@@ -1,8 +1,10 @@
-package com.xiaoguai.agentx.domain.conversation.handler;
+package com.xiaoguai.agentx.application.conversation.service.chat;
 
 
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.xiaoguai.agentx.application.conversation.dto.AgentChatResponse;
+import com.xiaoguai.agentx.application.conversation.service.AbstractMessageHandler;
+import com.xiaoguai.agentx.application.conversation.service.ChatContext;
 import com.xiaoguai.agentx.domain.conversation.constants.MessageType;
 import com.xiaoguai.agentx.domain.conversation.constants.Role;
 import com.xiaoguai.agentx.domain.conversation.factory.MessageFactory;
@@ -35,7 +37,7 @@ import java.util.List;
  * @Description: 聊天类型消息处理
  */
 @Component
-public class ChatMessageHandler implements MessageHandler {
+public class ChatMessageHandler extends AbstractMessageHandler {
 
     /**
      * 默认连接超时时间：5min
@@ -48,16 +50,12 @@ public class ChatMessageHandler implements MessageHandler {
     private static final String SUMMARY_PREFIX = "以下是用户历史消息的摘要，请仅作为参考，用户没有提起则不要回答摘要中的内容：\\n";
 
 
-    protected final ConversationDomainService conversationDomainService;
-    protected final ContextDomainService contextDomainService;
-
     public ChatMessageHandler(ConversationDomainService conversationDomainService, ContextDomainService contextDomainService) {
-        this.conversationDomainService = conversationDomainService;
-        this.contextDomainService = contextDomainService;
+        super(conversationDomainService, contextDomainService);
     }
 
     @Override
-    public <T> T handleChat(ChatEnvironment environment, MessageTransport<T> transport) {
+    public <T> T handleChat(ChatContext environment, MessageTransport<T> transport) {
         // 创建用户消息
         MessageEntity userMessage = MessageFactory.createUserMessage(environment);
         // 创建Assist消息
@@ -83,7 +81,7 @@ public class ChatMessageHandler implements MessageHandler {
     }
 
 
-    private ChatRequest prepareChatRequest(ChatEnvironment environment) {
+    private ChatRequest prepareChatRequest(ChatContext environment) {
 
         List<ChatMessage> chatMessages = new ArrayList<>();
 
@@ -124,7 +122,7 @@ public class ChatMessageHandler implements MessageHandler {
      * 处理聊天请求
      *
      * @param chatRequest   聊天请求
-     * @param environment   聊天环境
+     * @param chatContext   聊天环境
      * @param chatModel     模型客户端
      * @param connection    连接对象
      * @param transport     传输对象
@@ -132,7 +130,7 @@ public class ChatMessageHandler implements MessageHandler {
      * @param assistMessage llm信息
      */
     private <T> void processChat(ChatRequest chatRequest,
-                                 ChatEnvironment environment,
+                                 ChatContext chatContext,
                                  StreamingChatModel chatModel,
                                  T connection,
                                  MessageTransport<T> transport,
@@ -161,17 +159,8 @@ public class ChatMessageHandler implements MessageHandler {
 
                 AgentChatResponse response = AgentChatResponse.build("", true, false, MessageType.TEXT);
                 // 发送完成消息
-                transport.sendMessage(connection, response);
-                transport.completeConnection(connection);
-
-                // 保存消息
-                conversationDomainService.saveMessages(List.of(userMessage, assistMessage));
-
-                // 更新上下文
-                List<String> activeMessages = environment.getContextEntity().getActiveMessages();
-                activeMessages.add(userMessage.getId());
-                activeMessages.add(assistMessage.getId());
-                contextDomainService.insertOrUpdate(environment.getContextEntity());
+                transport.sendEndMessage(connection, response);
+                saveMessages(chatContext, userMessage, assistMessage);
             }
 
             @Override

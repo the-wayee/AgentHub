@@ -8,8 +8,6 @@ import com.xiaoguai.agentx.domain.agent.model.AgentWorkspaceEntity;
 import com.xiaoguai.agentx.domain.agent.service.AgentDomainService;
 import com.xiaoguai.agentx.domain.agent.service.AgentWorkspaceDomainService;
 import com.xiaoguai.agentx.domain.conversation.factory.MessageHandlerFactory;
-import com.xiaoguai.agentx.domain.conversation.handler.ChatEnvironment;
-import com.xiaoguai.agentx.domain.conversation.handler.MessageHandler;
 import com.xiaoguai.agentx.domain.conversation.model.ContextEntity;
 import com.xiaoguai.agentx.domain.conversation.model.MessageEntity;
 import com.xiaoguai.agentx.domain.conversation.model.SessionEntity;
@@ -98,7 +96,7 @@ public class ConversationAppService {
      */
     public SseEmitter chatStream(StreamChatRequest request, String userId) {
         // 准备对话环境
-        ChatEnvironment environment = prepareChatEnvironment(request, userId);
+        ChatContext environment = prepareChatEnvironment(request, userId);
         // 获取传输方式
         MessageTransport<SseEmitter> transport = MessageTransportFactory.getTransport(MessageTransportFactory.TRANSPORT_TYPE_SSE);
         // 获取消息处理器
@@ -114,9 +112,9 @@ public class ConversationAppService {
      * @param userId  用户id
      * @return 对话环境
      */
-    private ChatEnvironment prepareChatEnvironment(StreamChatRequest request, String userId) {
+    private ChatContext prepareChatEnvironment(StreamChatRequest request, String userId) {
         String sessionId = request.getSessionId();
-        ChatEnvironment environment = new ChatEnvironment();
+        ChatContext environment = new ChatContext();
         environment.setSessionId(sessionId);
         environment.setUserMessage(request.getMessage());
         environment.setUserId(userId);
@@ -157,7 +155,7 @@ public class ConversationAppService {
      * 准备上下文环境，根据上下文策略，使用滑动窗口or摘要算法
      * @param environment 上下文环境
      */
-    private void setupContext(ChatEnvironment environment) {
+    private void setupContext(ChatContext environment) {
         // 获取上下文
         ContextEntity context = contextDomainService.findBySessionId(environment.getSessionId());
         List<MessageEntity> activeMessages = new ArrayList<>();
@@ -183,7 +181,7 @@ public class ConversationAppService {
      * @param context 上下文
      * @param activeMessages 活跃消息列表
      */
-    public void applyTokenOverflowStrategy(ChatEnvironment environment, ContextEntity context, List<MessageEntity> activeMessages) {
+    public void applyTokenOverflowStrategy(ChatContext environment, ContextEntity context, List<MessageEntity> activeMessages) {
         LlmModelConfig llmModelConfig = environment.getLlmModelConfig();
         // 转换成Token消息
         List<TokenMessage> tokenMessages = tokenizeMessages(activeMessages);
