@@ -13,6 +13,7 @@ import { Switch } from "@/components/ui/switch"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Skeleton } from "@/components/ui/skeleton"
 import { AgentQuickSettings } from "@/components/agent/agent-quick-settings"
+import { MarkdownMessage } from "@/components/chat/markdown-message"
 
 export function ChatShell({ agentId }: { agentId: string }) {
   // Selectors to reduce re-renders
@@ -310,6 +311,15 @@ export function ChatShell({ agentId }: { agentId: string }) {
                       : "bg-muted rounded-tl-none",
                 )}
               >
+                {m.role === "assistant" ? (
+                <MarkdownMessage
+                  content={m.content}
+                  className={cn(
+                    "leading-relaxed text-sm",
+                    m.kind === "reasoning" && "text-[12px] italic prose-p:my-1 prose-ul:my-1 prose-ol:my-1",
+                  )}
+                />
+              ) : (
                 <div
                   className={cn(
                     "whitespace-pre-wrap leading-relaxed text-sm",
@@ -318,6 +328,7 @@ export function ChatShell({ agentId }: { agentId: string }) {
                 >
                   {m.content}
                 </div>
+              )}
               </Card>
               {m.role === "user" && (
                 <Avatar className="w-7 h-7">

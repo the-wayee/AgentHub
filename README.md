@@ -1,67 +1,42 @@
 # AgentHub - AI智能体平台
 
-AgentHub是一个基于Spring Boot和Next.js构建的AI智能体管理平台，支持创建、管理和部署各种类型的AI助手。
-
-## 代码提交规范
-
-- feat: 新功能 (feature)
-
-- fix: 修复 bug
-
-- docs: 文档修改 (比如 README)
-
-- style: 代码格式修改（不影响功能，如空格、分号）
-
-- refactor: 重构（既不是新增功能，也不是 bug 修复）
-
-- perf: 性能优化
-
-- test: 添加或修改测试
-
-- chore: 构建过程或辅助工具的变动（如依赖升级）
-
-- ci: CI/CD 配置变动（GitHub Actions, Jenkins 等）
-
-- build: 构建系统或依赖相关的变动（如 Maven、npm 依赖）
-
-- revert: 回滚 commit
-
-例如：
-
-feat(back): 开发xxx功能
-
-fix(front): 修复监听触发逻辑
+AgentHub是一个基于Spring Boot和Next.js构建的全栈AI智能体管理平台，支持创建、管理和部署各种类型的AI助手。项目采用DDD架构设计，集成多种LLM服务提供商，提供完整的智能体生命周期管理。
 
 ## 🚀 项目特性
 
 - **智能体管理**: 创建、编辑、版本控制和发布AI智能体
-- **多模型支持**: 集成多种LLM提供商（阿里云百炼、智谱AI等）
+- **多模型支持**: 集成多种LLM提供商（OpenAI、阿里云百炼、智谱AI等）
 - **会话管理**: 完整的对话会话管理和上下文维护
 - **工作区**: 个人工作区管理，支持自定义模型配置
-- **现代化UI**: 基于Next.js和Tailwind CSS的响应式界面
-- **Docker部署**: 一键部署，开箱即用
+- **现代化UI**: 基于Next.js 15和Tailwind CSS的响应式界面
+- **容器化部署**: Docker Compose一键部署，开箱即用
+- **CI/CD集成**: GitHub Actions自动化构建和代码检查
 
 ## 🏗️ 技术栈
 
-### 后端
-
+### 后端技术栈
 - **Java 17** + **Spring Boot 3.5.3**
-- **MyBatis-Plus** - 数据库ORM
+- **MyBatis-Plus 3.5.7** - 数据库ORM
 - **PostgreSQL** - 主数据库
-- **LangChain4j** - AI模型集成框架
+- **LangChain4j 1.3.0** - AI模型集成框架
+  - 支持OpenAI、阿里云百炼、智谱AI等多种LLM
+  - 集成MCP (Model Context Protocol) 支持
+- **FastJSON2** - JSON处理
 - **Maven** - 依赖管理
 
-### 前端
-
+### 前端技术栈
 - **Next.js 15** + **React 19**
 - **TypeScript** - 类型安全
-- **Tailwind CSS** - 样式框架
-- **Radix UI** - 组件库
+- **Tailwind CSS 4.1.9** - 样式框架
+- **Radix UI** - 无头组件库
+- **Ant Design 5.26.7** - UI组件库
 - **Zustand** - 状态管理
+- **React Hook Form** + **Zod** - 表单处理
+- **AI SDK** - AI对话集成
 
-### 基础设施
-
-- **Docker** + **Docker Compose**
+### 开发工具
+- **Docker** + **Docker Compose** - 容器化部署
+- **GitHub Actions** - CI/CD自动化
 - **PostgreSQL 15** - 数据库
 - **Maven** - 构建工具
 
@@ -121,7 +96,6 @@ AgentHub/
 项目支持通过环境变量进行配置，主要配置项包括：
 
 #### 数据库配置
-
 - `DB_HOST`: 数据库主机地址（默认：localhost）
 - `DB_PORT`: 数据库端口（默认：5432）
 - `DB_NAME`: 数据库名称（默认：agenthub）
@@ -129,9 +103,19 @@ AgentHub/
 - `DB_PASSWORD`: 数据库密码（默认：postgres）
 
 #### LLM服务配置
+项目支持多种LLM提供商，可通过环境变量配置：
 
-- `LLM_DEFAULT_PROVIDER`: 默认LLM提供商（默认：siliconflow）
-- `SILICONFLOW_API_URL`: SiliconFlow API地址
+**OpenAI配置**
+- `OPENAI_API_KEY`: OpenAI API密钥
+- `OPENAI_BASE_URL`: OpenAI API基础地址（可选）
+
+**阿里云百炼配置**
+- `DASHSCOPE_API_KEY`: 阿里云百炼API密钥
+
+**智谱AI配置**
+- `ZHIPUAI_API_KEY`: 智谱AI API密钥
+
+**SiliconFlow配置**
 - `SILICONFLOW_API_KEY`: SiliconFlow API密钥
 - `SILICONFLOW_MODEL`: 默认模型（默认：Qwen/Qwen3-32B）
 
@@ -178,7 +162,6 @@ AgentHub/
 如需在本地开发环境运行：
 
 #### 后端开发
-
 ```bash
 # 确保PostgreSQL运行在localhost:5432
 # 安装Java 17和Maven
@@ -186,7 +169,6 @@ mvn spring-boot:run
 ```
 
 #### 前端开发
-
 ```bash
 cd AgentHub-Front
 npm install
@@ -197,10 +179,22 @@ npm run dev
 
 项目采用DDD（领域驱动设计）架构：
 
-- **Application层**: 应用服务，处理业务逻辑
-- **Domain层**: 领域模型和业务规则
-- **Infrastructure层**: 基础设施实现
-- **Interfaces层**: 外部接口（API、DTO等）
+**后端架构 (src/main/java/com/xiaoguai/agentx/)**
+- **application/**: 应用服务层
+  - `agent/`: 智能体相关应用服务
+  - `admin/`: 管理员相关应用服务
+- **domain/**: 领域模型层
+  - 实体、值对象、领域服务
+- **infrastructure/**: 基础设施层
+  - 数据库、外部服务集成
+- **interfaces/**: 接口层
+  - REST API控制器、DTO转换
+
+**前端架构 (AgentHub-Front/)**
+- **app/**: Next.js App Router页面
+- **components/**: React组件库
+- **hooks/**: 自定义React Hooks
+- **lib/**: 工具函数和类型定义
 
 ## 🐳 Docker服务
 
@@ -249,11 +243,24 @@ docker compose restart backend
 
 ## 🤝 贡献指南
 
+### 开发流程
 1. Fork项目
 2. 创建特性分支 (`git checkout -b feature/AmazingFeature`)
 3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
 4. 推送到分支 (`git push origin feature/AmazingFeature`)
 5. 打开Pull Request
+
+### 代码规范
+- **后端**: 遵循Java代码规范，代码提交时会自动进行Maven构建和检查
+- **前端**: 遵循TypeScript/React规范，代码提交时会自动进行ESLint检查和类型检查
+- **提交信息**: 使用清晰的提交信息格式，如 `fix: 修复xxx问题` 或 `feature: 添加xxx功能`
+
+### CI/CD流程
+项目配置了GitHub Actions自动化流程：
+- **Backend Java Lint**: Java代码编译和测试
+- **Frontend TS/React Lint**: TypeScript代码检查和类型检查
+
+所有PR必须通过CI检查才能合并到main分支。
 
 ## 📄 许可证
 
