@@ -50,8 +50,14 @@ public class ConversationDomainService {
     /**
      * 保存上下文消息
      */
-    public void saveMessages(List<MessageEntity> messages) {
+    public void saveMessagesToContext(List<MessageEntity> messages, ContextEntity contextEntity) {
         messageRepository.insert(messages);
+
+        List<String> activeMessages = contextEntity.getActiveMessages();
+        for (MessageEntity message : messages) {
+            activeMessages.add(message.getId());
+        }
+        contextRepository.insertOrUpdate(contextEntity);
     }
 
     /**

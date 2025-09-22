@@ -75,12 +75,6 @@ public abstract class AbstractMessageHandler implements MessageHandler {
      */
     protected void saveMessages(ChatContext chatContext, MessageEntity userMessage, MessageEntity assistMessage) {
         // 保存消息
-        conversationDomainService.saveMessages(List.of(userMessage, assistMessage));
-
-        // 更新上下文
-        List<String> activeMessages = chatContext.getContextEntity().getActiveMessages();
-        activeMessages.add(userMessage.getId());
-        activeMessages.add(assistMessage.getId());
-        contextDomainService.insertOrUpdate(chatContext.getContextEntity());
+        conversationDomainService.saveMessagesToContext(List.of(userMessage, assistMessage), chatContext.getContextEntity());
     }
 }

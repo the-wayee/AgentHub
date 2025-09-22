@@ -1,7 +1,16 @@
 package com.xiaoguai.agentx.application.conversation.service.agent.manager;
 
 
+import dev.langchain4j.mcp.McpToolProvider;
+import dev.langchain4j.mcp.client.DefaultMcpClient;
+import dev.langchain4j.mcp.client.McpClient;
+import dev.langchain4j.mcp.client.transport.McpTransport;
+import dev.langchain4j.mcp.client.transport.http.HttpMcpTransport;
+import dev.langchain4j.service.tool.ToolProvider;
 import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @Author: the-way
@@ -11,4 +20,38 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class ToolCallManager {
+
+    /**
+     * 创建Mcp工具调用
+     * @param tools 工具urls
+     */
+    public ToolProvider createToolProvider(List<String> tools) {
+        List<McpClient> clients = new ArrayList<>();
+        for (String url : tools) {
+            McpTransport transport = new HttpMcpTransport.Builder()
+                    .logRequests(true)
+                    .logResponses(true)
+                    .sseUrl(url)
+                    .build();
+
+            McpClient client = new DefaultMcpClient.Builder()
+                    .transport(transport)
+                    .build();
+
+            clients.add(client);
+        }
+
+        return McpToolProvider.builder()
+                .mcpClients(clients)
+                .build();
+    }
+
+    /**
+     * 获取可用工具
+     *
+     * @return urls
+     */
+    public List<String> getAvailableTools() {
+        return new ArrayList<>();
+    }
 }

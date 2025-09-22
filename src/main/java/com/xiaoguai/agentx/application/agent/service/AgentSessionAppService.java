@@ -93,12 +93,10 @@ public class AgentSessionAppService {
         welcomeMessageEntity.setRole(Role.ASSISTANT);
         welcomeMessageEntity.setContent(welcomeMessage);
         welcomeMessageEntity.setSessionId(session.getId());
-        conversationDomainService.saveMessages(List.of(systemMessageEntity, welcomeMessageEntity));
 
         ContextEntity context = new ContextEntity();
         context.setSessionId(session.getId());
-        context.setActiveMessages(List.of(systemMessageEntity.getId(), welcomeMessageEntity.getId()));
-        contextDomainService.insertOrUpdate(context);
+        conversationDomainService.saveMessagesToContext(List.of(systemMessageEntity, welcomeMessageEntity), context);
         return SessionAssembler.toDTO(session);
     }
 
@@ -124,7 +122,7 @@ public class AgentSessionAppService {
         // 删除会话下的消息
         conversationDomainService.deleteConversationMessages(id);
         boolean deleteSession = sessionDomainService.deleteSession(id, userId);
-        if (!deleteSession){
+        if (!deleteSession) {
             throw new BusinessException("删除会话失败");
         }
     }
@@ -132,8 +130,8 @@ public class AgentSessionAppService {
     /**
      * 发送消息
      *
-     * @param id 会话id
-     * @param userId 用户id
+     * @param id      会话id
+     * @param userId  用户id
      * @param request 会话请求
      */
     public void sendMessage(String id, String userId, StreamChatRequest request) {

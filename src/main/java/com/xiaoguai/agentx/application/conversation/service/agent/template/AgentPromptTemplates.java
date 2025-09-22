@@ -106,4 +106,8 @@ public class AgentPromptTemplates {
                     "   \"reply\": String          // 对于问答消息，返回使用Markdown格式的完整、丰富且个性化的回复；对于任务消息，留空\n" +
                     "}\n\n" +
                     "用户消息是： %s";
+
+    public static String getInfoAnalysisPrompt() {
+        return infoAnalysisPrompt;
+    }
 }

@@ -1,7 +1,9 @@
 package com.xiaoguai.agentx.application.conversation.service.agent.workflow;
 
 
+import com.xiaoguai.agentx.application.conversation.dto.AgentChatResponse;
 import com.xiaoguai.agentx.application.conversation.service.ChatContext;
+import com.xiaoguai.agentx.domain.conversation.constants.MessageType;
 import com.xiaoguai.agentx.domain.conversation.model.MessageEntity;
 import com.xiaoguai.agentx.domain.task.model.TaskEntity;
 import com.xiaoguai.agentx.infrastrcture.transport.MessageTransport;
@@ -81,6 +83,16 @@ public class AgentWorkflowContext<T> {
      * 额外信息，用来分析任务是否需要拆分
      */
     private Map<String, Object> extraData;
+
+
+    /**
+     * 发送结束消息
+     */
+    public void sendEndMessage(String message, MessageType messageType) {
+        AgentChatResponse response = AgentChatResponse.build(message, true, false, messageType);
+        transport.sendEndMessage(connection, response);
+    }
+
 
     public String getId() {
         return id;
