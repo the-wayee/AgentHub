@@ -8,6 +8,7 @@ import com.xiaoguai.agentx.domain.conversation.model.MessageEntity;
 import com.xiaoguai.agentx.domain.task.model.TaskEntity;
 import com.xiaoguai.agentx.infrastrcture.transport.MessageTransport;
 
+import java.awt.*;
 import java.util.Map;
 import java.util.UUID;
 
@@ -91,6 +92,14 @@ public class AgentWorkflowContext<T> {
     public void sendEndMessage(String message, MessageType messageType) {
         AgentChatResponse response = AgentChatResponse.build(message, true, false, messageType);
         transport.sendEndMessage(connection, response);
+    }
+
+    /**
+     * 发送异常消息
+     */
+    public void sendErrorMessage(Throwable ex) {
+        String message = "执行过程产生错误: " + ex.getMessage();
+        sendEndMessage(message, MessageType.TEXT);
     }
 
 
