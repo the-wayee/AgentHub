@@ -11,8 +11,6 @@ import com.xiaoguai.agentx.domain.conversation.constants.Role;
 import com.xiaoguai.agentx.domain.conversation.model.MessageEntity;
 import com.xiaoguai.agentx.domain.conversation.service.ConversationDomainService;
 import com.xiaoguai.agentx.infrastrcture.llm.LlmProviderService;
-import dev.langchain4j.data.message.AiMessage;
-import dev.langchain4j.data.message.ChatMessage;
 import dev.langchain4j.data.message.SystemMessage;
 import dev.langchain4j.data.message.UserMessage;
 import dev.langchain4j.model.chat.ChatModel;
@@ -21,7 +19,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -167,21 +164,8 @@ public class ContextFillManager {
 
 
     public ChatRequest buildRequest(AgentWorkflowContext<?> context) {
-        List<MessageEntity> history = context.getChatContext().getHistoryMessages();
-
-        List<ChatMessage> messages = new ArrayList<>();
-        for (MessageEntity message : history) {
-            if (message.getRole() == Role.USER) {
-                messages.add(new UserMessage(message.getContent()));
-            } else if (message.getRole() == Role.SYSTEM) {
-                messages.add(new SystemMessage(message.getContent()));
-            } else {
-                messages.add(new AiMessage(message.getContent()));
-            }
-        }
-        return ChatRequest.builder()
-                .messages(messages)
-                .build();
+        ChatContext chatContext = context.getChatContext();
+        return chatContext.prepareRequest();
     }
 
 

@@ -107,7 +107,25 @@ public class AgentPromptTemplates {
                     "}\n\n" +
                     "用户消息是： %s";
 
+
+    /**
+     * 获取摘要前缀，用来表示摘要信息
+     */
+    public static String getSummaryPrefix() {
+        return SUMMARY_PREFIX;
+    }
+
+    /**
+     * 获取消息分析提示词
+     */
     public static String getInfoAnalysisPrompt() {
         return infoAnalysisPrompt;
+    }
+
+    /**
+     * 获取分析消息提示词
+     */
+    public static String getAnalyserMessagePrompt(String userMessage) {
+        return String.format(analyserMessagePrompt, userMessage);
     }
 }

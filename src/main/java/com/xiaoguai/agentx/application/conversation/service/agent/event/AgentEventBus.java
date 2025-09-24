@@ -1,6 +1,7 @@
 package com.xiaoguai.agentx.application.conversation.service.agent.event;
 
 
+import com.xiaoguai.agentx.application.conversation.service.agent.handler.AbstractAgentHandler;
 import com.xiaoguai.agentx.application.conversation.service.agent.workflow.AgentWorkflowStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,10 +31,14 @@ public class AgentEventBus {
     /**
      * 发布事件
      */
-    public static <T> void publishEvent(AgentWorkflowStatus status, AgentEvent<T> event) {
+    public static <T> void publishEvent(AgentEvent<T> event) {
+        AgentWorkflowStatus status = event.getToStatus();
         AgentEventHandler handler = handlers.get(status);
         if (handler != null) {
             try {
+                if (((AbstractAgentHandler)handler).isBreak()) {
+                    return;
+                }
                 handler.handle(event);
             } catch (Exception e) {
                 logger.error("事件处理异常: {}", e.getMessage());

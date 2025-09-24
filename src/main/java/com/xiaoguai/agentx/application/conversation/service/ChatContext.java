@@ -1,13 +1,24 @@
 package com.xiaoguai.agentx.application.conversation.service;
 
 
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
+import com.xiaoguai.agentx.application.conversation.service.agent.template.AgentPromptTemplates;
 import com.xiaoguai.agentx.domain.agent.model.AgentEntity;
+import com.xiaoguai.agentx.domain.conversation.constants.Role;
 import com.xiaoguai.agentx.domain.conversation.model.ContextEntity;
 import com.xiaoguai.agentx.domain.conversation.model.MessageEntity;
 import com.xiaoguai.agentx.domain.llm.model.ModelEntity;
 import com.xiaoguai.agentx.domain.llm.model.ProviderEntity;
 import com.xiaoguai.agentx.domain.llm.model.config.LlmModelConfig;
+import dev.langchain4j.data.message.AiMessage;
+import dev.langchain4j.data.message.ChatMessage;
+import dev.langchain4j.data.message.SystemMessage;
+import dev.langchain4j.data.message.UserMessage;
+import dev.langchain4j.model.chat.request.ChatRequest;
+import dev.langchain4j.model.chat.request.ChatRequestParameters;
+import dev.langchain4j.model.openai.OpenAiChatRequestParameters;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -62,6 +73,54 @@ public class ChatContext {
      * 历史消息
      */
     private List<MessageEntity> historyMessages;
+
+
+    /**
+     * 构建聊天请求
+     */
+    public ChatRequest prepareRequest() {
+
+        List<ChatMessage> messages = new ArrayList<>();
+
+        // 如果有系统提示词
+        if (StringUtils.isNotBlank(this.getAgentEntity().getSystemPrompt())) {
+            messages.add(new SystemMessage(this.getAgentEntity().getSystemPrompt()));
+        }
+
+        // 如果有摘要消息
+        if (StringUtils.isNotBlank(this.getContextEntity().getSummary())) {
+            messages.add(new AiMessage(AgentPromptTemplates.getSummaryPrefix() +  this.getContextEntity().getSummary()));
+        }
+
+        // 构建历史消息
+        for (MessageEntity message : historyMessages) {
+            if (message.getRole() == Role.USER) {
+                messages.add(new UserMessage(message.getContent()));
+            } else if (message.getRole() == Role.SYSTEM) {
+                messages.add(new SystemMessage(message.getContent()));
+            } else {
+                messages.add(new AiMessage(message.getContent()));
+            }
+        }
+
+        // 添加当前用户消息
+        messages.add(new UserMessage(this.getUserMessage()));
+
+        // 添加请求参数
+        ChatRequestParameters parameters = OpenAiChatRequestParameters.builder()
+                .modelName(this.getModelEntity().getModelId())
+                .topK(this.getLlmModelConfig().getTopK())
+                .topP(this.getLlmModelConfig().getTopP())
+                .temperature(this.getLlmModelConfig().getTemperature())
+                .build();
+
+
+        return ChatRequest.builder()
+                .messages(messages)
+                .parameters(parameters)
+                .build();
+    }
+
 
     public String getSessionId() {
         return sessionId;

@@ -50,4 +50,10 @@ public class AgentEvent<T> {
     public void setToStatus(AgentWorkflowStatus toStatus) {
         this.toStatus = toStatus;
     }
+
+    public AgentEvent(AgentWorkflowContext<T> context, AgentWorkflowStatus fromStatus, AgentWorkflowStatus toStatus) {
+        this.context = context;
+        this.fromStatus = fromStatus;
+        this.toStatus = toStatus;
+    }
 }

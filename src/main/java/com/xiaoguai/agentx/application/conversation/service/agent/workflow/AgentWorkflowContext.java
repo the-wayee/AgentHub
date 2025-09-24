@@ -3,12 +3,16 @@ package com.xiaoguai.agentx.application.conversation.service.agent.workflow;
 
 import com.xiaoguai.agentx.application.conversation.dto.AgentChatResponse;
 import com.xiaoguai.agentx.application.conversation.service.ChatContext;
+import com.xiaoguai.agentx.application.conversation.service.agent.event.AgentEvent;
+import com.xiaoguai.agentx.application.conversation.service.agent.event.AgentEventBus;
 import com.xiaoguai.agentx.domain.conversation.constants.MessageType;
 import com.xiaoguai.agentx.domain.conversation.model.MessageEntity;
 import com.xiaoguai.agentx.domain.task.model.TaskEntity;
 import com.xiaoguai.agentx.infrastrcture.transport.MessageTransport;
 
 import java.awt.*;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -78,12 +82,12 @@ public class AgentWorkflowContext<T> {
      * k -> 任务名称
      * v -> 任务结果
      */
-    private Map<String, String> subTasksResult;
+    private Map<String, String> subTasksResult = new LinkedHashMap<>();
 
     /**
      * 额外信息，用来分析任务是否需要拆分
      */
-    private Map<String, Object> extraData;
+    private Map<String, Object> extraData = new HashMap<>();
 
 
     /**
@@ -102,6 +106,12 @@ public class AgentWorkflowContext<T> {
         sendEndMessage(message, MessageType.TEXT);
     }
 
+    public void transitionTo(AgentWorkflowStatus status) {
+        this.previousStatus = this.status;
+        this.status = status;
+        AgentEvent<T> event = new AgentEvent<>(this, this.previousStatus, this.status);
+        AgentEventBus.publishEvent(event);
+    }
 
     public String getId() {
         return id;
@@ -191,7 +201,7 @@ public class AgentWorkflowContext<T> {
         return extraData;
     }
 
-    public void setExtraData(Map<String, Object> extraData) {
-        this.extraData = extraData;
+    public void addExtraData(String key,  Object value) {
+        this.extraData.put(key, value);
     }
 }
