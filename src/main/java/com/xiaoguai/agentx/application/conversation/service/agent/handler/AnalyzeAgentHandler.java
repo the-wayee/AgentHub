@@ -27,8 +27,8 @@ public class AnalyzeAgentHandler extends AbstractAgentHandler {
 
     private static final String extraAnalyzerMessageKey = "analyzerMessage";
 
-    protected AnalyzeAgentHandler(ConversationDomainService conversationDomainService, ContextFillManager contextFillManager) {
-        super(conversationDomainService, contextFillManager);
+    protected AnalyzeAgentHandler(ConversationDomainService conversationDomainService) {
+        super(conversationDomainService);
     }
 
 

@@ -11,6 +11,8 @@ import com.xiaoguai.agentx.domain.conversation.constants.Role;
 import com.xiaoguai.agentx.domain.conversation.model.MessageEntity;
 import com.xiaoguai.agentx.domain.conversation.service.ConversationDomainService;
 import com.xiaoguai.agentx.infrastrcture.llm.LlmProviderService;
+import dev.langchain4j.data.message.AiMessage;
+import dev.langchain4j.data.message.ChatMessage;
 import dev.langchain4j.data.message.SystemMessage;
 import dev.langchain4j.data.message.UserMessage;
 import dev.langchain4j.model.chat.ChatModel;
@@ -19,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -58,6 +61,9 @@ public class ContextFillManager {
         this.conversationDomainService = conversationDomainService;
     }
 
+    public CompletableFuture<Boolean> checkInfoComplete(AgentWorkflowContext<?> context) {
+        return checkInfoComplete(context, 1);
+    }
 
     /**
      * 判断用户信息是否完整
@@ -87,13 +93,16 @@ public class ContextFillManager {
 
         MessageEntity assistMessage = createAssistMessage(context.getChatContext());
         // 构建历史上下文消息
-        ChatRequest chatRequest = buildRequest(context);
+        List<ChatMessage> chatMessages = buildeMessages(context);
 
         // 添加用户消息
-        chatRequest.messages().add(new UserMessage(userMessage));
+        chatMessages.add(new UserMessage(userMessage));
 
         // 添加系统提示词
-        chatRequest.messages().add(new SystemMessage(AgentPromptTemplates.getInfoAnalysisPrompt()));
+        chatMessages.add(new SystemMessage(AgentPromptTemplates.getInfoAnalysisPrompt()));
+        ChatRequest chatRequest = ChatRequest.builder()
+                .messages(chatMessages)
+                .build();
         try {
             // 获取请求客户端
             ChatModel chatModel = getChatModel(context);
@@ -155,17 +164,42 @@ public class ContextFillManager {
     }
 
     /**
+     * 是否是补充说明
+     */
+    public boolean isSupplement(String sessionId) {
+        return WAITING_FUTURE.get(sessionId) != null;
+    }
+
+    /**
+     * 获取之前的工作流
+     */
+    public AgentWorkflowContext<?> getPreWorkflowContext(String sessionId) {
+        return  BLOCKING_CONTEXT.get(sessionId);
+    }
+
+    /**
      * 获取标准客户端
      */
-    public ChatModel getChatModel(AgentWorkflowContext<?> context) {
+    private ChatModel getChatModel(AgentWorkflowContext<?> context) {
         return LlmProviderService.getChatModel(context.getChatContext().getProviderEntity().getProtocol(),
                 context.getChatContext().getProviderEntity().getConfig());
     }
 
 
-    public ChatRequest buildRequest(AgentWorkflowContext<?> context) {
+    private List<ChatMessage> buildeMessages(AgentWorkflowContext<?> context) {
         ChatContext chatContext = context.getChatContext();
-        return chatContext.prepareRequest();
+        List<ChatMessage> messages = new ArrayList<>();
+        for (MessageEntity message : chatContext.getHistoryMessages()) {
+            if (message.getRole() == Role.USER) {
+                messages.add(new UserMessage(message.getContent()));
+            } else if (message.getRole() == Role.SYSTEM) {
+                messages.add(new SystemMessage(message.getContent()));
+            } else {
+                messages.add(new AiMessage(message.getContent()));
+            }
+        }
+
+        return messages;
     }
 
 

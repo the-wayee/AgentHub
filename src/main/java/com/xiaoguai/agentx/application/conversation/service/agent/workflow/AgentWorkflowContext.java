@@ -75,19 +75,19 @@ public class AgentWorkflowContext<T> {
      * k -> 任务名称
      * v -> 任务实体
      */
-    private Map<String, TaskEntity> subTasks;
+    private Map<String, TaskEntity> subTasks = new LinkedHashMap<>();
 
     /**
      * 子任务结果映射
      * k -> 任务名称
      * v -> 任务结果
      */
-    private Map<String, String> subTasksResult = new LinkedHashMap<>();
+    private final Map<String, String> subTasksResult = new LinkedHashMap<>();
 
     /**
      * 额外信息，用来分析任务是否需要拆分
      */
-    private Map<String, Object> extraData = new HashMap<>();
+    private final Map<String, Object> extraData = new HashMap<>();
 
 
     /**
@@ -193,9 +193,6 @@ public class AgentWorkflowContext<T> {
         return subTasksResult;
     }
 
-    public void setSubTasksResult(Map<String, String> subTasksResult) {
-        this.subTasksResult = subTasksResult;
-    }
 
     public Map<String, Object> getExtraData() {
         return extraData;

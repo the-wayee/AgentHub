@@ -25,13 +25,10 @@ public abstract class AbstractAgentHandler implements AgentEventHandler {
 
     private final ConversationDomainService conversationDomainService;
 
-    private final ContextFillManager contextFillManager;
-
     private boolean isBreak = false;
 
-    protected AbstractAgentHandler(ConversationDomainService conversationDomainService, ContextFillManager contextFillManager) {
+    protected AbstractAgentHandler(ConversationDomainService conversationDomainService) {
         this.conversationDomainService = conversationDomainService;
-        this.contextFillManager = contextFillManager;
     }
 
 

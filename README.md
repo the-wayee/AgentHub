@@ -250,6 +250,87 @@ docker compose restart backend
 4. 推送到分支 (`git push origin feature/AmazingFeature`)
 5. 打开Pull Request
 
+### Git提交信息规范
+
+#### 格式要求
+提交信息遵循以下格式：
+```
+<type>(<scope>): <subject>
+
+<body>
+
+<footer>
+```
+
+#### 类型说明
+- `feat`: 新功能
+- `fix`: 修复bug
+- `docs`: 文档更新
+- `style`: 代码格式调整（不影响功能）
+- `refactor`: 代码重构（不影响功能）
+- `perf`: 性能优化
+- `test`: 测试相关
+- `chore`: 构建工具、依赖管理
+- `ci`: CI/CD配置相关
+- `build`: 构建相关
+- `revert`: 回滚操作
+- `optimize`: 优化（包括代码、性能等）
+- `adjust`: 调整配置或参数
+- `feature`: 功能开发（用于较大功能模块）
+
+#### 作用域说明
+使用括号标注影响范围：
+- `back`: 后端相关
+- `front`: 前端相关
+- `doc`: 文档相关
+- `ci`: CI/CD相关
+- `all`: 全局性改动
+
+#### 示例
+```
+feat(back): 开发Agent问题分析处理器
+
+- 实现问题分析工作流
+- 添加问题分类功能
+- 集成LangChain4j处理逻辑
+
+🤖 Generated with [Claude Code](https://claude.ai/code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+```
+
+```
+fix(front): 修复前端消息接口触发异常
+
+- 修复API调用错误处理
+- 优化用户体验
+- 添加错误提示
+
+🤖 Generated with [Claude Code](https://claude.ai/code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+```
+
+```
+docs: 更新API文档和README
+
+- 添加接口说明
+- 更新部署指南
+- 完善贡献指南
+
+🤖 Generated with [Claude Code](https://claude.ai/code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+```
+
+#### 注意事项
+1. **英文标点**: 使用英文冒号和句号
+2. **简洁明了**: 主题行不超过50个字符
+3. **中文描述**: 主题和正文使用中文
+4. **完整描述**: 正文详细说明变更内容
+5. **统一格式**: 使用Claude Code生成统一格式的提交信息
+6. **关联PR**: 在footer中添加相关PR或Issue编号
+
 ### 代码规范
 - **后端**: 遵循Java代码规范，代码提交时会自动进行Maven构建和检查
 - **前端**: 遵循TypeScript/React规范，代码提交时会自动进行ESLint检查和类型检查
