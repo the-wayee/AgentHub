@@ -12,10 +12,13 @@ import com.xiaoguai.agentx.application.conversation.service.agent.workflow.Agent
 import com.xiaoguai.agentx.domain.conversation.constants.MessageType;
 import com.xiaoguai.agentx.domain.conversation.model.MessageEntity;
 import com.xiaoguai.agentx.domain.conversation.service.ConversationDomainService;
+import dev.langchain4j.data.message.ChatMessage;
+import dev.langchain4j.data.message.SystemMessage;
 import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.model.chat.request.ChatRequest;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -46,7 +49,9 @@ public class AnalyzeAgentHandler extends AbstractAgentHandler {
 
         // 构建请求
         ChatRequest chatRequest = buildRequest(context.getChatContext());
-
+        List<ChatMessage> messages = new ArrayList<>(chatRequest.messages());
+        messages.add(new SystemMessage(AgentPromptTemplates.getAnalyserMessagePrompt(userMessage.getContent())));
+        chatRequest = chatRequest.toBuilder().messages(messages).build();
         // 请求大模型，询问是否简单问题
         String result = chatModel.chat(chatRequest).aiMessage().text();
         AnalyzerMessageDTO analyzerMessageDTO = JSON.parseObject(result, AnalyzerMessageDTO.class);
@@ -79,8 +84,6 @@ public class AnalyzeAgentHandler extends AbstractAgentHandler {
      * 构建请求
      */
     private ChatRequest buildRequest(ChatContext context) {
-        String userMessage = context.getUserMessage();
-        context.setUserMessage(AgentPromptTemplates.getAnalyserMessagePrompt(userMessage));
         return context.prepareRequest();
     }
 

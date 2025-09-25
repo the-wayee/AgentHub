@@ -141,7 +141,7 @@ public class ContextFillManager {
             conversationDomainService.saveMessagesToContext(List.of(assistMessage, userMessage1), context.getChatContext().getContextEntity());
 
             // 向前端发送补充信息
-            context.sendEndMessage(requirement, MessageType.TEXT);
+            context.sendStreamMessage(requirement, MessageType.TEXT);
 
             // 等待用户补充数据
             CompletableFuture<String> waitForInput = new CompletableFuture<>();
