@@ -49,10 +49,10 @@ export const useConvoStore = create<ConvoState>()(
           // 调用后端API创建真实的会话
           const data = await api.createSession(agentId)
           
-          // 处理不同的响应格式
-          const sessionId = data?.id || data?.data?.id || data?.sessionId
-          const title = data?.title || data?.data?.title || "新会话"
-          const createdAt = data?.createdAt || data?.data?.createdAt || Date.now()
+          // 处理Result<SessionDTO>响应格式
+          const sessionId = data?.data?.id || data?.id || data?.sessionId
+          const title = data?.data?.title || data?.title || "新会话"
+          const createdAt = data?.data?.createdAt || data?.createdAt || Date.now()
           
           if (sessionId) {
             // 使用后端返回的真实sessionId

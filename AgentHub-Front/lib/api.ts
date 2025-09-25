@@ -250,7 +250,7 @@ export const api = {
   
   // 删除会话
   deleteSession: (sessionId: string) => {
-    return apiFetch(`/api/session/${sessionId}`, {
+    return apiFetch(`/api/agent/session/${sessionId}`, {
       method: "DELETE",
     });
   },

@@ -100,10 +100,10 @@ export function WorkspaceSidebar({
               if (!agent?.id) return
               try {
                 const j = await api.createSession(agent.id)
-                if (j?.id) {
+                if (j?.data?.id) {
                   // insert locally without reloading
-                  addConversation({ id: j.id, agentId: agent.id, title: j.title, createdAt: j.createdAt })
-                  setActive(j.id)
+                  addConversation({ id: j.data.id, agentId: agent.id, title: j.data.title, createdAt: j.data.createdAt })
+                  setActive(j.data.id)
                   toast({ title: '已新建会话' })
                 } else {
                   // 后端创建失败，显示错误信息
