@@ -53,8 +53,8 @@ public class AnalyzeAgentHandler extends AbstractAgentHandler {
         context.addExtraData(extraAnalyzerMessageKey, analyzerMessageDTO);
         // 是简单问答问题
         if (analyzerMessageDTO.isQuestion()) {
-            // 向前端返回响应
-            context.sendEndMessage(analyzerMessageDTO.getReply(), MessageType.TEXT);
+            // 向前端返回流式响应
+            context.sendStreamMessage(analyzerMessageDTO.getReply(), MessageType.TEXT);
             // 保存消息
             context.getAssistMessage().setContent(analyzerMessageDTO.getReply());
             saveAndUpdateContext(List.of(context.getUserMessage(), context.getAssistMessage()), context.getChatContext());

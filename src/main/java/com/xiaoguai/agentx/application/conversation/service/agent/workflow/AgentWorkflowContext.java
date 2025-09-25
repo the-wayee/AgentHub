@@ -11,6 +11,9 @@ import com.xiaoguai.agentx.domain.task.model.TaskEntity;
 import com.xiaoguai.agentx.infrastrcture.transport.MessageTransport;
 
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @Author: the-way
@@ -117,6 +120,52 @@ public class AgentWorkflowContext<T> {
     public void sendErrorMessage(Throwable ex) {
         String message = "执行过程产生错误: " + ex.getMessage();
         sendEndMessage(message, MessageType.TEXT);
+    }
+
+    /**
+     * 流式发送消息（模拟流式效果）
+     */
+    public void sendStreamMessage(String message, MessageType messageType) {
+        ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+
+        // 将消息按句子拆分，如果消息较短则按词拆分
+        List<String> chunks = splitMessageIntoChunks(message);
+
+        for (int i = 0; i < chunks.size(); i++) {
+            final int index = i;
+            final String chunk = chunks.get(i);
+            final boolean isLast = (index == chunks.size() - 1);
+
+            scheduler.schedule(() -> {
+                try {
+                    AgentChatResponse response = AgentChatResponse.build(chunk, isLast, false, messageType);
+                    if (isLast) {
+                        transport.sendEndMessage(connection, response);
+                    } else {
+                        transport.sendMessage(connection, response);
+                    }
+                } catch (Exception e) {
+                    // 忽略发送异常，避免影响主流程
+                }
+            }, index * 30, TimeUnit.MILLISECONDS); // 每30ms发送一个片段
+        }
+
+        // 关闭调度器
+        scheduler.schedule(scheduler::shutdown, (chunks.size() + 1) * 30, TimeUnit.MILLISECONDS);
+    }
+
+    /**
+     * 将消息拆分为单个字符
+     */
+    private List<String> splitMessageIntoChunks(String message) {
+        List<String> chunks = new ArrayList<>();
+
+        // 逐字拆分
+        for (int i = 0; i < message.length(); i++) {
+            chunks.add(String.valueOf(message.charAt(i)));
+        }
+
+        return chunks.isEmpty() ? Collections.singletonList(message) : chunks;
     }
 
     public void transitionTo(AgentWorkflowStatus status) {
