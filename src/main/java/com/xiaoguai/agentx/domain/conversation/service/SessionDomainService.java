@@ -23,9 +23,11 @@ import java.util.stream.Collectors;
 public class SessionDomainService {
 
     private final SessionRepository sessionRepository;
+    private final MessageDomainService messageDomainService;
 
-    public SessionDomainService(SessionRepository sessionRepository) {
+    public SessionDomainService(SessionRepository sessionRepository, MessageDomainService messageDomainService) {
         this.sessionRepository = sessionRepository;
+        this.messageDomainService = messageDomainService;
     }
 
     /**

@@ -18,6 +18,7 @@ import com.xiaoguai.agentx.infrastrcture.exception.BusinessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -65,8 +66,7 @@ public class AgentSessionAppService {
         List<SessionEntity> sessions = sessionDomainService.getSessionsByAgentId(agentId, userId);
         if (sessions.isEmpty()) {
             // 如果没有会话列表，创建一个
-            SessionEntity session = sessionDomainService.createSession(agentId, userId);
-            sessions.add(session);
+            return Collections.singletonList(createSession(agentId, userId));
         }
         return SessionAssembler.toDTOs(sessions);
     }
