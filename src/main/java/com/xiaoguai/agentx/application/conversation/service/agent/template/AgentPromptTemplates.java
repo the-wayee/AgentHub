@@ -128,4 +128,11 @@ public class AgentPromptTemplates {
     public static String getAnalyserMessagePrompt(String userMessage) {
         return String.format(analyserMessagePrompt, userMessage);
     }
+
+    /**
+     * 获取任务拆分提示词
+     */
+    public static String getDecompositionPrompt() {
+        return decompositionPrompt;
+    }
 }

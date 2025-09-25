@@ -36,7 +36,7 @@ public class ContextEntity extends BaseEntity {
      * 活跃消息ID列表，JSON数组
      */
     @TableField(value = "active_messages", typeHandler = ListConverter.class)
-    private List<String> activeMessages;
+    private List<String> activeMessages = new ArrayList<>();
 
     /**
      * 历史消息摘要

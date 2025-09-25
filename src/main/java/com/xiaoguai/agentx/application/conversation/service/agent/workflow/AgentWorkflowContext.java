@@ -10,11 +10,7 @@ import com.xiaoguai.agentx.domain.conversation.model.MessageEntity;
 import com.xiaoguai.agentx.domain.task.model.TaskEntity;
 import com.xiaoguai.agentx.infrastrcture.transport.MessageTransport;
 
-import java.awt.*;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * @Author: the-way
@@ -66,10 +62,11 @@ public class AgentWorkflowContext<T> {
 
     /**
      * 父任务
-     * 代表这个会话的复杂任务
      */
     private TaskEntity parentTask;
 
+
+    private List<String> tasks = new ArrayList<>();
     /**
      * 子任务
      * k -> 任务名称
@@ -89,12 +86,28 @@ public class AgentWorkflowContext<T> {
      */
     private final Map<String, Object> extraData = new HashMap<>();
 
+    /**
+     * 工作流是否中断
+     */
+    private boolean isBreak = false;
 
+    /**
+     * 发送普通消息
+     */
+    public void sendMessage(String message, MessageType messageType){
+        AgentChatResponse response = AgentChatResponse.build(message, false, false, messageType);
+        transport.sendEndMessage(connection, response);
+    }
     /**
      * 发送结束消息
      */
     public void sendEndMessage(String message, MessageType messageType) {
         AgentChatResponse response = AgentChatResponse.build(message, true, false, messageType);
+        transport.sendEndMessage(connection, response);
+    }
+
+    public void sendEndMessage(MessageType messageType) {
+        AgentChatResponse response = AgentChatResponse.buildEndMessage(messageType);
         transport.sendEndMessage(connection, response);
     }
 
@@ -111,6 +124,14 @@ public class AgentWorkflowContext<T> {
         this.status = status;
         AgentEvent<T> event = new AgentEvent<>(this, this.previousStatus, this.status);
         AgentEventBus.publishEvent(event);
+    }
+
+    /**
+     * 添加子任务
+     */
+    public void addSubTask(TaskEntity task) {
+        tasks.add(task.getTaskName());
+        subTasks.put(task.getTaskName(), task);
     }
 
     public String getId() {
@@ -193,6 +214,13 @@ public class AgentWorkflowContext<T> {
         return subTasksResult;
     }
 
+    public List<String> getTasks() {
+        return tasks;
+    }
+
+    public void setTasks(List<String> tasks) {
+        this.tasks = tasks;
+    }
 
     public Map<String, Object> getExtraData() {
         return extraData;
@@ -200,5 +228,13 @@ public class AgentWorkflowContext<T> {
 
     public void addExtraData(String key,  Object value) {
         this.extraData.put(key, value);
+    }
+
+    public boolean isBreak() {
+        return isBreak;
+    }
+
+    public void setBreak(boolean aBreak) {
+        isBreak = aBreak;
     }
 }

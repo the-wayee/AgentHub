@@ -68,7 +68,7 @@ public class AnalyzeAgentHandler extends AbstractAgentHandler {
     public <T> void transitionTo(AgentWorkflowContext<T> context) {
         AnalyzerMessageDTO dto = (AnalyzerMessageDTO) context.getExtraData().get(extraAnalyzerMessageKey);
         if (dto.isQuestion()) {
-            super.setBreak(true);
+            context.setBreak(true);
         } else {
             context.transitionTo(AgentWorkflowStatus.TASK_SPLIT);
         }

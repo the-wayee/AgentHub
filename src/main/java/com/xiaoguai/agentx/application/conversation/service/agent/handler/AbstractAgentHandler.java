@@ -11,6 +11,7 @@ import com.xiaoguai.agentx.domain.conversation.model.MessageEntity;
 import com.xiaoguai.agentx.domain.conversation.service.ConversationDomainService;
 import com.xiaoguai.agentx.infrastrcture.llm.LlmProviderService;
 import dev.langchain4j.model.chat.ChatModel;
+import dev.langchain4j.model.chat.StreamingChatModel;
 
 import java.util.List;
 
@@ -24,9 +25,6 @@ import java.util.List;
 public abstract class AbstractAgentHandler implements AgentEventHandler {
 
     private final ConversationDomainService conversationDomainService;
-
-    private boolean isBreak = false;
-
     protected AbstractAgentHandler(ConversationDomainService conversationDomainService) {
         this.conversationDomainService = conversationDomainService;
     }
@@ -57,12 +55,19 @@ public abstract class AbstractAgentHandler implements AgentEventHandler {
     public abstract <T> void transitionTo(AgentWorkflowContext<T> context);
 
 
-
     /**
      * 获取标准客户端
      */
     protected ChatModel getChatModel(AgentWorkflowContext<?> context) {
         return LlmProviderService.getChatModel(context.getChatContext().getProviderEntity().getProtocol(),
+                context.getChatContext().getProviderEntity().getConfig());
+    }
+
+    /**
+     * 获取流式客户端
+     */
+    protected StreamingChatModel getStreamModel(AgentWorkflowContext<?> context) {
+        return LlmProviderService.getStreamModel(context.getChatContext().getProviderEntity().getProtocol(),
                 context.getChatContext().getProviderEntity().getConfig());
     }
 
@@ -96,15 +101,4 @@ public abstract class AbstractAgentHandler implements AgentEventHandler {
         return message;
     }
 
-
-    /**
-     * 设置工作流中断标记
-     */
-    public void setBreak(boolean isBreak) {
-        this.isBreak = isBreak;
-    }
-
-    public boolean isBreak() {
-        return isBreak;
-    }
 }

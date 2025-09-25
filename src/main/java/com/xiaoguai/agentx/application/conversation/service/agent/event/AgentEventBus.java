@@ -36,7 +36,7 @@ public class AgentEventBus {
         AgentEventHandler handler = handlers.get(status);
         if (handler != null) {
             try {
-                if (((AbstractAgentHandler)handler).isBreak()) {
+                if (event.getContext().isBreak()) {
                     return;
                 }
                 handler.handle(event);

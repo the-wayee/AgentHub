@@ -62,6 +62,15 @@ public class AgentChatResponse {
         return streamChatResponse;
     }
 
+    public static AgentChatResponse buildEndMessage(MessageType messageType) {
+        AgentChatResponse streamChatResponse = new AgentChatResponse();
+        streamChatResponse.setContent("");
+        streamChatResponse.setDone(true);
+        streamChatResponse.setThinking(false);
+        streamChatResponse.setMessageType(messageType);
+        return streamChatResponse;
+    }
+
 
     public String getContent() {
         return content;

@@ -17,7 +17,7 @@ public class AnalyzerMessageDTO {
         return isQuestion;
     }
 
-    public void setQuestion(boolean question) {
+    public void setIsQuestion(boolean question) {
         isQuestion = question;
     }
 
