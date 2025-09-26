@@ -14,6 +14,7 @@ import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @Author: the-way
@@ -70,6 +71,12 @@ public class AgentWorkflowContext<T> {
 
 
     private List<String> tasks = new ArrayList<>();
+
+
+    /**
+     * 当前执行任务索引
+     */
+    private final AtomicInteger currentTaskIndex = new AtomicInteger(0);
     /**
      * 子任务
      * k -> 任务名称
@@ -83,6 +90,11 @@ public class AgentWorkflowContext<T> {
      * v -> 任务结果
      */
     private final Map<String, String> subTasksResult = new LinkedHashMap<>();
+
+    /**
+     * 已完成的任务数量
+     */
+    private int completeTaskCount = 0;
 
     /**
      * 额外信息，用来分析任务是否需要拆分
@@ -106,12 +118,12 @@ public class AgentWorkflowContext<T> {
      */
     public void sendEndMessage(String message, MessageType messageType) {
         AgentChatResponse response = AgentChatResponse.build(message, true, false, messageType);
-        transport.sendEndMessage(connection, response);
+        transport.sendMessage(connection, response);
     }
 
     public void sendEndMessage(MessageType messageType) {
         AgentChatResponse response = AgentChatResponse.buildEndMessage(messageType);
-        transport.sendEndMessage(connection, response);
+        transport.sendMessage(connection, response);
     }
 
     /**
@@ -182,6 +194,34 @@ public class AgentWorkflowContext<T> {
         tasks.add(task.getTaskName());
         subTasks.put(task.getTaskName(), task);
     }
+
+    /**
+     * 判断是否还有下一个任务
+     */
+    public boolean hasNextTask() {
+        return currentTaskIndex.get() < tasks.size();
+    }
+
+    /**
+     * 设置任务结果
+     */
+    public void setTaskResult(String taskName,  String taskResult) {
+        subTasksResult.put(taskName, taskResult);
+        completeTaskCount++;
+    }
+    /**
+     * 获取当前执行任务
+     */
+    public String getCurrentTask() {
+        int index = currentTaskIndex.getAndIncrement();
+        if (index < tasks.size()) {
+            return tasks.get(index);
+        }
+        return null;
+    }
+
+
+
 
     public String getId() {
         return id;
@@ -279,11 +319,33 @@ public class AgentWorkflowContext<T> {
         this.extraData.put(key, value);
     }
 
+    public AtomicInteger getCurrentTaskIndex() {
+        return currentTaskIndex;
+    }
+
+    public int getCompleteTaskCount() {
+        return completeTaskCount;
+    }
+
+    public int getTotalTaskCount() {
+        return tasks.size();
+    }
+
+    public void setCompleteTaskCount(int completeTaskCount) {
+        this.completeTaskCount = completeTaskCount;
+    }
+
     public boolean isBreak() {
         return isBreak;
     }
 
     public void setBreak(boolean aBreak) {
         isBreak = aBreak;
+    }
+
+    public void sendTaskEndMessage(String taskId, MessageType messageType) {
+        AgentChatResponse response = AgentChatResponse.buildEndMessage(messageType);
+        response.setTaskId(taskId);
+        transport.sendMessage(connection, response);
     }
 }

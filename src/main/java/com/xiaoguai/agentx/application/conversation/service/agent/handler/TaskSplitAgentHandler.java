@@ -113,11 +113,11 @@ public class TaskSplitAgentHandler extends AbstractAgentHandler {
                     // 告诉前端任务拆分结束
                     context.sendEndMessage(MessageType.TASK_SPLIT_FINISH);
 
+                    // 更新上下文
+                    saveAndUpdateContext(List.of(userMessage, assistMessage), context.getChatContext());
                     // 任务流转
                     context.transitionTo(AgentWorkflowStatus.TASK_SPLIT_COMPLETE);
 
-                    // 更新上下文
-                    saveAndUpdateContext(List.of(userMessage, assistMessage), context.getChatContext());
                 } catch (Exception e) {
                     logger.error("任务拆分阶段出错，{}", e.getMessage());
                     context.sendErrorMessage(e);
@@ -139,8 +139,10 @@ public class TaskSplitAgentHandler extends AbstractAgentHandler {
     private List<String> splitTaskDescriptions(String text) {
         List<String> tasks = new ArrayList<>();
 
-        // 简单的任务分割逻辑，基于行号和可能的标记如"任务1"，"1."等
-        // 实际项目中可能需要更复杂的解析逻辑
+        if (text == null || text.trim().isEmpty()) {
+            return tasks;
+        }
+
         String[] lines = text.split("\n");
         StringBuilder currentTask = new StringBuilder();
 
@@ -152,10 +154,19 @@ public class TaskSplitAgentHandler extends AbstractAgentHandler {
                 continue;
             }
 
-            // 检测新任务的开始（基于常见模式）
-            boolean isNewTask = line.matches("^\\d+\\..*") || // "1. 任务描述"
+            // 检测新任务的开始（支持更多格式）
+            boolean isNewTask = line.matches("^\\d+[.、)].*") || // "1. 任务描述", "1、任务描述", "1)任务描述"
+                    line.matches("^[-•*▪‣⁃].*") || // "- 任务描述", "• 任务描述" 等
                     line.matches("^任务\\s*\\d+.*") || // "任务1: 描述"
-                    line.matches("^子任务\\s*\\d+.*"); // "子任务1: 描述"
+                    line.matches("^子任务\\s*\\d+.*") || // "子任务1: 描述"
+                    line.matches("^[A-Z][.)].*") || // "A. 任务描述", "A)任务描述"
+                    line.matches("^[a-z][.)].*"); // "a. 任务描述", "a)任务描述"
+
+            // 移除任务标识符（如 "1. ", "- " 等）
+            String cleanedLine = line.replaceAll("^[0-9]+[.、)]\\s*", "")
+                    .replaceAll("^[-•*▪‣⁃]\\s*", "")
+                    .replaceAll("^[子]?任务\\s*\\d+[:：]\\s*", "")
+                    .replaceAll("^[A-Za-z][.)]\\s*", "");
 
             if (isNewTask && currentTask.length() > 0) {
                 // 保存之前的任务
@@ -163,7 +174,7 @@ public class TaskSplitAgentHandler extends AbstractAgentHandler {
                 currentTask = new StringBuilder();
             }
 
-            currentTask.append(line).append("\n");
+            currentTask.append(cleanedLine).append("\n");
         }
 
         // 添加最后一个任务

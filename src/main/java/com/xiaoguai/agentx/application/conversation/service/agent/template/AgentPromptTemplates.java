@@ -1,6 +1,8 @@
 package com.xiaoguai.agentx.application.conversation.service.agent.template;
 
 
+import java.util.Map;
+
 /**
  * @Author: the-way
  * @Verson: v1.0
@@ -134,5 +136,22 @@ public class AgentPromptTemplates {
      */
     public static String getDecompositionPrompt() {
         return decompositionPrompt;
+    }
+
+    /**
+     * \
+     * 获取任务执行提示词
+     */
+    public static String getTaskExecutionPrompt(String parentTask, String currentTask,
+                                                Map<String, String> taskResult) {
+        StringBuilder sb = new StringBuilder();
+        if (!taskResult.isEmpty()) {
+            sb.append("已完成的子任务：\n");
+            taskResult.forEach((k, v) -> {
+                sb.append("- 任务: ").append(k).append("\n")
+                        .append("- 结果: ").append(v).append("\n\n");
+            });
+        }
+        return String.format(taskExecutionPrompt, parentTask, currentTask, sb);
     }
 }

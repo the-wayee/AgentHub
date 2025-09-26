@@ -4,8 +4,8 @@ package com.xiaoguai.agentx.application.conversation.service.agent.handler;
 import com.xiaoguai.agentx.application.conversation.service.ChatContext;
 import com.xiaoguai.agentx.application.conversation.service.agent.event.AgentEvent;
 import com.xiaoguai.agentx.application.conversation.service.agent.event.AgentEventHandler;
-import com.xiaoguai.agentx.application.conversation.service.agent.manager.ContextFillManager;
 import com.xiaoguai.agentx.application.conversation.service.agent.workflow.AgentWorkflowContext;
+import com.xiaoguai.agentx.domain.conversation.constants.MessageType;
 import com.xiaoguai.agentx.domain.conversation.constants.Role;
 import com.xiaoguai.agentx.domain.conversation.model.MessageEntity;
 import com.xiaoguai.agentx.domain.conversation.service.ConversationDomainService;
@@ -76,6 +76,29 @@ public abstract class AbstractAgentHandler implements AgentEventHandler {
      */
     protected void saveAndUpdateContext(List<MessageEntity> messages, ChatContext context) {
         conversationDomainService.saveMessagesToContext(messages, context.getContextEntity());
+    }
+
+    /**
+     * 保存消息，但是不更新到上下文
+     */
+    protected void saveMessage(MessageEntity message) {
+        conversationDomainService.saveMessage(message);
+    }
+
+    /**
+     * 保存任务执行消息
+     */
+    protected MessageEntity createMessage(ChatContext chatContext, String content, MessageType messageType, int tokenCount) {
+        MessageEntity message = new MessageEntity();
+        message.setSessionId(chatContext.getSessionId());
+        message.setMessageType(messageType);
+        message.setModel(chatContext.getLlmModelConfig().getModelId());
+        message.setProvider(chatContext.getProviderEntity().getId());
+        message.setRole(Role.ASSISTANT);
+        message.setContent(content);
+        message.setTokenCount(tokenCount);
+        return message;
+
     }
 
     /**

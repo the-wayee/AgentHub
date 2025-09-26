@@ -2,8 +2,10 @@ package com.xiaoguai.agentx.application.conversation.service.agent;
 
 
 import com.xiaoguai.agentx.application.conversation.service.ChatContext;
+import com.xiaoguai.agentx.application.conversation.service.agent.event.AgentEvent;
 import com.xiaoguai.agentx.application.conversation.service.agent.event.AgentEventBus;
 import com.xiaoguai.agentx.application.conversation.service.agent.handler.AnalyzeAgentHandler;
+import com.xiaoguai.agentx.application.conversation.service.agent.handler.TaskExecAgentHandler;
 import com.xiaoguai.agentx.application.conversation.service.agent.handler.TaskSplitAgentHandler;
 import com.xiaoguai.agentx.application.conversation.service.agent.manager.ContextFillManager;
 import com.xiaoguai.agentx.application.conversation.service.agent.manager.TaskManager;
@@ -28,15 +30,17 @@ public class AgentMessageHandler extends ChatMessageHandler {
     private final ContextFillManager contextFillManager;
     private final AnalyzeAgentHandler analyzeAgentHandler;
     private final TaskSplitAgentHandler taskSplitAgentHandler;
+    private final TaskExecAgentHandler taskExecAgentHandler;
 
     private final TaskManager taskManager;
 
-    public AgentMessageHandler(ConversationDomainService conversationDomainService, ContextDomainService contextDomainService, ContextFillManager contextFillManager, AnalyzeAgentHandler analyzeAgentHandler, TaskSplitAgentHandler taskSplitAgentHandler, TaskManager taskManager) {
+    public AgentMessageHandler(ConversationDomainService conversationDomainService, ContextDomainService contextDomainService, ContextFillManager contextFillManager, AnalyzeAgentHandler analyzeAgentHandler, TaskSplitAgentHandler taskSplitAgentHandler, TaskExecAgentHandler taskExecAgentHandler, TaskManager taskManager) {
         super(conversationDomainService, contextDomainService);
         this.contextFillManager = contextFillManager;
 
         this.analyzeAgentHandler = analyzeAgentHandler;
         this.taskSplitAgentHandler = taskSplitAgentHandler;
+        this.taskExecAgentHandler = taskExecAgentHandler;
         this.taskManager = taskManager;
 
         // 初始化处理器
@@ -49,6 +53,9 @@ public class AgentMessageHandler extends ChatMessageHandler {
 
         // 任务分解处理器
         AgentEventBus.register(AgentWorkflowStatus.TASK_SPLIT, taskSplitAgentHandler);
+
+        // 任务执行处理器
+        AgentEventBus.register(AgentWorkflowStatus.TASK_SPLIT_COMPLETE, taskExecAgentHandler);
     }
 
     @Override

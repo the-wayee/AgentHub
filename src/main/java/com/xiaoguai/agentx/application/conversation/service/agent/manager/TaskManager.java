@@ -51,4 +51,29 @@ public class TaskManager {
         task.setStartTime(LocalDateTime.now());
         return task;
     }
+
+    /**
+     * 更新任务进度
+     */
+    public void updateTaskProgress(TaskEntity task, Integer completeTaskCount, Integer totalTaskCount) {
+        int progress = (int)(completeTaskCount / (double)totalTaskCount) * 100;
+        task.updateProgress(progress);
+        taskDomainService.updateTask(task);
+    }
+
+    /**
+     * 更新任务状态
+     */
+    public void updateTaskStatus(TaskEntity task, TaskStatus status) {
+        task.setStatus(status);
+        taskDomainService.updateTask(task);
+    }
+
+    /**
+     * 完成任务
+     */
+    public void completeTask(TaskEntity task, String result) {
+        task.setTaskResult(result);
+        taskDomainService.updateTask(task);
+    }
 }
