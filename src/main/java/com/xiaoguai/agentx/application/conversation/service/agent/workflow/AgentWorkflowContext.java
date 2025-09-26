@@ -348,4 +348,13 @@ public class AgentWorkflowContext<T> {
         response.setTaskId(taskId);
         transport.sendMessage(connection, response);
     }
+
+    /**
+     * 发送任务开始消息（包含任务内容和taskId）
+     */
+    public void sendTaskStartMessage(String taskContent, String taskId, MessageType messageType) {
+        AgentChatResponse response = AgentChatResponse.build(taskContent, true, false, messageType);
+        response.setTaskId(taskId);
+        transport.sendMessage(connection, response);
+    }
 }
