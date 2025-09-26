@@ -85,7 +85,7 @@ public class ContextFillManager {
             WAITING_FUTURE.remove(sessionId);
             BLOCKING_CONTEXT.remove(sessionId);
 
-            context.sendEndMessage("已尝试多次获取信息，将基于已有信息继续处理", MessageType.TEXT);
+            context.sendMessage("已尝试多次获取信息，将基于已有信息继续处理\n\n", MessageType.TEXT);
 
             // 返回完整标识
             return CompletableFuture.completedFuture(true);
@@ -171,10 +171,21 @@ public class ContextFillManager {
     }
 
     /**
+     * 处理补充消息
+     */
+    public void handleRequireInput(String sessionId, String requirement) {
+        CompletableFuture<String> future = WAITING_FUTURE.get(sessionId);
+        if (future != null) {
+            // 确保递归调用会自动进行
+            future.complete(requirement);
+        }
+    }
+
+    /**
      * 获取之前的工作流
      */
     public AgentWorkflowContext<?> getPreWorkflowContext(String sessionId) {
-        return  BLOCKING_CONTEXT.get(sessionId);
+        return BLOCKING_CONTEXT.get(sessionId);
     }
 
     /**

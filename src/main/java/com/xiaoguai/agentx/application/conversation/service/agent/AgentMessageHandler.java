@@ -6,11 +6,13 @@ import com.xiaoguai.agentx.application.conversation.service.agent.event.AgentEve
 import com.xiaoguai.agentx.application.conversation.service.agent.handler.AnalyzeAgentHandler;
 import com.xiaoguai.agentx.application.conversation.service.agent.handler.TaskSplitAgentHandler;
 import com.xiaoguai.agentx.application.conversation.service.agent.manager.ContextFillManager;
+import com.xiaoguai.agentx.application.conversation.service.agent.manager.TaskManager;
 import com.xiaoguai.agentx.application.conversation.service.agent.workflow.AgentWorkflowContext;
 import com.xiaoguai.agentx.application.conversation.service.agent.workflow.AgentWorkflowStatus;
 import com.xiaoguai.agentx.application.conversation.service.chat.ChatMessageHandler;
 import com.xiaoguai.agentx.domain.conversation.service.ContextDomainService;
 import com.xiaoguai.agentx.domain.conversation.service.ConversationDomainService;
+import com.xiaoguai.agentx.domain.task.model.TaskEntity;
 import com.xiaoguai.agentx.infrastrcture.transport.MessageTransport;
 import org.springframework.stereotype.Component;
 
@@ -27,13 +29,15 @@ public class AgentMessageHandler extends ChatMessageHandler {
     private final AnalyzeAgentHandler analyzeAgentHandler;
     private final TaskSplitAgentHandler taskSplitAgentHandler;
 
+    private final TaskManager taskManager;
 
-    public AgentMessageHandler(ConversationDomainService conversationDomainService, ContextDomainService contextDomainService, ContextFillManager contextFillManager, AnalyzeAgentHandler analyzeAgentHandler, TaskSplitAgentHandler taskSplitAgentHandler) {
+    public AgentMessageHandler(ConversationDomainService conversationDomainService, ContextDomainService contextDomainService, ContextFillManager contextFillManager, AnalyzeAgentHandler analyzeAgentHandler, TaskSplitAgentHandler taskSplitAgentHandler, TaskManager taskManager) {
         super(conversationDomainService, contextDomainService);
         this.contextFillManager = contextFillManager;
 
         this.analyzeAgentHandler = analyzeAgentHandler;
         this.taskSplitAgentHandler = taskSplitAgentHandler;
+        this.taskManager = taskManager;
 
         // 初始化处理器
         init();
@@ -50,16 +54,25 @@ public class AgentMessageHandler extends ChatMessageHandler {
     @Override
     public <T> T handleChat(ChatContext environment, MessageTransport<T> transport) {
         String sessionId = environment.getSessionId();
-
-        // 如果是补充信息，获取之前的工作流，进行sse的回复
+        String userMessage = environment.getUserMessage();
+        // 如果是补充信息，获取之前的工作流，重新设置连接
         if (contextFillManager.isSupplement(sessionId)) {
 
+            // 获取之前的工作流
+            @SuppressWarnings("unchecked")
+            AgentWorkflowContext<T> preWorkflowContext = (AgentWorkflowContext<T>) contextFillManager.getPreWorkflowContext(sessionId);
+            T connection = transport.createConnection(CONNECTION_TIMEOUT);
+            preWorkflowContext.setTransport(transport);
+            preWorkflowContext.setConnection(connection);
+
+            contextFillManager.handleRequireInput(sessionId, userMessage);
+            return connection;
         }
 
         // 创建连接
         T connection = transport.createConnection(CONNECTION_TIMEOUT);
 
-        // TODO 创建父任务
+        TaskEntity parentTask = taskManager.createParentTask(environment);
 
         // 进入状态流程
         AgentWorkflowContext<T> workflow = new AgentWorkflowContext<>();
@@ -68,6 +81,7 @@ public class AgentMessageHandler extends ChatMessageHandler {
         workflow.setAssistMessage(createAssistMessage(environment));
         workflow.setUserMessage(createUserMessage(environment));
         workflow.setTransport(transport);
+        workflow.setParentTask(parentTask);
 
         // 启动工作流
         workflow.transitionTo(AgentWorkflowStatus.ANALYZE);

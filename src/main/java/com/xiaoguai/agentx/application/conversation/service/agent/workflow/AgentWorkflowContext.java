@@ -99,7 +99,7 @@ public class AgentWorkflowContext<T> {
      */
     public void sendMessage(String message, MessageType messageType){
         AgentChatResponse response = AgentChatResponse.build(message, false, false, messageType);
-        transport.sendEndMessage(connection, response);
+        transport.sendMessage(connection, response);
     }
     /**
      * 发送结束消息
