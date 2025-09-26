@@ -82,11 +82,6 @@ public class ChatContext {
 
         List<ChatMessage> messages = new ArrayList<>();
 
-        // 如果有系统提示词
-        if (StringUtils.isNotBlank(this.getAgentEntity().getSystemPrompt())) {
-            messages.add(new SystemMessage(this.getAgentEntity().getSystemPrompt()));
-        }
-
         // 如果有摘要消息
         if (StringUtils.isNotBlank(this.getContextEntity().getSummary())) {
             messages.add(new AiMessage(AgentPromptTemplates.getSummaryPrefix() +  this.getContextEntity().getSummary()));

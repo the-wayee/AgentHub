@@ -135,10 +135,10 @@ public class ContextFillManager {
             logger.info("会话{} 不完整，等待用户补充{}", sessionId, requirement);
 
             // 更新工作流上下文
-            context.getChatContext().getHistoryMessages().addAll(List.of(assistMessage, userMessage1));
+            context.getChatContext().getHistoryMessages().addAll(List.of(userMessage1, assistMessage));
 
             // 保存用户和助手信息,更新到数据库上下文
-            conversationDomainService.saveMessagesToContext(List.of(assistMessage, userMessage1), context.getChatContext().getContextEntity());
+            conversationDomainService.saveMessagesToContext(List.of(userMessage1, assistMessage), context.getChatContext().getContextEntity());
 
             // 向前端发送补充信息
             context.sendStreamMessage(requirement, MessageType.TEXT);
@@ -151,6 +151,7 @@ public class ContextFillManager {
             return waitForInput.thenCompose(input -> {
                 // 获取到用户输入，递归调用
                 context.getChatContext().setUserMessage(input);
+                context.setUserMessage(createUserMessage(context.getChatContext()));
                 return checkInfoComplete(context, retryTimes + 1);
             });
         } catch (Exception e) {

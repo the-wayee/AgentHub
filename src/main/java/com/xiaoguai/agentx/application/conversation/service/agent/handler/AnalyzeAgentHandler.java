@@ -14,6 +14,7 @@ import com.xiaoguai.agentx.domain.conversation.model.MessageEntity;
 import com.xiaoguai.agentx.domain.conversation.service.ConversationDomainService;
 import dev.langchain4j.data.message.ChatMessage;
 import dev.langchain4j.data.message.SystemMessage;
+import dev.langchain4j.data.message.UserMessage;
 import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.model.chat.request.ChatRequest;
 import org.springframework.stereotype.Component;
@@ -63,10 +64,7 @@ public class AnalyzeAgentHandler extends AbstractAgentHandler {
             // 保存消息
             context.getAssistMessage().setContent(analyzerMessageDTO.getReply());
             saveAndUpdateContext(List.of(context.getUserMessage(), context.getAssistMessage()), context.getChatContext());
-
-            return;
         }
-        saveAndUpdateContext(Collections.singletonList(userMessage), context.getChatContext());
     }
 
     @Override

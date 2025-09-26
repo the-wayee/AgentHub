@@ -13,6 +13,7 @@ import com.xiaoguai.agentx.domain.conversation.service.ConversationDomainService
 import com.xiaoguai.agentx.domain.task.model.TaskEntity;
 import dev.langchain4j.data.message.ChatMessage;
 import dev.langchain4j.data.message.SystemMessage;
+import dev.langchain4j.data.message.UserMessage;
 import dev.langchain4j.model.chat.StreamingChatModel;
 import dev.langchain4j.model.chat.request.ChatRequest;
 import dev.langchain4j.model.chat.response.ChatResponse;
@@ -80,7 +81,7 @@ public class TaskSplitAgentHandler extends AbstractAgentHandler {
         // 构建请求
         ChatRequest request = context.getChatContext().prepareRequest();
         List<ChatMessage> messages = new ArrayList<>(request.messages());
-        messages.add(new SystemMessage(AgentPromptTemplates.getDecompositionPrompt()));
+        messages.add(new UserMessage(AgentPromptTemplates.getDecompositionPrompt()));
         request = request.toBuilder().messages(messages).build();
 
         streamModel.chat(request, new StreamingChatResponseHandler() {
@@ -116,7 +117,7 @@ public class TaskSplitAgentHandler extends AbstractAgentHandler {
                     context.transitionTo(AgentWorkflowStatus.TASK_SPLIT_COMPLETE);
 
                     // 更新上下文
-                    saveAndUpdateContext(List.of(assistMessage), context.getChatContext());
+                    saveAndUpdateContext(List.of(userMessage, assistMessage), context.getChatContext());
                 } catch (Exception e) {
                     logger.error("任务拆分阶段出错，{}", e.getMessage());
                     context.sendErrorMessage(e);
