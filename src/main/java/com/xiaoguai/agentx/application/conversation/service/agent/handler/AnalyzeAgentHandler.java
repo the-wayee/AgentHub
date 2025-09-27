@@ -12,6 +12,7 @@ import com.xiaoguai.agentx.application.conversation.service.agent.workflow.Agent
 import com.xiaoguai.agentx.domain.conversation.constants.MessageType;
 import com.xiaoguai.agentx.domain.conversation.model.MessageEntity;
 import com.xiaoguai.agentx.domain.conversation.service.ConversationDomainService;
+import com.xiaoguai.agentx.infrastrcture.utils.ModelResponseToJsonUtils;
 import dev.langchain4j.data.message.ChatMessage;
 import dev.langchain4j.data.message.SystemMessage;
 import dev.langchain4j.data.message.UserMessage;
@@ -51,11 +52,11 @@ public class AnalyzeAgentHandler extends AbstractAgentHandler {
         // 构建请求
         ChatRequest chatRequest = buildRequest(context.getChatContext());
         List<ChatMessage> messages = new ArrayList<>(chatRequest.messages());
-        messages.add(new SystemMessage(AgentPromptTemplates.getAnalyserMessagePrompt(userMessage.getContent())));
+        messages.add(new UserMessage(AgentPromptTemplates.getAnalyserMessagePrompt(userMessage.getContent())));
         chatRequest = chatRequest.toBuilder().messages(messages).build();
         // 请求大模型，询问是否简单问题
         String result = chatModel.chat(chatRequest).aiMessage().text();
-        AnalyzerMessageDTO analyzerMessageDTO = JSON.parseObject(result, AnalyzerMessageDTO.class);
+        AnalyzerMessageDTO analyzerMessageDTO = ModelResponseToJsonUtils.toJson(result, AnalyzerMessageDTO.class);
         context.addExtraData(extraAnalyzerMessageKey, analyzerMessageDTO);
         // 是简单问答问题
         if (analyzerMessageDTO.isQuestion()) {

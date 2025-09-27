@@ -441,7 +441,7 @@ export function ChatShell({ agentId }: { agentId: string }) {
                   )}
                   <Card
                     className={cn(
-                      "px-4 py-3 rounded-2xl max-w-[600px] min-w-[200px] shadow-sm whitespace-pre-wrap break-words",
+                      "px-4 py-3 rounded-2xl max-w-[600px] min-w-[200px] shadow-sm break-words",
                       m.role === "user"
                         ? "bg-primary text-primary-foreground rounded-tr-none"
                         : m.kind === "reasoning"
