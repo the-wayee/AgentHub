@@ -10,6 +10,7 @@ import com.xiaoguai.agentx.domain.conversation.constants.MessageType;
 import com.xiaoguai.agentx.domain.conversation.model.MessageEntity;
 import com.xiaoguai.agentx.domain.conversation.service.ConversationDomainService;
 import dev.langchain4j.data.message.ChatMessage;
+import dev.langchain4j.data.message.SystemMessage;
 import dev.langchain4j.data.message.UserMessage;
 import dev.langchain4j.model.chat.StreamingChatModel;
 import dev.langchain4j.model.chat.request.ChatRequest;
@@ -97,7 +98,6 @@ public class SummarizeAgentHandler extends AbstractAgentHandler {
         List<ChatMessage> messages = new ArrayList<>();
 
         messages.add(new UserMessage(AgentPromptTemplates.getSummaryPrompt(context.getSummaryResult())));
-        messages.add(new UserMessage("请基于上述子任务结果提供总结"));
 
         return buildChatRequest(context.getChatContext(), messages);
     }

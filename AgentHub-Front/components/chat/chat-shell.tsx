@@ -281,13 +281,15 @@ export function ChatShell({ agentId }: { agentId: string }) {
         })
 
         // 处理任务状态更新
-        if (messageType === MessageType.TASK_STATUS_TO_LOADING && taskId && taskName) {
+        if (messageType === MessageType.TASK_STATUS_TO_LOADING && taskId) {
           setTasks(prev => {
             const existing = prev.find(t => t.id === taskId)
             if (existing) {
               return prev.map(t => t.id === taskId ? { ...t, status: 'loading' as const, updatedAt: new Date() } : t)
             } else {
-              return [...prev, { id: taskId, name: taskName, status: 'loading', content, createdAt: new Date(), updatedAt: new Date() }]
+              // 如果没有找到任务，使用taskId作为任务名
+              const finalTaskName = taskName || `任务 ${taskId.slice(0, 8)}`
+              return [...prev, { id: taskId, name: finalTaskName, status: 'loading', content, createdAt: new Date(), updatedAt: new Date() }]
             }
           })
         }
@@ -329,6 +331,16 @@ export function ChatShell({ agentId }: { agentId: string }) {
             console.log('任务已存在，跳过:', taskId)
             return prev
           })
+        }
+
+        // 新增：当messageType是TEXT且done为true时，创建新的聊天气泡
+        if (messageType === MessageType.TEXT && done) {
+          // 只有在有内容时才创建新的聊天气泡
+          if (content) {
+            finalId = appendAssistantMessage(convoId, "", "normal", messageType as string, taskId, taskName)
+            appendMessageDelta(convoId, finalId, content)
+          }
+          return // 返回，不执行后续的逻辑
         }
 
         if (reasoning) {

@@ -41,7 +41,8 @@ public class ConversationDomainService {
      */
     public List<MessageDTO> getConversationMessages(String sessionId) {
         List<MessageEntity> messageEntities = messageRepository.selectList(Wrappers.<MessageEntity>lambdaQuery()
-                .eq(MessageEntity::getSessionId, sessionId));
+                .eq(MessageEntity::getSessionId, sessionId)
+                .orderByAsc(MessageEntity::getCreatedAt));
         return messageEntities.stream()
                 .filter(f -> !f.getRole().equals(Role.SYSTEM))
                 .map(MessageAssembler::toDTO).toList();
