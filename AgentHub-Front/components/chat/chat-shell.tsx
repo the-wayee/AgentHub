@@ -77,6 +77,15 @@ export function ChatShell({ agentId }: { agentId: string }) {
     return result
   }, [conversations, activeId, agent, convosForAgent])
 
+  const [input, setInput] = useState("")
+  const [isStreaming, setIsStreaming] = useState(false)
+  const [enableThink, setEnableThink] = useState(false)
+  const abortRef = useRef<AbortController | null>(null)
+  const [openSettings, setOpenSettings] = useState(false)
+  const [tasks, setTasks] = useState<Task[]>([])
+  const [showTaskList, setShowTaskList] = useState(false)
+  const [currentConversationId, setCurrentConversationId] = useState<string | null>(null)
+
   // Ensure a conversation exists via effect (safe setState outside render).
   useEffect(() => {
     if (!agent) return
@@ -86,16 +95,11 @@ export function ChatShell({ agentId }: { agentId: string }) {
       }).catch((error) => {
         // 不创建假会话，让用户手动创建
       })
+    } else if (!currentConversationId || derivedActiveConvo.id !== currentConversationId) {
+      // 初始化当前会话ID
+      setCurrentConversationId(derivedActiveConvo.id)
     }
-  }, [agent, derivedActiveConvo, createConversation, setActive])
-
-  const [input, setInput] = useState("")
-  const [isStreaming, setIsStreaming] = useState(false)
-  const [enableThink, setEnableThink] = useState(false)
-  const abortRef = useRef<AbortController | null>(null)
-  const [openSettings, setOpenSettings] = useState(false)
-  const [tasks, setTasks] = useState<Task[]>([])
-  const [showTaskList, setShowTaskList] = useState(false)
+  }, [agent, derivedActiveConvo, createConversation, setActive, currentConversationId])
   const scrollRef = useRef<HTMLDivElement | null>(null)
   useEffect(() => {
     const el = scrollRef.current
@@ -104,6 +108,21 @@ export function ChatShell({ agentId }: { agentId: string }) {
     }
   }, [derivedActiveConvo?.messages.length])
 
+  // 监听会话切换，重置任务状态
+  useEffect(() => {
+    if (derivedActiveConvo && currentConversationId && derivedActiveConvo.id !== currentConversationId) {
+      // 会话切换时重置任务状态，但不要立即隐藏任务区域
+      setTasks([])
+      // 只有在没有任务消息时才隐藏任务区域
+      const hasTaskMessages = derivedActiveConvo.messages.some(msg =>
+        msg.messageType && ['TASK_SPLIT', 'TASK_SPLIT_FINISH', 'TASK_EXEC', 'TASK_STATUS_TO_LOADING', 'TASK_STATUS_TO_FINISH'].includes(msg.messageType as string)
+      )
+      setShowTaskList(hasTaskMessages)
+      setCurrentConversationId(derivedActiveConvo.id)
+    }
+  }, [derivedActiveConvo, currentConversationId])
+
+  
   // 监听任务完成状态，所有任务完成后隐藏任务列表
   useEffect(() => {
     if (tasks.length > 0) {
@@ -159,11 +178,14 @@ export function ChatShell({ agentId }: { agentId: string }) {
         // API返回格式: { code: 200, message: "操作成功", data: [...] }
         const list = response?.data || response
         if (!cancelled && Array.isArray(list)) {
-          const mapped = list.map((m: any) => ({ 
-            id: m.id, 
-            role: (m.role?.toLowerCase() === 'user' ? 'user' : (m.role?.toLowerCase() === 'assistant' ? 'assistant' : 'system')) as "user" | "assistant" | "system", 
-            content: m.content, 
-            createdAt: m.createdAt 
+          const mapped = list.map((m: any) => ({
+            id: m.id,
+            role: (m.role?.toLowerCase() === 'user' ? 'user' : (m.role?.toLowerCase() === 'assistant' ? 'assistant' : 'system')) as "user" | "assistant" | "system",
+            content: m.content,
+            messageType: m.messageType,
+            taskId: m.taskId,
+            taskName: m.taskName,
+            createdAt: m.createdAt
           }))
           replaceMessages(derivedActiveConvo.id, mapped)
           lastLoadedSessionId.current = derivedActiveConvo.id
@@ -419,7 +441,7 @@ export function ChatShell({ agentId }: { agentId: string }) {
                   )}
                   <Card
                     className={cn(
-                      "px-3 py-2 rounded-2xl max-w-[75%] shadow-sm",
+                      "px-4 py-3 rounded-2xl max-w-[600px] min-w-[200px] shadow-sm whitespace-pre-wrap break-words",
                       m.role === "user"
                         ? "bg-primary text-primary-foreground rounded-tr-none"
                         : m.kind === "reasoning"

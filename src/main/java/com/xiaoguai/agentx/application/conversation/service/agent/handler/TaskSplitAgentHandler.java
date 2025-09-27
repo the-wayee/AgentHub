@@ -96,7 +96,7 @@ public class TaskSplitAgentHandler extends AbstractAgentHandler {
                 TokenUsage tokenUsage = chatResponse.tokenUsage();
                 assistMessage.setTokenCount(tokenUsage.outputTokenCount());
                 assistMessage.setContent(aiMessage);
-                assistMessage.setMessageType(MessageType.TEXT);
+                assistMessage.setMessageType(MessageType.TASK_SPLIT);
                 try {
                     List<String> tasks = splitTaskDescriptions(aiMessage);
                     if (tasks.isEmpty()) {

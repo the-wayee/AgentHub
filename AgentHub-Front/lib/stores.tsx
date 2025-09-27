@@ -31,7 +31,7 @@ type ConvoState = {
   replaceConversationsForAgent: (agentId: string, sessions: { id: string; title?: string; createdAt?: string | number }[]) => void
   replaceMessages: (
     convoId: string,
-    messages: { id: string; role: "user" | "assistant" | "system"; content: string; createdAt?: string | number }[],
+    messages: { id: string; role: "user" | "assistant" | "system"; content: string; messageType?: string; taskId?: string; taskName?: string; createdAt?: string | number }[],
   ) => void
   appendAssistantMessage: (convoId: string, initialContent?: string, kind?: "normal" | "reasoning") => string
   setMessageContent: (convoId: string, messageId: string, content: string) => void
@@ -164,6 +164,9 @@ export const useConvoStore = create<ConvoState>()(
                     id: m.id,
                     role: m.role,
                     content: m.content,
+                    messageType: m.messageType,
+                    taskId: m.taskId,
+                    taskName: m.taskName,
                     ts: typeof m.createdAt === "string" ? Date.parse(m.createdAt) : m.createdAt || Date.now(),
                   })),
                 }
