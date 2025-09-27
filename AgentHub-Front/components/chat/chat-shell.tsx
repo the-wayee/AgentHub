@@ -95,6 +95,7 @@ export function ChatShell({ agentId }: { agentId: string }) {
   const abortRef = useRef<AbortController | null>(null)
   const [openSettings, setOpenSettings] = useState(false)
   const [tasks, setTasks] = useState<Task[]>([])
+  const [showTaskList, setShowTaskList] = useState(false)
   const scrollRef = useRef<HTMLDivElement | null>(null)
   useEffect(() => {
     const el = scrollRef.current
@@ -102,6 +103,24 @@ export function ChatShell({ agentId }: { agentId: string }) {
       el.scrollTop = el.scrollHeight
     }
   }, [derivedActiveConvo?.messages.length])
+
+  // 监听任务完成状态，所有任务完成后隐藏任务列表
+  useEffect(() => {
+    if (tasks.length > 0) {
+      const allCompleted = tasks.every(task => task.status === 'completed' || task.status === 'failed')
+      if (allCompleted) {
+        // 延迟隐藏，让用户看到完成状态
+        const timer = setTimeout(() => {
+          setShowTaskList(false)
+          // 清空任务列表
+          setTimeout(() => {
+            setTasks([])
+          }, 300) // 等待动画完成
+        }, 2000) // 显示2秒后隐藏
+        return () => clearTimeout(timer)
+      }
+    }
+  }, [tasks])
 
   // Load messages when conversation changes, but avoid reloading when messages are being added
   const lastLoadedSessionId = useRef<string | null>(null)
@@ -191,6 +210,7 @@ export function ChatShell({ agentId }: { agentId: string }) {
       abortRef.current = controller
       setIsStreaming(true)
       setTasks([]) // 清空任务列表
+      setShowTaskList(false) // 隐藏任务列表
       const res = await api.chat(text, convoId, enableThink, controller.signal)
 
       if (!res.body) {
@@ -206,39 +226,94 @@ export function ChatShell({ agentId }: { agentId: string }) {
       let buffer = ""
 
       const handlePayload = (payload: string, evtName?: string) => {
+        console.log('=== 收到消息 ===', {
+          rawPayload: payload,
+          eventName: evtName,
+          payloadLength: payload.length
+        })
+
         let obj: any
         try {
           obj = JSON.parse(payload)
-        } catch {
+          console.log('JSON解析成功:', obj)
+        } catch (error) {
+          console.log('JSON解析失败，使用原始内容:', error)
           obj = { content: payload }
         }
+
         const content: string = obj?.content ?? ""
         const done: boolean = obj?.done ?? obj?.isDone ?? (evtName === "done")
-        const reasoning: boolean = obj?.reasoning ?? obj?.isReasoning ?? (evtName === "reasoning")
+        const reasoning: boolean = obj?.reasoning ?? obj?.isReasoning ?? obj?.isThinking ?? (evtName === "reasoning")
         const messageType: MessageType = obj?.messageType
         const taskId: string = obj?.taskId
         const taskName: string = obj?.taskName
+
+        console.log('解析后的消息数据:', {
+          content,
+          done,
+          reasoning,
+          messageType,
+          taskId,
+          taskName,
+          所有字段: Object.keys(obj)
+        })
 
         // 处理任务状态更新
         if (messageType === MessageType.TASK_STATUS_TO_LOADING && taskId && taskName) {
           setTasks(prev => {
             const existing = prev.find(t => t.id === taskId)
             if (existing) {
-              return prev.map(t => t.id === taskId ? { ...t, status: 'loading' as const } : t)
+              return prev.map(t => t.id === taskId ? { ...t, status: 'loading' as const, updatedAt: new Date() } : t)
             } else {
-              return [...prev, { id: taskId, name: taskName, status: 'loading', content }]
+              return [...prev, { id: taskId, name: taskName, status: 'loading', content, createdAt: new Date(), updatedAt: new Date() }]
             }
           })
         }
 
         if (messageType === MessageType.TASK_STATUS_TO_FINISH && taskId) {
-          setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: 'completed' as const } : t))
+          setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: 'completed' as const, updatedAt: new Date() } : t))
+        }
+
+        // 处理任务拆分消息 - 添加到任务列表
+        if (messageType === MessageType.TASK_SPLIT && taskId && taskName) {
+          setTasks(prev => {
+            const existing = prev.find(t => t.id === taskId)
+            if (!existing) {
+              return [...prev, { id: taskId, name: taskName, status: 'pending' as const, content }]
+            }
+            return prev
+          })
+        }
+
+        // 处理任务拆分完成消息 - 添加单个任务到列表
+        if (messageType === MessageType.TASK_SPLIT_FINISH && taskId) {
+          const finalTaskName = taskName || content || `任务 ${taskId.slice(0, 8)}`
+          console.log('收到 TASK_SPLIT_FINISH 消息:', { taskId, taskName: finalTaskName, content })
+          setTasks(prev => {
+            const existing = prev.find(t => t.id === taskId)
+            if (!existing) {
+              console.log('添加新任务到列表:', { taskId, taskName: finalTaskName })
+              // 显示任务列表
+              setShowTaskList(true)
+              return [...prev, {
+                id: taskId,
+                name: finalTaskName,
+                status: 'pending' as const,
+                content,
+                createdAt: new Date(),
+                updatedAt: new Date()
+              }]
+            }
+            console.log('任务已存在，跳过:', taskId)
+            return prev
+          })
         }
 
         if (reasoning) {
           if (!reasoningId) reasoningId = appendAssistantMessage(convoId, "", "reasoning")
           if (content) appendMessageDelta(convoId, reasoningId, content)
-        } else {
+        } else if (messageType !== MessageType.TASK_SPLIT_FINISH) {
+          // TASK_SPLIT_FINISH 消息不显示在聊天气泡中，只在任务列表中显示
           if (!finalId) finalId = appendAssistantMessage(convoId, "", "normal", messageType as string, taskId, taskName)
           if (content) appendMessageDelta(convoId, finalId, content)
         }
@@ -316,63 +391,71 @@ export function ChatShell({ agentId }: { agentId: string }) {
 
       </div>
 
-      <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto px-4 py-6">
-        <div className="mx-auto max-w-3xl space-y-6">
-          {derivedActiveConvo.messages.map((m, i) => (
-            <div key={i} className={cn("flex gap-3", m.role === "user" ? "justify-end" : "justify-start")}>
-              {m.role !== "user" && (
-                <Avatar className="w-7 h-7">
-                  <AvatarFallback className="text-xs">A</AvatarFallback>
-                </Avatar>
-              )}
-              <div className="flex flex-col gap-1">
-                {m.role === "assistant" && m.messageType && (
-                  <MessageTypeBadge messageType={m.messageType as any} />
+      {/* 任务进度显示屏 - 刘海样式 */}
+      <div className={`px-4 py-2 transition-all duration-300 ease-in-out overflow-hidden ${
+        showTaskList
+          ? 'max-h-48 opacity-100'
+          : 'max-h-0 opacity-0 py-0'
+      }`}>
+        <div className="mx-auto">
+          <TaskProgress tasks={tasks} />
+        </div>
+      </div>
+
+      <div className="flex-1 flex flex-col min-h-0">
+        {/* 对话框区域 */}
+        <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto px-4 py-6">
+          <div className="mx-auto max-w-3xl space-y-6">
+            {derivedActiveConvo.messages.map((m, i) => (
+              <div key={i} className={cn("flex gap-3", m.role === "user" ? "justify-end" : "justify-start")}>
+                {m.role !== "user" && (
+                  <Avatar className="w-7 h-7">
+                    <AvatarFallback className="text-xs">A</AvatarFallback>
+                  </Avatar>
                 )}
-                <Card
-                  className={cn(
-                    "px-3 py-2 rounded-2xl max-w-[75%] shadow-sm",
-                    m.role === "user"
-                      ? "bg-primary text-primary-foreground rounded-tr-none"
-                      : m.kind === "reasoning"
-                        ? "bg-muted text-muted-foreground rounded-tl-none animate-in fade-in duration-300"
-                        : "bg-muted rounded-tl-none",
+                <div className="flex flex-col gap-1">
+                  {m.role === "assistant" && m.messageType && (
+                    <MessageTypeBadge messageType={m.messageType as any} />
                   )}
-                >
-                  {m.role === "assistant" ? (
-                  <MarkdownMessage
-                    content={m.content}
+                  <Card
                     className={cn(
-                      "leading-relaxed text-sm",
-                      m.kind === "reasoning" && "text-[12px] italic prose-p:my-1 prose-ul:my-1 prose-ol:my-1",
-                    )}
-                  />
-                ) : (
-                  <div
-                    className={cn(
-                      "whitespace-pre-wrap leading-relaxed text-sm",
-                      m.kind === "reasoning" && "text-[12px] italic",
+                      "px-3 py-2 rounded-2xl max-w-[75%] shadow-sm",
+                      m.role === "user"
+                        ? "bg-primary text-primary-foreground rounded-tr-none"
+                        : m.kind === "reasoning"
+                          ? "bg-muted text-muted-foreground rounded-tl-none animate-in fade-in duration-300"
+                          : "bg-muted rounded-tl-none",
                     )}
                   >
-                    {m.content}
-                  </div>
+                    {m.role === "assistant" ? (
+                    <MarkdownMessage
+                      content={m.content}
+                      className={cn(
+                        "leading-relaxed text-sm",
+                        m.kind === "reasoning" && "text-[12px] italic prose-p:my-1 prose-ul:my-1 prose-ol:my-1",
+                      )}
+                    />
+                  ) : (
+                    <div
+                      className={cn(
+                        "whitespace-pre-wrap leading-relaxed text-sm",
+                        m.kind === "reasoning" && "text-[12px] italic",
+                      )}
+                    >
+                      {m.content}
+                    </div>
+                  )}
+                  </Card>
+                </div>
+                {m.role === "user" && (
+                  <Avatar className="w-7 h-7">
+                    <AvatarFallback className="text-xs">U</AvatarFallback>
+                  </Avatar>
                 )}
-                </Card>
               </div>
-              {m.role === "user" && (
-                <Avatar className="w-7 h-7">
-                  <AvatarFallback className="text-xs">U</AvatarFallback>
-                </Avatar>
-              )}
-            </div>
-          ))}
-
-          {tasks.length > 0 && (
-            <div className="space-y-2">
-              <TaskProgress tasks={tasks} />
-            </div>
-          )}
-          <div />
+            ))}
+            <div />
+          </div>
         </div>
       </div>
 

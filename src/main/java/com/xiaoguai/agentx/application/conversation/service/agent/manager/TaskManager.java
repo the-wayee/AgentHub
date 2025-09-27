@@ -36,6 +36,8 @@ public class TaskManager {
         task.setProgress(0);
         task.setStatus(TaskStatus.PROGRESSING);
         task.setStartTime(LocalDateTime.now());
+        task.setUserId(UserContext.getUserId());
+        taskDomainService.addTask(task);
         return task;
     }
 

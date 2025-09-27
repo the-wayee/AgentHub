@@ -109,10 +109,8 @@ public class TaskSplitAgentHandler extends AbstractAgentHandler {
                         TaskEntity subTask = taskManager.createSubTask(context.getParentTask().getId(),
                                 task, context.getChatContext());
                         context.addSubTask(subTask);
-                        context.sendTaskStartMessage(task,subTask.getId(), MessageType.TASK_SPLIT);
+                        context.sendTaskStartMessage(task,subTask.getId(), MessageType.TASK_SPLIT_FINISH);
                     }
-                    // 告诉前端任务拆分结束
-                    context.sendEndMessage(MessageType.TASK_SPLIT_FINISH);
 
                     // 更新上下文
                     saveAndUpdateContext(List.of(userMessage, assistMessage), context.getChatContext());

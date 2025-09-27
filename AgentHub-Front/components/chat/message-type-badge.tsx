@@ -20,6 +20,8 @@ export function MessageTypeBadge({ messageType }: MessageTypeBadgeProps) {
         return '任务进行中'
       case MessageType.TASK_STATUS_TO_FINISH:
         return '任务完成'
+      case MessageType.TASK_SPLIT:
+        return '任务拆分'
       case MessageType.TASK_SPLIT_FINISH:
         return '任务拆分完成'
       default:
@@ -39,6 +41,8 @@ export function MessageTypeBadge({ messageType }: MessageTypeBadgeProps) {
         return 'secondary'
       case MessageType.TASK_STATUS_TO_FINISH:
         return 'default'
+      case MessageType.TASK_SPLIT:
+        return 'secondary'
       case MessageType.TASK_SPLIT_FINISH:
         return 'outline'
       default:
@@ -58,6 +62,8 @@ export function MessageTypeBadge({ messageType }: MessageTypeBadgeProps) {
         return 'bg-yellow-100 text-yellow-800'
       case MessageType.TASK_STATUS_TO_FINISH:
         return 'bg-green-100 text-green-800'
+      case MessageType.TASK_SPLIT:
+        return 'bg-orange-100 text-orange-800'
       case MessageType.TASK_SPLIT_FINISH:
         return 'bg-gray-100 text-gray-800'
       default:

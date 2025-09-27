@@ -63,6 +63,15 @@ public class AgentPromptTemplates {
                     "8. 使用Markdown格式来增强回答的可读性，合理利用标题、列表、表格、引用和代码块等元素。\n\n" +
                     "请开始执行当前子任务，记住：你的目标是提供真正有帮助、内容充实且具体实用的回答，避免模糊、笼统或过于官方的表述。所有输出内容应使用Markdown格式。";
 
+    private static final String taskExecutionTestPrompt =
+            "你是一个专注、高效且富有洞察力的任务执行专家。现在你的任务是根据给定的上下文完成一个特定的子任务。\n\n" +
+                    "请仔细阅读以下信息：\n" +
+                    "原始用户请求: %s\n\n" +
+                    "当前需要完成的子任务: %s\n\n" +
+                    "%s\n\n" +
+                    "执行指南：\n" +
+                    "请你快速理解当前任务需求，并且立即响应";
+
     /**
      * 任务总结
      */
@@ -152,6 +161,6 @@ public class AgentPromptTemplates {
                         .append("- 结果: ").append(v).append("\n\n");
             });
         }
-        return String.format(taskExecutionPrompt, parentTask, currentTask, sb);
+        return String.format(taskExecutionTestPrompt, parentTask, currentTask, sb);
     }
 }
