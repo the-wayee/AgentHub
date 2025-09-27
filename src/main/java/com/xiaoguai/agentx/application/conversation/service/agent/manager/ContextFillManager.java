@@ -11,6 +11,7 @@ import com.xiaoguai.agentx.domain.conversation.constants.Role;
 import com.xiaoguai.agentx.domain.conversation.model.MessageEntity;
 import com.xiaoguai.agentx.domain.conversation.service.ConversationDomainService;
 import com.xiaoguai.agentx.infrastrcture.llm.LlmProviderService;
+import com.xiaoguai.agentx.infrastrcture.utils.ModelResponseToJsonUtils;
 import dev.langchain4j.data.message.AiMessage;
 import dev.langchain4j.data.message.ChatMessage;
 import dev.langchain4j.data.message.SystemMessage;
@@ -111,7 +112,7 @@ public class ContextFillManager {
             String result = chatModel.chat(chatRequest).aiMessage().text();
 
             // 解析返回JSON数据
-            InfoRequirementDTO infoRequirementDTO = JSON.parseObject(result, InfoRequirementDTO.class);
+            InfoRequirementDTO infoRequirementDTO = ModelResponseToJsonUtils.toJson(result, InfoRequirementDTO.class);
 
             if (infoRequirementDTO == null) {
                 logger.error("数据解析失败，原始响应：{}", result);
