@@ -13,6 +13,9 @@ type Msg = {
   content: string
   ts: number
   kind?: "normal" | "reasoning"
+  messageType?: string
+  taskId?: string
+  taskName?: string
 }
 type Conversation = { id: string; agentId: string; title: string; createdAt: number; messages: Msg[] }
 
@@ -167,7 +170,7 @@ export const useConvoStore = create<ConvoState>()(
               : c,
           ),
         })),
-      appendAssistantMessage: (convoId, initialContent = "", kind = "normal") => {
+      appendAssistantMessage: (convoId, initialContent = "", kind = "normal", messageType?: string, taskId?: string, taskName?: string) => {
         const id = nanoid()
         set((s) => ({
           conversations: s.conversations.map((c) =>
@@ -176,7 +179,7 @@ export const useConvoStore = create<ConvoState>()(
                   ...c,
                   messages: [
                     ...c.messages,
-                    { id, role: "assistant", content: initialContent, ts: Date.now(), kind },
+                    { id, role: "assistant", content: initialContent, ts: Date.now(), kind, messageType, taskId, taskName },
                   ],
                 }
               : c,

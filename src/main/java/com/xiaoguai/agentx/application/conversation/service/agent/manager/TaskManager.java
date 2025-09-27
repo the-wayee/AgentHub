@@ -5,6 +5,7 @@ import com.xiaoguai.agentx.application.conversation.service.ChatContext;
 import com.xiaoguai.agentx.domain.task.constants.TaskStatus;
 import com.xiaoguai.agentx.domain.task.model.TaskEntity;
 import com.xiaoguai.agentx.domain.task.service.TaskDomainService;
+import com.xiaoguai.agentx.infrastrcture.auth.UserContext;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -49,6 +50,8 @@ public class TaskManager {
         task.setProgress(0);
         task.setStatus(TaskStatus.PROGRESSING);
         task.setStartTime(LocalDateTime.now());
+        task.setUserId(UserContext.getUserId());
+        taskDomainService.addTask(task);
         return task;
     }
 

@@ -14,6 +14,9 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Skeleton } from "@/components/ui/skeleton"
 import { AgentQuickSettings } from "@/components/agent/agent-quick-settings"
 import { MarkdownMessage } from "@/components/chat/markdown-message"
+import { MessageTypeBadge } from "@/components/chat/message-type-badge"
+import { TaskProgress } from "@/components/chat/task-progress"
+import { MessageType, Task } from "@/components/chat/types"
 
 export function ChatShell({ agentId }: { agentId: string }) {
   // Selectors to reduce re-renders
@@ -91,6 +94,7 @@ export function ChatShell({ agentId }: { agentId: string }) {
   const [enableThink, setEnableThink] = useState(false)
   const abortRef = useRef<AbortController | null>(null)
   const [openSettings, setOpenSettings] = useState(false)
+  const [tasks, setTasks] = useState<Task[]>([])
   const scrollRef = useRef<HTMLDivElement | null>(null)
   useEffect(() => {
     const el = scrollRef.current
@@ -186,6 +190,7 @@ export function ChatShell({ agentId }: { agentId: string }) {
       const controller = new AbortController()
       abortRef.current = controller
       setIsStreaming(true)
+      setTasks([]) // 清空任务列表
       const res = await api.chat(text, convoId, enableThink, controller.signal)
 
       if (!res.body) {
@@ -210,12 +215,31 @@ export function ChatShell({ agentId }: { agentId: string }) {
         const content: string = obj?.content ?? ""
         const done: boolean = obj?.done ?? obj?.isDone ?? (evtName === "done")
         const reasoning: boolean = obj?.reasoning ?? obj?.isReasoning ?? (evtName === "reasoning")
+        const messageType: MessageType = obj?.messageType
+        const taskId: string = obj?.taskId
+        const taskName: string = obj?.taskName
+
+        // 处理任务状态更新
+        if (messageType === MessageType.TASK_STATUS_TO_LOADING && taskId && taskName) {
+          setTasks(prev => {
+            const existing = prev.find(t => t.id === taskId)
+            if (existing) {
+              return prev.map(t => t.id === taskId ? { ...t, status: 'loading' as const } : t)
+            } else {
+              return [...prev, { id: taskId, name: taskName, status: 'loading', content }]
+            }
+          })
+        }
+
+        if (messageType === MessageType.TASK_STATUS_TO_FINISH && taskId) {
+          setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: 'completed' as const } : t))
+        }
 
         if (reasoning) {
           if (!reasoningId) reasoningId = appendAssistantMessage(convoId, "", "reasoning")
           if (content) appendMessageDelta(convoId, reasoningId, content)
         } else {
-          if (!finalId) finalId = appendAssistantMessage(convoId, "", "normal")
+          if (!finalId) finalId = appendAssistantMessage(convoId, "", "normal", messageType as string, taskId, taskName)
           if (content) appendMessageDelta(convoId, finalId, content)
         }
 
@@ -301,35 +325,40 @@ export function ChatShell({ agentId }: { agentId: string }) {
                   <AvatarFallback className="text-xs">A</AvatarFallback>
                 </Avatar>
               )}
-              <Card
-                className={cn(
-                  "px-3 py-2 rounded-2xl max-w-[75%] shadow-sm",
-                  m.role === "user"
-                    ? "bg-primary text-primary-foreground rounded-tr-none"
-                    : m.kind === "reasoning"
-                      ? "bg-muted text-muted-foreground rounded-tl-none animate-in fade-in duration-300"
-                      : "bg-muted rounded-tl-none",
+              <div className="flex flex-col gap-1">
+                {m.role === "assistant" && m.messageType && (
+                  <MessageTypeBadge messageType={m.messageType as any} />
                 )}
-              >
-                {m.role === "assistant" ? (
-                <MarkdownMessage
-                  content={m.content}
+                <Card
                   className={cn(
-                    "leading-relaxed text-sm",
-                    m.kind === "reasoning" && "text-[12px] italic prose-p:my-1 prose-ul:my-1 prose-ol:my-1",
-                  )}
-                />
-              ) : (
-                <div
-                  className={cn(
-                    "whitespace-pre-wrap leading-relaxed text-sm",
-                    m.kind === "reasoning" && "text-[12px] italic",
+                    "px-3 py-2 rounded-2xl max-w-[75%] shadow-sm",
+                    m.role === "user"
+                      ? "bg-primary text-primary-foreground rounded-tr-none"
+                      : m.kind === "reasoning"
+                        ? "bg-muted text-muted-foreground rounded-tl-none animate-in fade-in duration-300"
+                        : "bg-muted rounded-tl-none",
                   )}
                 >
-                  {m.content}
-                </div>
-              )}
-              </Card>
+                  {m.role === "assistant" ? (
+                  <MarkdownMessage
+                    content={m.content}
+                    className={cn(
+                      "leading-relaxed text-sm",
+                      m.kind === "reasoning" && "text-[12px] italic prose-p:my-1 prose-ul:my-1 prose-ol:my-1",
+                    )}
+                  />
+                ) : (
+                  <div
+                    className={cn(
+                      "whitespace-pre-wrap leading-relaxed text-sm",
+                      m.kind === "reasoning" && "text-[12px] italic",
+                    )}
+                  >
+                    {m.content}
+                  </div>
+                )}
+                </Card>
+              </div>
               {m.role === "user" && (
                 <Avatar className="w-7 h-7">
                   <AvatarFallback className="text-xs">U</AvatarFallback>
@@ -337,6 +366,12 @@ export function ChatShell({ agentId }: { agentId: string }) {
               )}
             </div>
           ))}
+
+          {tasks.length > 0 && (
+            <div className="space-y-2">
+              <TaskProgress tasks={tasks} />
+            </div>
+          )}
           <div />
         </div>
       </div>
