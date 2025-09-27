@@ -10,8 +10,11 @@ import com.xiaoguai.agentx.domain.conversation.constants.Role;
 import com.xiaoguai.agentx.domain.conversation.model.MessageEntity;
 import com.xiaoguai.agentx.domain.conversation.service.ConversationDomainService;
 import com.xiaoguai.agentx.infrastrcture.llm.LlmProviderService;
+import dev.langchain4j.data.message.ChatMessage;
 import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.model.chat.StreamingChatModel;
+import dev.langchain4j.model.chat.request.ChatRequest;
+import dev.langchain4j.model.openai.OpenAiChatRequestParameters;
 
 import java.util.List;
 
@@ -25,6 +28,7 @@ import java.util.List;
 public abstract class AbstractAgentHandler implements AgentEventHandler {
 
     private final ConversationDomainService conversationDomainService;
+
     protected AbstractAgentHandler(ConversationDomainService conversationDomainService) {
         this.conversationDomainService = conversationDomainService;
     }
@@ -122,6 +126,19 @@ public abstract class AbstractAgentHandler implements AgentEventHandler {
         message.setRole(Role.ASSISTANT);
         message.setSessionId(environment.getSessionId());
         return message;
+    }
+
+    protected ChatRequest buildChatRequest(ChatContext context, List<ChatMessage> messages) {
+        ChatRequest.Builder builder = ChatRequest.builder();
+        builder.messages(messages);
+
+        OpenAiChatRequestParameters parameters = OpenAiChatRequestParameters.builder()
+                .temperature(context.getLlmModelConfig().getTemperature())
+                .topK(context.getLlmModelConfig().getTopK())
+                .topP(context.getLlmModelConfig().getTopP())
+                .build();
+        builder.parameters(parameters);
+        return builder.build();
     }
 
 }

@@ -71,7 +71,7 @@ public class AgentPromptTemplates {
                     "当前需要完成的子任务: %s\n\n" +
                     "%s\n\n" +
                     "执行指南：\n" +
-                    "请你快速理解当前任务需求，并且立即响应";
+                    "请你快速理解当前任务需求，给出一个简洁但有效的执行结果，并且立即响应";
 
     /**
      * 任务总结
@@ -89,7 +89,10 @@ public class AgentPromptTemplates {
                     "8. 使用Markdown格式编排你的回答，充分利用标题(#)、子标题(##)、列表(- 或1.)、强调(**粗体**或*斜体*)、引用(>)、代码块(```)等元素增强可读性和结构感。\n" +
                     "9. 根据内容类型，适当使用表格、分隔线或其他Markdown元素组织信息。\n\n" +
                     "子任务执行结果：\n%s\n\n" +
-                    "请提供一个完整、丰富且令人满意的回答，使用Markdown格式使其具有良好的结构和可读性，就像你正在与一个真实的人进行有意义的对话，而不仅仅是完成一项任务。";
+                    "以上任务结果通过 \n" +
+                    "- 任务: \n " +
+                    "- 结果: \n" +
+                    "的样式提供，请你仔细查看并提供一个完整、丰富且令人满意的回答，使用Markdown格式使其具有良好的结构和可读性，就像你正在与一个真实的人进行有意义的对话，而不仅仅是完成一项任务。";
 
     /**
      * 分析用户消息
@@ -163,5 +166,12 @@ public class AgentPromptTemplates {
             });
         }
         return String.format(taskExecutionTestPrompt, parentTask, currentTask, sb);
+    }
+
+    /**
+     * 获取总结提示词
+     */
+    public static String getSummaryPrompt(String result) {
+        return String.format(summaryPrompt, result);
     }
 }

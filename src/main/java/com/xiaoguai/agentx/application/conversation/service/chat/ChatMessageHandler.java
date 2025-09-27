@@ -42,7 +42,7 @@ public class ChatMessageHandler extends AbstractMessageHandler {
     /**
      * 默认连接超时时间：5min
      */
-    protected static final long CONNECTION_TIMEOUT = 300000L;
+    protected static final long CONNECTION_TIMEOUT = 600000L;
 
     /**
      * 摘要前缀信息

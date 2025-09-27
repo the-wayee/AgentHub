@@ -109,10 +109,11 @@ public class AgentWorkflowContext<T> {
     /**
      * 发送普通消息
      */
-    public void sendMessage(String message, MessageType messageType){
+    public void sendMessage(String message, MessageType messageType) {
         AgentChatResponse response = AgentChatResponse.build(message, false, false, messageType);
         transport.sendMessage(connection, response);
     }
+
     /**
      * 发送结束消息
      */
@@ -172,6 +173,13 @@ public class AgentWorkflowContext<T> {
     }
 
     /**
+     * 完成
+     */
+    public void completeConnection() {
+        transport.completeConnection(connection);
+    }
+
+    /**
      * 将消息拆分为单个字符
      */
     private List<String> splitMessageIntoChunks(String message) {
@@ -210,10 +218,23 @@ public class AgentWorkflowContext<T> {
     /**
      * 设置任务结果
      */
-    public void setTaskResult(String taskName,  String taskResult) {
+    public void setTaskResult(String taskName, String taskResult) {
         subTasksResult.put(taskName, taskResult);
         completeTaskCount++;
     }
+
+    /**
+     * 获取任务结果
+     */
+    public String getSummaryResult() {
+        StringBuilder sb = new StringBuilder();
+        subTasksResult.forEach((k, v) -> {
+            sb.append("- 任务: ").append(k).append("\n")
+                    .append("- 结果: ").append("\n").append(v).append("\n\n");
+        });
+        return sb.toString();
+    }
+
     /**
      * 获取当前执行任务
      */
@@ -224,8 +245,6 @@ public class AgentWorkflowContext<T> {
         }
         return null;
     }
-
-
 
 
     public String getId() {
@@ -320,7 +339,7 @@ public class AgentWorkflowContext<T> {
         return extraData;
     }
 
-    public void addExtraData(String key,  Object value) {
+    public void addExtraData(String key, Object value) {
         this.extraData.put(key, value);
     }
 

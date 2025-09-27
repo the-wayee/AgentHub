@@ -70,6 +70,8 @@ public class TaskExecAgentHandler extends AbstractAgentHandler {
                         context.getCompleteTaskCount(),
                         context.getTotalTaskCount());
             }
+
+            context.sendEndMessage(MessageType.TEXT);
         } catch (Exception e) {
             context.sendErrorMessage(e);
         }
