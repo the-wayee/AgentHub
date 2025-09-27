@@ -91,9 +91,6 @@ public class TaskExecAgentHandler extends AbstractAgentHandler {
         String taskId = task.getId();
 
         try {
-            // 发送任务开始消息（包含任务内容和taskId）
-            context.sendTaskStartMessage(currentTask, taskId, MessageType.TASK_EXEC);
-
             // 前端展示消息id正在执行
             context.sendTaskEndMessage(taskId, MessageType.TASK_STATUS_TO_LOADING);
 

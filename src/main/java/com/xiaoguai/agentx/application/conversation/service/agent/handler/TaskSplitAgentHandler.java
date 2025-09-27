@@ -87,7 +87,7 @@ public class TaskSplitAgentHandler extends AbstractAgentHandler {
         streamModel.chat(request, new StreamingChatResponseHandler() {
             @Override
             public void onPartialResponse(String s) {
-                context.sendMessage(s, MessageType.TEXT);
+                context.sendMessage(s, MessageType.TASK_SPLIT);
             }
 
             @Override
@@ -109,6 +109,7 @@ public class TaskSplitAgentHandler extends AbstractAgentHandler {
                         TaskEntity subTask = taskManager.createSubTask(context.getParentTask().getId(),
                                 task, context.getChatContext());
                         context.addSubTask(subTask);
+                        context.sendTaskStartMessage(task,subTask.getId(), MessageType.TASK_SPLIT);
                     }
                     // 告诉前端任务拆分结束
                     context.sendEndMessage(MessageType.TASK_SPLIT_FINISH);

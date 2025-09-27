@@ -126,6 +126,11 @@ public class AgentWorkflowContext<T> {
         transport.sendMessage(connection, response);
     }
 
+    public void sendEndMessage(String message, String taskId, MessageType messageType) {
+        AgentChatResponse response = AgentChatResponse.build(message, true, false, messageType);
+        transport.sendMessage(connection, response);
+    }
+
     /**
      * 发送异常消息
      */

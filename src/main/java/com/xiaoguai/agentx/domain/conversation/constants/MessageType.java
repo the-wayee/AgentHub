@@ -29,6 +29,10 @@ public enum MessageType {
     TASK_STATUS_TO_FINISH,
 
     /**
+     * 任务拆分
+     */
+    TASK_SPLIT,
+    /**
      * 任务拆分结束消息
      */
     TASK_SPLIT_FINISH
