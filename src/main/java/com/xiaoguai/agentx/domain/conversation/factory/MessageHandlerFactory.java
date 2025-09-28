@@ -1,11 +1,11 @@
 package com.xiaoguai.agentx.domain.conversation.factory;
 
 
+import com.xiaoguai.agentx.application.conversation.service.MessageHandler;
+import com.xiaoguai.agentx.application.conversation.service.message.agent.AgentMessageHandler;
+import com.xiaoguai.agentx.application.conversation.service.message.chat.ChatMessageHandler;
 import com.xiaoguai.agentx.domain.agent.constant.AgentType;
 import com.xiaoguai.agentx.domain.agent.model.AgentEntity;
-import com.xiaoguai.agentx.application.conversation.service.agent.AgentMessageHandler;
-import com.xiaoguai.agentx.application.conversation.service.chat.ChatMessageHandler;
-import com.xiaoguai.agentx.application.conversation.service.MessageHandler;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 

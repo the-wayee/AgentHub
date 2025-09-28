@@ -1,8 +1,7 @@
-package com.xiaoguai.agentx.application.conversation.service;
+package com.xiaoguai.agentx.application.conversation.service.context;
 
 
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
-import com.xiaoguai.agentx.application.conversation.service.agent.template.AgentPromptTemplates;
 import com.xiaoguai.agentx.domain.agent.model.AgentEntity;
 import com.xiaoguai.agentx.domain.conversation.constants.Role;
 import com.xiaoguai.agentx.domain.conversation.model.ContextEntity;

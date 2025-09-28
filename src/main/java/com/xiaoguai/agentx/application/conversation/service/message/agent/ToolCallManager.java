@@ -1,4 +1,4 @@
-package com.xiaoguai.agentx.application.conversation.service.agent.manager;
+package com.xiaoguai.agentx.application.conversation.service.message.agent;
 
 
 import dev.langchain4j.mcp.McpToolProvider;

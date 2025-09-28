@@ -1,11 +1,15 @@
 package com.xiaoguai.agentx.application.conversation.service;
 
 
+import com.xiaoguai.agentx.application.conversation.service.context.ChatContext;
 import com.xiaoguai.agentx.domain.conversation.constants.Role;
+import com.xiaoguai.agentx.domain.conversation.factory.MessageFactory;
 import com.xiaoguai.agentx.domain.conversation.model.MessageEntity;
 import com.xiaoguai.agentx.domain.conversation.service.ContextDomainService;
 import com.xiaoguai.agentx.domain.conversation.service.ConversationDomainService;
+import com.xiaoguai.agentx.infrastrcture.llm.LlmProviderService;
 import com.xiaoguai.agentx.infrastrcture.transport.MessageTransport;
+import dev.langchain4j.model.chat.StreamingChatModel;
 
 import java.util.List;
 
@@ -43,38 +47,35 @@ public abstract class AbstractMessageHandler implements MessageHandler {
      * @param transport   传输对象
      */
     @Override
-    public abstract <T> T handleChat(ChatContext environment, MessageTransport<T> transport);
+    public <T> T handleChat(ChatContext environment, MessageTransport<T> transport) {
+        // 创建连接
+        T connection = transport.createConnection(CONNECTION_TIMEOUT);
+
+        // 创建model
+        StreamingChatModel streamModel = LlmProviderService.getStreamModel(environment.getProviderEntity().getProtocol() , environment.getProviderEntity().getConfig());
+
+        // 创建对话消息
+        MessageEntity userMessage = createUserMessage(environment);
+        MessageEntity assistMessage = createAssistMessage(environment);
+
+        //
+
+        return connection;
+    }
 
 
     /**
      * 创建用户消息
      */
     protected MessageEntity createUserMessage(ChatContext chatContext) {
-        MessageEntity messageEntity = new MessageEntity();
-        messageEntity.setSessionId(chatContext.getSessionId());
-        messageEntity.setContent(chatContext.getUserMessage());
-        messageEntity.setRole(Role.USER);
-        return messageEntity;
+        return MessageFactory.createUserMessage(chatContext);
     }
 
     /**
      * 创建助理消息
      */
     protected MessageEntity createAssistMessage(ChatContext chatContext) {
-        MessageEntity messageEntity = new MessageEntity();
-        messageEntity.setSessionId(chatContext.getSessionId());
-        messageEntity.setProvider(chatContext.getProviderEntity().getId());
-        messageEntity.setModel(chatContext.getModelEntity().getId());
-        messageEntity.setRole(Role.ASSISTANT);
-        return messageEntity;
+        return MessageFactory.createAssistMessage(chatContext);
     }
 
-
-    /**
-     * 保存消息
-     */
-    protected void saveMessages(ChatContext chatContext, MessageEntity userMessage, MessageEntity assistMessage) {
-        // 保存消息
-        conversationDomainService.saveMessagesToContext(List.of(userMessage, assistMessage), chatContext.getContextEntity());
-    }
 }

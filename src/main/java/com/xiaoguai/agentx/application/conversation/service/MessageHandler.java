@@ -1,6 +1,7 @@
 package com.xiaoguai.agentx.application.conversation.service;
 
 
+import com.xiaoguai.agentx.application.conversation.service.context.ChatContext;
 import com.xiaoguai.agentx.infrastrcture.transport.MessageTransport;
 
 /**

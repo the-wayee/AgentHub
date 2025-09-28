@@ -1,8 +1,10 @@
-package com.xiaoguai.agentx.application.conversation.service;
+package com.xiaoguai.agentx.application.conversation;
 
 
 import com.xiaoguai.agentx.application.conversation.dto.MessageDTO;
 import com.xiaoguai.agentx.application.conversation.dto.StreamChatRequest;
+import com.xiaoguai.agentx.application.conversation.service.MessageHandler;
+import com.xiaoguai.agentx.application.conversation.service.context.ChatContext;
 import com.xiaoguai.agentx.domain.agent.model.AgentEntity;
 import com.xiaoguai.agentx.domain.agent.model.AgentWorkspaceEntity;
 import com.xiaoguai.agentx.domain.agent.service.AgentDomainService;

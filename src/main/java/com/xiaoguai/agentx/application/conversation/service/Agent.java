@@ -1,4 +1,4 @@
-package com.xiaoguai.agentx.application.conversation.service.agent;
+package com.xiaoguai.agentx.application.conversation.service;
 
 
 import dev.langchain4j.data.message.AiMessage;

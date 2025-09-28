@@ -2,7 +2,7 @@ package com.xiaoguai.agentx.domain.conversation.factory;
 
 
 import com.xiaoguai.agentx.domain.conversation.constants.Role;
-import com.xiaoguai.agentx.application.conversation.service.ChatContext;
+import com.xiaoguai.agentx.application.conversation.service.context.ChatContext;
 import com.xiaoguai.agentx.domain.conversation.model.MessageEntity;
 
 /**
