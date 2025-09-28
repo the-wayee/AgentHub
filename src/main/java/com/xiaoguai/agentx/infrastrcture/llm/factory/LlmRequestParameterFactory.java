@@ -3,7 +3,6 @@ package com.xiaoguai.agentx.infrastrcture.llm.factory;
 
 import com.xiaoguai.agentx.domain.llm.model.config.LlmModelConfig;
 import com.xiaoguai.agentx.infrastrcture.llm.protocol.enums.ProviderProtocol;
-import dev.langchain4j.community.model.dashscope.QwenChatRequestParameters;
 import dev.langchain4j.model.chat.request.ChatRequestParameters;
 import dev.langchain4j.model.openai.OpenAiChatRequestParameters;
 
@@ -25,21 +24,7 @@ public class LlmRequestParameterFactory {
                         .topK(llmModelConfig.getTopK())
                         .build();
             }
-            case DASHSCOPE -> {
-                requestParameters = QwenChatRequestParameters.builder()
-                        .temperature(llmModelConfig.getTemperature())
-                        .topK(llmModelConfig.getTopK())
-                        .topK(llmModelConfig.getTopK())
-                        .enableThinking(llmModelConfig.getEnableThinking())
-                        .enableSearch(llmModelConfig.getEnableSearch())
-                        .build();
-            } case ZHIPU -> {
-                requestParameters = OpenAiChatRequestParameters.builder()
-                        .temperature(llmModelConfig.getTemperature())
-                        .topK(llmModelConfig.getTopK())
-                        .topK(llmModelConfig.getTopK())
-                        .build();
-            }
+
             default -> {
                 requestParameters = OpenAiChatRequestParameters.builder()
                         .modelName(llmModelConfig.getModelId())

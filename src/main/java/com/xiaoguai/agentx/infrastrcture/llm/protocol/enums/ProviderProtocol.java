@@ -11,10 +11,7 @@ import com.xiaoguai.agentx.infrastrcture.exception.BusinessException;
  */
 public enum ProviderProtocol {
 
-    OPENAI("OpenAI"),
-    DASHSCOPE("阿里百炼"),
-    ZHIPU("清华智谱"),
-    CUSTOM("自定义");
+    OPENAI("OpenAI");
     private final String name;
 
     ProviderProtocol(String name) {

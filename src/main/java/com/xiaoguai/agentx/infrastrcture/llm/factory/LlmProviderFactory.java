@@ -4,10 +4,6 @@ package com.xiaoguai.agentx.infrastrcture.llm.factory;
 import com.xiaoguai.agentx.infrastrcture.exception.BusinessException;
 import com.xiaoguai.agentx.infrastrcture.llm.config.BaseProviderConfig;
 import com.xiaoguai.agentx.infrastrcture.llm.protocol.enums.ProviderProtocol;
-import dev.langchain4j.community.model.dashscope.QwenChatModel;
-import dev.langchain4j.community.model.dashscope.QwenStreamingChatModel;
-import dev.langchain4j.community.model.zhipu.ZhipuAiChatModel;
-import dev.langchain4j.community.model.zhipu.ZhipuAiStreamingChatModel;
 import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.model.chat.StreamingChatModel;
 import dev.langchain4j.model.openai.OpenAiChatModel;
@@ -34,25 +30,6 @@ public class LlmProviderFactory {
                         .modelName(config.getModel())
                         .build();
             }
-            case DASHSCOPE -> {
-                model = QwenChatModel.builder()
-                        .apiKey(config.getApiKey())
-                        .modelName(config.getModel())
-                        .build();
-            }
-            case ZHIPU -> {
-                model = ZhipuAiChatModel.builder()
-                        .apiKey(config.getApiKey())
-                        .model(config.getModel())
-                        .build();
-            }
-            case CUSTOM -> {
-                model = OpenAiChatModel.builder()
-                        .apiKey(config.getApiKey())
-                        .baseUrl(config.getBaseUrl())
-                        .modelName(config.getModel())
-                        .build();
-            }
             default -> {
                 throw new BusinessException("获取服务商协议失败: " + protocol.getName());
             }
@@ -72,18 +49,6 @@ public class LlmProviderFactory {
                 model = OpenAiStreamingChatModel.builder()
                         .baseUrl(config.getBaseUrl())
                         .modelName(config.getModel())
-                        .apiKey(config.getApiKey())
-                        .build();
-            }
-            case DASHSCOPE -> {
-                model = QwenStreamingChatModel.builder()
-                        .modelName(config.getModel())
-                        .apiKey(config.getApiKey())
-                        .build();
-            }
-            case ZHIPU -> {
-                model = ZhipuAiStreamingChatModel.builder()
-                        .model(config.getModel())
                         .apiKey(config.getApiKey())
                         .build();
             }
