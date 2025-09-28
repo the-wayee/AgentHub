@@ -34,4 +34,8 @@ public class MessageDomainService {
         }
         return messageRepository.selectBatchIds(ids);
     }
+
+    public void updateMessage(MessageEntity messageEntity) {
+        messageRepository.checkUpdateById(messageEntity);
+    }
 }

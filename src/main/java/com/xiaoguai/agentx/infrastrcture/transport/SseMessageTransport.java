@@ -23,6 +23,7 @@ public class SseMessageTransport implements MessageTransport<SseEmitter>{
 
     private static final String SYSTEM_ERROR_MESSAGE = "\n\n [系统错误: ";
 
+
     @Override
     public SseEmitter createConnection(long timeout) {
         SseEmitter emitter = new SseEmitter(timeout);

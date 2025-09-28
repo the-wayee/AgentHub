@@ -147,4 +147,14 @@ public class MessageEntity extends BaseEntity {
     public void setMessageType(MessageType messageType) {
         this.messageType = messageType;
     }
+
+    public boolean isUserMessage() {
+        return Role.USER == role;
+    }
+    public boolean isAssistMessage() {
+        return Role.ASSISTANT == role;
+    }
+    public boolean isSystemMessage() {
+        return Role.SYSTEM == role;
+    }
 }

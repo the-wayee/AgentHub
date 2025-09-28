@@ -4,6 +4,8 @@ package com.xiaoguai.agentx.application.conversation.service.message.agent;
 import com.xiaoguai.agentx.application.conversation.service.AbstractMessageHandler;
 import com.xiaoguai.agentx.domain.conversation.service.ContextDomainService;
 import com.xiaoguai.agentx.domain.conversation.service.ConversationDomainService;
+import com.xiaoguai.agentx.domain.conversation.service.MessageDomainService;
+import dev.langchain4j.service.tool.ToolProvider;
 import org.springframework.stereotype.Component;
 
 /**
@@ -15,9 +17,16 @@ import org.springframework.stereotype.Component;
 @Component
 public class AgentMessageHandler extends AbstractMessageHandler {
 
-    protected AgentMessageHandler(ConversationDomainService conversationDomainService, ContextDomainService contextDomainService) {
-        super(conversationDomainService, contextDomainService);
+    private final ToolCallManager toolCallManager;
+
+    protected AgentMessageHandler(MessageDomainService messageDomainService, ConversationDomainService conversationDomainService, ToolCallManager toolCallManager) {
+        super(messageDomainService, conversationDomainService);
+        this.toolCallManager = toolCallManager;
     }
 
 
+    @Override
+    protected ToolProvider provideTools() {
+        return toolCallManager.createToolProvider(toolCallManager.getAvailableTools());
+    }
 }

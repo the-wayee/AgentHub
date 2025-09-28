@@ -53,13 +53,21 @@ public class AgentChatResponse {
     private Long timestamp = System.currentTimeMillis();
 
 
-    public static AgentChatResponse build(String content, boolean isDone, boolean isThinking, MessageType messageType) {
+    private static AgentChatResponse build(String content, boolean isThinking, MessageType messageType) {
         AgentChatResponse streamChatResponse = new AgentChatResponse();
         streamChatResponse.setContent(content);
-        streamChatResponse.setDone(isDone);
+        streamChatResponse.setDone(false);
         streamChatResponse.setThinking(isThinking);
         streamChatResponse.setMessageType(messageType);
         return streamChatResponse;
+    }
+
+    public static AgentChatResponse buildMessage(String content, MessageType messageType) {
+        return build(content, false, messageType);
+    }
+
+    public static AgentChatResponse buildThinkResponse(String content, MessageType messageType) {
+        return build(content, true, messageType);
     }
 
     public static AgentChatResponse buildEndMessage(MessageType messageType) {

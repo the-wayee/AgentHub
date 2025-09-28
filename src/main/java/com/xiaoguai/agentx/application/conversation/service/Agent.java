@@ -1,7 +1,7 @@
 package com.xiaoguai.agentx.application.conversation.service;
 
 
-import dev.langchain4j.data.message.AiMessage;
+import dev.langchain4j.service.TokenStream;
 
 /**
  * @Author: the-way
@@ -11,5 +11,5 @@ import dev.langchain4j.data.message.AiMessage;
  */
 public interface Agent {
 
-    AiMessage chat(String prompt);
+    TokenStream chat(String prompt);
 }
