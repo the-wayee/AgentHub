@@ -53,6 +53,17 @@ mybatis-plus:
       logic-not-delete-value: "null"
     banner: false
 
+# 邮箱参数
+mail:
+  smtp:
+    host: ${MAIL_SMTP_HOST:smtp.qq.com}
+    port: ${MAIL_SMTP_PORT:25}
+    username: ${MAIL_SMTP_USERNAME:xx}
+    password: ${MAIL_SMTP_PASSWORD:xx}
+  verification:
+    template: ${MAIL_VERIFICATION_TEMPLATE:您的验证码是:%s，有效期10分钟，请勿泄露给他人。}
+    subject: ${MAIL_VERIFICATION_SUBJECT:AgenHub - 邮箱验证码}
+
 
 logging:
   level:
