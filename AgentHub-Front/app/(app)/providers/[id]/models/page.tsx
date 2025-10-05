@@ -103,11 +103,8 @@ export default function ProviderModelsPage() {
   // 专门获取模型列表的函数
   async function loadModels() {
     try {
-      const res = await fetch(`/api/llm/models/by-provider/${providerId}`, { 
-        cache: 'no-store' 
-      })
-      const result = await res.json()
-      
+      const result = await api.getModelsByProvider(providerId)
+
       if (result.code === 200 && Array.isArray(result.data)) {
         setModels(result.data)
       } else {
@@ -232,16 +229,11 @@ export default function ProviderModelsPage() {
 
   async function toggleModel(modelId: string, currentStatus: boolean) {
     try {
-      const res = await fetch(`/api/llm/models/${modelId}/toggle-status`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' }
-      })
-      
-      const result = await res.json().catch(() => null)
-      
-      if (res.ok && result?.code === 200) {
+      const result = await api.toggleModelStatus(modelId)
+
+      if (result?.code === 200) {
         // 更新本地状态
-        setModels(prev => prev.map(model => 
+        setModels(prev => prev.map(model =>
           model.id === modelId ? { ...model, status: !currentStatus } : model
         ))
         toast({

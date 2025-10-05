@@ -462,6 +462,31 @@ create index if not exists idx_agent_tasks_parent_task_id
     on public.agent_tasks (parent_task_id);
 
 
+CREATE TABLE users (
+                       id varchar(36) PRIMARY KEY,
+                       nickname varchar(255) NOT NULL,
+                       email varchar(255),
+                       phone varchar(11),
+                       password varchar NOT NULL,
+                       created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                       updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                       deleted_at TIMESTAMP,
+                       github_id varchar(255),
+                       github_login varchar(255),
+                       avatar_url varchar(255)
+);
+
+COMMENT ON COLUMN users.id IS '主键';
+COMMENT ON COLUMN users.nickname IS '昵称';
+COMMENT ON COLUMN users.email IS '邮箱';
+COMMENT ON COLUMN users.phone IS '手机号';
+COMMENT ON COLUMN users.password IS '密码';
+COMMENT ON COLUMN users.created_at IS '创建时间';
+COMMENT ON COLUMN users.updated_at IS '更新时间';
+COMMENT ON COLUMN users.deleted_at IS '逻辑删除时间';
+
+
+
 INSERT INTO public.agent_workspace (id, agent_id, user_id, llm_model_config, created_at, updated_at, deleted_at) VALUES ('ead8686aef44524dd9d3b89fdfbdb24a', 'c3e412cb5da36b9709ccbcb120207f1d', '1', '{"modelId": "e3580d308d375eac56ca0a96b922fe5d", "maxTokens": 1000, "reserveRatio": 60.0, "strategyType": "NONE", "summaryThreshold": 2}', '2025-09-08 17:39:14.955310', '2025-09-08 17:41:25.637744', null);
 INSERT INTO public.agents (id, name, avatar, description, system_prompt, welcome_message, published_version, enabled, agent_type, user_id, created_at, updated_at, deleted_at) VALUES ('c3e412cb5da36b9709ccbcb120207f1d', '小乖', '', '小乖', '你是一个有帮助的助手', '你好，请问我能帮到你什么', null, true, 'FUNCTIONAL_AGENT', '1', '2025-09-08 17:39:14.952646', '2025-09-08 17:39:14.952646', null);
 INSERT INTO public.models (id, user_id, provider_id, model_id, name, description, official, type, status, created_at, updated_at, deleted_at) VALUES ('e3580d308d375eac56ca0a96b922fe5d', '1', 'eab86898ebda4226a2dc1558af8d37b9', 'qwen-plus', 'qwen-plus', '阿里云热门模型', false, 'NORMAL', true, '2025-09-08 17:40:26.884930', '2025-09-08 17:40:26.884930', null);

@@ -337,7 +337,7 @@ export function ChatShell({ agentId }: { agentId: string }) {
         if (messageType === MessageType.TEXT && done) {
           // 只有在有内容时才创建新的聊天气泡
           if (content) {
-            finalId = appendAssistantMessage(convoId, "", "normal", messageType as string, taskId, taskName)
+            finalId = appendAssistantMessage(convoId, "", "normal", messageType as string, taskId)
             appendMessageDelta(convoId, finalId, content)
           }
           return // 返回，不执行后续的逻辑
@@ -348,7 +348,7 @@ export function ChatShell({ agentId }: { agentId: string }) {
           if (content) appendMessageDelta(convoId, reasoningId, content)
         } else if (messageType !== MessageType.TASK_SPLIT_FINISH) {
           // TASK_SPLIT_FINISH 消息不显示在聊天气泡中，只在任务列表中显示
-          if (!finalId) finalId = appendAssistantMessage(convoId, "", "normal", messageType as string, taskId, taskName)
+          if (!finalId) finalId = appendAssistantMessage(convoId, "", "normal", messageType as string, taskId)
           if (content) appendMessageDelta(convoId, finalId, content)
         }
 

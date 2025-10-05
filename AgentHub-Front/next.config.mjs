@@ -1,10 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   eslint: {
-    ignoreDuringBuilds: true,
+    ignoreDuringBuilds: false,
   },
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
   images: {
     unoptimized: true,
@@ -12,7 +12,7 @@ const nextConfig = {
   reactStrictMode: false,
   async rewrites() {
     const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'
-    
+
     return [
       // 代理所有API路径到后端
       {

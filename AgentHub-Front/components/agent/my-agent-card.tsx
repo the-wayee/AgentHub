@@ -18,6 +18,7 @@ import {
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { useEffect, useState } from "react"
 import type { Agent } from "@/lib/types"
+import { api } from "@/lib/api"
 
 export function MyAgentCard({
   agent,
@@ -100,7 +101,7 @@ export function MyAgentCard({
                   className="cursor-pointer"
                   onClick={async () => {
                     try {
-                      await fetch(`/api/agent/${encodeURIComponent(agent.id)}/toggle-status`, { cache: "no-store" })
+                      await api.toggleAgentStatus(agent.id)
                     } finally {
                       onToggle?.()
                     }

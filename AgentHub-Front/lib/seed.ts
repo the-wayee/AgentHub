@@ -11,7 +11,6 @@ export function seedAgents(): Agent[] {
   return [
     {
       id: "demo",
-      workspaceId: "personal",
       name: "Alpha 助手",
       description: "友好的聊天与问答助手，支持简单工具调用与私有知识。",
       version: "1.0.0",
@@ -23,7 +22,6 @@ export function seedAgents(): Agent[] {
     },
     {
       id: "writer",
-      workspaceId: "personal",
       name: "文案写作助手",
       description: "营销文案、标题创意与润色。",
       version: "0.9.2",
@@ -35,7 +33,6 @@ export function seedAgents(): Agent[] {
     },
     {
       id: "analyst",
-      workspaceId: "team",
       name: "数据分析助手",
       description: "表格、指标与简单可视化推荐。",
       version: "0.6.0",

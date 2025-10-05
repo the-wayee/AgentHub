@@ -45,7 +45,7 @@ export default function ExplorePage() {
       (a) =>
         a.name.toLowerCase().includes(lower) ||
         (a.description || "").toLowerCase().includes(lower) ||
-        (a.tags || []).some((t) => t.toLowerCase().includes(lower)),
+        (a.tags || []).some((t: string) => t.toLowerCase().includes(lower)),
     )
   }, [agents, q])
 

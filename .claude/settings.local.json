@@ -6,7 +6,11 @@
       "Bash(npx tsc:*)",
       "Bash(npm run build:*)",
       "Bash(node:*)",
-      "Bash(timeout:*)"
+      "Bash(timeout:*)",
+      "Bash(mvn:*)",
+      "Bash(java:*)",
+      "Bash(npm run lint)",
+      "Bash(npm run type-check:*)"
     ],
     "deny": [],
     "ask": []

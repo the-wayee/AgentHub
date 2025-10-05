@@ -14,6 +14,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ArrowLeft, Plus, Edit, Trash2, Search, Settings } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { api } from "@/lib/api"
 import { AdminModelsSkeleton } from "@/components/ui/page-skeleton"
 
 interface Model {
@@ -233,15 +234,10 @@ export default function AdminProviderModelsPage() {
   // 切换模型状态
   async function toggleModelStatus(modelId: string, status: boolean) {
     try {
-      const res = await fetch(`/api/llm/models/${modelId}/toggle-status`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' }
-      })
+      const result = await api.toggleModelStatus(modelId)
 
-      const result = await res.json()
-
-      if (res.ok && result.success) {
-        setModels(prev => prev.map(m => 
+      if (result?.code === 200) {
+        setModels(prev => prev.map(m =>
           m.id === modelId ? { ...m, status } : m
         ))
         toast({
@@ -249,14 +245,14 @@ export default function AdminProviderModelsPage() {
           description: `模型已${status ? '启用' : '禁用'}`
         })
       } else {
-        const errorMsg = result.message || '状态更新失败'
+        const errorMsg = result?.message || '状态更新失败'
         toast({
           title: "状态更新失败",
           description: errorMsg,
           variant: "destructive"
         })
         // 恢复原状态
-        setModels(prev => prev.map(m => 
+        setModels(prev => prev.map(m =>
           m.id === modelId ? { ...m, status: !status } : m
         ))
       }
@@ -267,7 +263,7 @@ export default function AdminProviderModelsPage() {
         variant: "destructive"
       })
       // 恢复原状态
-      setModels(prev => prev.map(m => 
+      setModels(prev => prev.map(m =>
         m.id === modelId ? { ...m, status: !status } : m
       ))
     }

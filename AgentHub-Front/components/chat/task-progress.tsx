@@ -132,7 +132,7 @@ export function TaskProgress({ tasks }: TaskProgressProps) {
       {/* 任务列表 - 限制高度并滚动 */}
       <div className="max-h-32 overflow-y-auto space-y-0.5 pr-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
         {tasks
-          .sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0))
+          .sort((a, b) => (a.createdAt?.getTime() || 0) - (b.createdAt?.getTime() || 0))
           .map((task, index) => (
             <div
               key={task.id}

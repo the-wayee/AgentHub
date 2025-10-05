@@ -33,7 +33,7 @@ type ConvoState = {
     convoId: string,
     messages: { id: string; role: "user" | "assistant" | "system"; content: string; messageType?: string; taskId?: string; taskName?: string; createdAt?: string | number }[],
   ) => void
-  appendAssistantMessage: (convoId: string, initialContent?: string, kind?: "normal" | "reasoning") => string
+  appendAssistantMessage: (convoId: string, initialContent?: string, kind?: "normal" | "reasoning", messageType?: string, taskId?: string, taskName?: string) => string
   setMessageContent: (convoId: string, messageId: string, content: string) => void
   appendMessageDelta: (convoId: string, messageId: string, delta: string) => void
   removeMessage: (convoId: string, messageId: string) => void

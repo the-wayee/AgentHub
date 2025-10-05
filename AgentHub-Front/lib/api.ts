@@ -112,13 +112,7 @@ export const api = {
     });
   },
   
-  // 切换agent状态
-  toggleAgentStatus: (agentId: string) => {
-    return apiFetch(`/api/agent/${agentId}/toggle-status`, {
-      method: "POST",
-    });
-  },
-  
+    
   // 获取LLM providers
   getProviders: () => {
     return apiFetch(`/api/llm/providers`);
@@ -143,6 +137,22 @@ export const api = {
   // 切换LLM provider状态
   toggleProviderStatus: (providerId: string) => {
     return apiFetch(`/api/llm/providers/${providerId}/toggle-status`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+    });
+  },
+
+  // 切换模型状态
+  toggleModelStatus: (modelId: string) => {
+    return apiFetch(`/api/llm/models/${modelId}/toggle-status`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+    });
+  },
+
+  // 切换Agent状态
+  toggleAgentStatus: (agentId: string) => {
+    return apiFetch(`/api/agent/${agentId}/toggle-status`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
     });
@@ -175,7 +185,7 @@ export const api = {
   
   // 根据provider获取模型
   getModelsByProvider: (providerId: string) => {
-    return apiFetch(`/api/llm/models/by-provider/${providerId}`);
+    return apiFetch(`/api/llm/models/${providerId}`);
   },
   
   // 获取admin providers

@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -24,6 +25,7 @@ const defaultModel = {
 }
 
 export function AgentBuilder({ agent, onSave, showTitle = true, onCancel }: { agent?: Agent; onSave?: (a: Agent) => void; showTitle?: boolean; onCancel?: () => void }) {
+  const router = useRouter()
   const { upsertAgent } = useAgentCatalog()
   const knowledge = useKnowledgeStore((s) => s.items)
   const [activeTab, setActiveTab] = useState("base")

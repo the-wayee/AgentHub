@@ -118,17 +118,12 @@ export default function ProvidersPage() {
   // 切换服务商状态
   async function toggleProviderStatus(providerId: string, currentStatus: boolean) {
     try {
-      const res = await fetch(`/api/llm/providers/${providerId}/toggle-status`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' }
-      })
-      
-      const result = await res.json().catch(() => null)
-      
-      if (res.ok && result?.success) {
+      const result = await api.toggleProviderStatus(providerId)
+
+      if (result?.code === 200) {
         // 更新本地状态
-        setProviders(prev => prev.map(provider => 
-          provider.id === providerId 
+        setProviders(prev => prev.map(provider =>
+          provider.id === providerId
             ? { ...provider, status: !currentStatus, provider: { ...provider.provider, status: !currentStatus } }
             : provider
         ))
@@ -509,12 +504,9 @@ export default function ProvidersPage() {
                 }`}
                 onClick={async () => {
                   try {
-                    // 直接调用后端接口加载模型列表
-                    const res = await fetch(`/api/llm/models/by-provider/${provider.id}`, { 
-                      cache: 'no-store' 
-                    })
-                    const result = await res.json()
-                    
+                    // 使用api.ts中的getModelsByProvider方法加载模型列表
+                    const result = await api.getModelsByProvider(provider.id)
+
                     if (result.code === 200) {
                       // 成功加载模型列表后跳转
                       window.location.href = `/providers/${provider.id}/models`
