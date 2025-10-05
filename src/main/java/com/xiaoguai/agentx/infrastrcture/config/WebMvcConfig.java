@@ -27,7 +27,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
                 .excludePathPatterns( // 不拦截以下路径
                         "/login", // 登录接口
                         "/register", // 注册接口
-                        "/send-email-code", "/verify-email-code", "/get-captcha", "/reset-password",
+                        "/send-email-code", "/verify-email-code", "/get-captcha","/account-available", "/reset-password",
                         "/send-reset-password-code",
                         "/oauth/github/authorize",
                         "/oauth/github/callback");

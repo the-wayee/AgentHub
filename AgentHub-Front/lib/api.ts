@@ -1,30 +1,133 @@
 // API工具函数，用于在容器环境中直接调用后端API
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
-export async function apiFetch(path: string, options?: RequestInit) {
+// 401状态码处理函数
+function handleUnauthorized() {
+  // 清除本地存储的认证信息
+  if (typeof window !== 'undefined') {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+
+    // 重定向到登录页面，并添加当前页面作为重定向参数
+    const currentPath = window.location.pathname + window.location.search;
+    const loginUrl = `/login${currentPath !== '/' ? `?redirect=${encodeURIComponent(currentPath)}` : ''}`;
+    window.location.href = loginUrl;
+  }
+}
+
+// 获取认证Token
+function getAuthToken(): string | null {
+  if (typeof window !== 'undefined') {
+    return localStorage.getItem('token');
+  }
+  return null;
+}
+
+// 公共的响应处理函数
+function handleApiResponse(result: any) {
+  // 处理后端返回的数据格式
+  // 后端格式: { code: 200, message: "操作成功", data: {...} }
+  // 前端期望: { success: boolean, message: string, data: T }
+  if (result && typeof result === 'object' && 'code' in result) {
+    return {
+      success: result.code === 200,
+      message: result.message || (result.code === 200 ? '操作成功' : '操作失败'),
+      data: result.data
+    };
+  }
+
+  // 如果已经是前端期望的格式，直接返回
+  return result;
+}
+
+// 不需要认证的API调用
+export async function apiFetchPublic(path: string, options?: RequestInit) {
   const url = `${API_URL}${path}`;
-  
-  const res = await fetch(url, options);
-  
+
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...(options?.headers as Record<string, string> || {}),
+  };
+
+  const res = await fetch(url, {
+    ...options,
+    headers,
+  });
+
   if (!res.ok) {
     const errorText = await res.text();
     throw new Error(`API error: ${res.status} - ${errorText}`);
   }
-  
-  return res.json();
+
+  const result = await res.json();
+  return handleApiResponse(result);
+}
+
+// 需要认证的API调用
+export async function apiFetch(path: string, options?: RequestInit) {
+  const url = `${API_URL}${path}`;
+
+  // 添加认证头
+  const token = getAuthToken();
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...(options?.headers as Record<string, string> || {}),
+  };
+
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  const res = await fetch(url, {
+    ...options,
+    headers,
+  });
+
+  // 处理401状态码
+  if (res.status === 401) {
+    handleUnauthorized();
+    return Promise.reject(new Error('Unauthorized - redirecting to login'));
+  }
+
+  if (!res.ok) {
+    const errorText = await res.text();
+    throw new Error(`API error: ${res.status} - ${errorText}`);
+  }
+
+  const result = await res.json();
+  return handleApiResponse(result);
 }
 
 // 专门用于SSE聊天的函数，不走JSON解析
 export async function apiFetchSSE(path: string, options?: RequestInit) {
   const url = `${API_URL}${path}`;
-  
-  const res = await fetch(url, options);
-  
+
+  // 添加认证头
+  const token = getAuthToken();
+  const headers: Record<string, string> = {
+    ...(options?.headers as Record<string, string> || {}),
+  };
+
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  const res = await fetch(url, {
+    ...options,
+    headers,
+  });
+
+  // 处理401状态码
+  if (res.status === 401) {
+    handleUnauthorized();
+    return Promise.reject(new Error('Unauthorized - redirecting to login'));
+  }
+
   if (!res.ok) {
     const errorText = await res.text();
     throw new Error(`API SSE error: ${res.status} - ${errorText}`);
   }
-  
+
   return res;
 }
 
