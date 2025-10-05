@@ -23,10 +23,13 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(userAuthInterceptor);
-//                // 添加拦截路径 - 拦截所有API请求
-//                .addPathPatterns("/api/**")
-//                // 排除不需要鉴权的路径，例如登录、注册等
-//                .excludePathPatterns("/api/auth/login", "/api/auth/register");
+        registry.addInterceptor(userAuthInterceptor).addPathPatterns("/**") // 拦截所有请求
+                .excludePathPatterns( // 不拦截以下路径
+                        "/login", // 登录接口
+                        "/register", // 注册接口
+                        "/send-email-code", "/verify-email-code", "/get-captcha", "/reset-password",
+                        "/send-reset-password-code",
+                        "/oauth/github/authorize",
+                        "/oauth/github/callback");
     }
 }

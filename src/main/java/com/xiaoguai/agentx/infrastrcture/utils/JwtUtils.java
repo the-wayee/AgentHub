@@ -1,0 +1,55 @@
+package com.xiaoguai.agentx.infrastrcture.utils;
+
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.Keys;
+
+import javax.crypto.SecretKey;
+import java.util.Date;
+
+/**
+ * @Author: the-way
+ * @Verson: v1.0
+ * @Date: 2025-10-05 12:23
+ * @Description: JwtUtils
+ */
+public class JwtUtils {
+
+    private static String jwtSecret = "the-way666";
+
+    // token过期时间 - 24小时
+    private static final long EXPIRATION_TIME = 24 * 60 * 60 * 1000;
+
+    private static SecretKey getSigningKey() {
+        byte[] keyBytes = Decoders.BASE64.decode(jwtSecret);
+        return Keys.hmacShaKeyFor(keyBytes);
+    }
+
+    /** 生成JWT Token */
+    public static String generateToken(String userId) {
+        Date now = new Date();
+        Date expiryDate = new Date(now.getTime() + EXPIRATION_TIME);
+
+        return Jwts.builder().subject(userId).issuedAt(now).expiration(expiryDate).signWith(getSigningKey()).compact();
+    }
+
+    /** 从token中获取用户ID */
+    public static String getUserIdFromToken(String token) {
+        Claims claims = Jwts.parser().verifyWith(getSigningKey()).build().parseSignedClaims(token).getPayload();
+
+        return claims.getSubject();
+    }
+
+    /** 验证token是否有效 */
+    public static boolean validateToken(String token) {
+        try {
+            Jwts.parser().verifyWith(getSigningKey()).build().parseSignedClaims(token);
+            return true;
+        } catch (JwtException | IllegalArgumentException e) {
+            return false;
+        }
+    }
+}
