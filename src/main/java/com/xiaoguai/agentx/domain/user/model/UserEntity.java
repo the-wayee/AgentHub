@@ -4,7 +4,9 @@ package com.xiaoguai.agentx.domain.user.model;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.xiaoguai.agentx.infrastrcture.entity.BaseEntity;
+import com.xiaoguai.agentx.infrastrcture.exception.BusinessException;
 
 /**
  * @Author: the-way
@@ -87,5 +89,11 @@ public class UserEntity extends BaseEntity {
     public void setAvatarUrl(String avatarUrl) {
         this.avatarUrl = avatarUrl;
     }
+    public void valid() {
+        if (StringUtils.isEmpty(email) && StringUtils.isEmpty(phone) && StringUtils.isEmpty(githubId)) {
+            throw new BusinessException("必须使用邮箱、手机号或GitHub账号来作为账号");
+        }
+    }
+
 }
 

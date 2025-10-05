@@ -57,7 +57,7 @@ public class VerificationCodeService {
      * @param captchaCode  图形验证码code
      * @param ip    客户端id
      */
-    public String generateCode(String email, String captchaUuid, String captchaCode, String ip) {
+    public String generateCode(String email, String captchaUuid, String captchaCode, String ip, String businessType) {
         if (!CaptchaUtils.verifyCaptcha(captchaUuid, captchaCode)) {
             throw new BusinessException("图形验证码错误或已过期");
         }
@@ -79,7 +79,7 @@ public class VerificationCodeService {
         long expirationMillis = TimeUnit.MINUTES.toMillis(EXPIRATION_MINUTES);
 
         // 存储验证码
-        String storageKey = generateStorageKey(email, BUSINESS_TYPE_REGISTER);
+        String storageKey = generateStorageKey(email, businessType);
         codeStorage.storeCode(storageKey, code.toString(), expirationMillis);
 
         // 记录ip次数
@@ -94,6 +94,28 @@ public class VerificationCodeService {
         LIMIT_INFO_MAP.put(email, limitInfo);
 
         return code.toString();
+    }
+
+    public String generateCode(String email, String captchaUuid, String captchaCode, String ip) {
+        return generateCode(email, captchaUuid, captchaCode, ip, BUSINESS_TYPE_REGISTER);
+    }
+
+    /** 验证验证码
+     * @param email 邮箱
+     * @param captchaCode 验证码
+     * @param businessType 业务类型
+     * @return 验证结果
+     */
+    public boolean verifyCode(String email, String captchaCode, String businessType) {
+        String storageKey = generateStorageKey(email, businessType);
+        return codeStorage.verifyCode(storageKey, captchaCode);
+    }
+
+    /**
+     * 验证验证码
+     */
+    public boolean verifyCode(String email, String captchaCode) {
+        return verifyCode(email, captchaCode, BUSINESS_TYPE_REGISTER);
     }
 
 
