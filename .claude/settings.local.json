@@ -10,7 +10,8 @@
       "Bash(mvn:*)",
       "Bash(java:*)",
       "Bash(npm run lint)",
-      "Bash(npm run type-check:*)"
+      "Bash(npm run type-check:*)",
+      "Bash(curl:*)"
     ],
     "deny": [],
     "ask": []

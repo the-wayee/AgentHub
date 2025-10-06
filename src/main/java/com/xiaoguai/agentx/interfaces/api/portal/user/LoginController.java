@@ -5,10 +5,7 @@ import com.xiaoguai.agentx.application.user.service.LoginAppService;
 import com.xiaoguai.agentx.infrastrcture.verification.CaptchaUtils;
 import com.xiaoguai.agentx.infrastrcture.verification.CaptchaUtils.CaptchaResult;
 import com.xiaoguai.agentx.interfaces.api.common.Result;
-import com.xiaoguai.agentx.interfaces.dto.user.req.LoginRequest;
-import com.xiaoguai.agentx.interfaces.dto.user.req.RegisterRequest;
-import com.xiaoguai.agentx.interfaces.dto.user.req.SendEmailCodeRequest;
-import com.xiaoguai.agentx.interfaces.dto.user.req.SendResetPasswordCodeRequest;
+import com.xiaoguai.agentx.interfaces.dto.user.req.*;
 import com.xiaoguai.agentx.interfaces.dto.user.resp.CaptchaResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.NotNull;
@@ -89,6 +86,15 @@ public class LoginController {
         String clientIp = getClientIp(httpRequest);
         loginAppService.sendResetPasswordCode(request, clientIp);
         return Result.success().message("验证码已发送，请查收邮件");
+    }
+
+    /**
+     * 重置密码
+     */
+    @PostMapping("/reset-password")
+    public Result<?> resetPassword(@RequestBody @Validated ResetPasswordRequest request) {
+        loginAppService.resetPassword(request);
+        return Result.success();
     }
 
     /**

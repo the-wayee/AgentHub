@@ -18,7 +18,7 @@ import java.util.Date;
  */
 public class JwtUtils {
 
-    private static String jwtSecret = "the-way666";
+    private static String jwtSecret = "5367566B59703373367639792F423F4528482B4D6251655468576D5A71347437";
 
     // token过期时间 - 24小时
     private static final long EXPIRATION_TIME = 24 * 60 * 60 * 1000;

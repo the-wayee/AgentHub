@@ -83,6 +83,15 @@ public class UserDomainService {
         return userRepository.selectOne(wrapper);
     }
 
+    /**
+     * 更新用户密码
+     */
+    public void updateUserPassword(UserEntity user, String newPassword) {
+        user.setPassword(PasswordUtils.encode(newPassword));
+
+        userRepository.checkUpdateById(user);
+    }
+
     private String generateNickname() {
         return "AgentHub-" + UUID.randomUUID().toString().replace("-", "").substring(0, 6);
     }

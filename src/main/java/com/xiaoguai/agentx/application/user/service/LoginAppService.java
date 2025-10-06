@@ -6,12 +6,10 @@ import com.xiaoguai.agentx.domain.user.service.UserDomainService;
 import com.xiaoguai.agentx.infrastrcture.email.EmailService;
 import com.xiaoguai.agentx.infrastrcture.exception.BusinessException;
 import com.xiaoguai.agentx.infrastrcture.utils.JwtUtils;
+import com.xiaoguai.agentx.infrastrcture.utils.PasswordUtils;
 import com.xiaoguai.agentx.infrastrcture.verification.CaptchaUtils;
 import com.xiaoguai.agentx.infrastrcture.verification.VerificationCodeService;
-import com.xiaoguai.agentx.interfaces.dto.user.req.LoginRequest;
-import com.xiaoguai.agentx.interfaces.dto.user.req.RegisterRequest;
-import com.xiaoguai.agentx.interfaces.dto.user.req.SendEmailCodeRequest;
-import com.xiaoguai.agentx.interfaces.dto.user.req.SendResetPasswordCodeRequest;
+import com.xiaoguai.agentx.interfaces.dto.user.req.*;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.stereotype.Service;
 
@@ -93,8 +91,27 @@ public class LoginAppService {
         emailService.sendVerificationEmail(request.getEmail(), code);
     }
 
+    /**
+     * 重置密码
+     */
+    public void resetPassword(ResetPasswordRequest request) {
+        boolean valid = verificationCodeService.verifyCode(request.getEmail(), request.getCode(), BUSINESS_TYPE_RESET_PASSWORD);
+        if (!valid) {
+            throw new BusinessException("验证码无效或已过期");
+        }
+
+        // 重置密码
+        UserEntity user = userDomainService.findUserByAccount(request.getEmail());
+        if (user == null) {
+            throw new BusinessException("用户不存在");
+        }
+
+        userDomainService.updateUserPassword(user, request.getNewPassword());
+    }
+
     public boolean checkAccountAvailable(String account) {
         UserEntity user = userDomainService.findUserByAccount(account);
         return user == null;
     }
+
 }

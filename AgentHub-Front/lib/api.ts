@@ -54,12 +54,15 @@ export async function apiFetchPublic(path: string, options?: RequestInit) {
     headers,
   });
 
+  const result = await res.json();
+
+  // 即使状态码不是200，也尝试解析后端返回的错误信息
   if (!res.ok) {
-    const errorText = await res.text();
-    throw new Error(`API error: ${res.status} - ${errorText}`);
+    // 处理后端错误响应格式，将错误信息转换为前端期望的格式
+    const errorResponse = handleApiResponse(result);
+    throw new Error(errorResponse.message || `API error: ${res.status}`);
   }
 
-  const result = await res.json();
   return handleApiResponse(result);
 }
 
@@ -83,18 +86,21 @@ export async function apiFetch(path: string, options?: RequestInit) {
     headers,
   });
 
+  const result = await res.json();
+
   // 处理401状态码
   if (res.status === 401) {
     handleUnauthorized();
     return Promise.reject(new Error('Unauthorized - redirecting to login'));
   }
 
+  // 即使状态码不是200，也尝试解析后端返回的错误信息
   if (!res.ok) {
-    const errorText = await res.text();
-    throw new Error(`API error: ${res.status} - ${errorText}`);
+    // 处理后端错误响应格式，将错误信息转换为前端期望的格式
+    const errorResponse = handleApiResponse(result);
+    throw new Error(errorResponse.message || `API error: ${res.status}`);
   }
 
-  const result = await res.json();
   return handleApiResponse(result);
 }
 

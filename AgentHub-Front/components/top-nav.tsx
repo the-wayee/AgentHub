@@ -8,6 +8,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { User } from "lucide-react"
 
 import * as React from "react"
+import { useRouter } from "next/navigation"
 
 const links = [
   { href: "/chat/demo", label: "主页", icon: Home },
@@ -20,6 +21,18 @@ const links = [
 
 export function TopNav() {
   const pathname = usePathname()
+  const router = useRouter()
+
+  const handleLogout = () => {
+    // 清除本地存储的认证信息
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('token')
+      localStorage.removeItem('user')
+    }
+
+    // 跳转到登录页面
+    router.push('/login')
+  }
 
   return (
     <header className="h-14 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -100,6 +113,10 @@ export function TopNav() {
                 <Link href="/admin" prefetch={false}>
                   <Shield className="w-4 h-4 mr-2" /> 后台管理
                 </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleLogout}>
+                退出登录
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

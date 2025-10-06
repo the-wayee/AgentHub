@@ -19,6 +19,18 @@ export interface SendEmailCodeRequest {
   captchaCode: string
 }
 
+export interface SendResetPasswordCodeRequest {
+  email: string
+  captchaUuid: string
+  captchaCode: string
+}
+
+export interface ResetPasswordRequest {
+  email: string
+  newPassword: string
+  code: string
+}
+
 export interface CaptchaResponse {
   uuid: string
   imageBase64: string
@@ -70,15 +82,20 @@ export const authApi = {
   },
 
   // 发送重置密码验证码（不需要认证）
-  sendResetPasswordCode: (email: string, captchaUuid: string, captchaCode: string): Promise<ApiResponse> => {
+  sendResetPasswordCode: (data: SendResetPasswordCodeRequest): Promise<ApiResponse> => {
     return apiFetchPublic("/api/send-reset-password-code", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email,
-        captchaUuid,
-        captchaCode
-      }),
+      body: JSON.stringify(data),
+    })
+  },
+
+  // 重置密码（不需要认证）
+  resetPassword: (data: ResetPasswordRequest): Promise<ApiResponse> => {
+    return apiFetchPublic("/api/reset-password", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
     })
   },
 
