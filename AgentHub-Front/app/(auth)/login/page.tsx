@@ -1,6 +1,6 @@
 "use client"
 
-import React from "react"
+import React, { Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { AuthLayout } from "@/components/auth/auth-layout"
@@ -8,21 +8,20 @@ import { LoginForm } from "@/components/auth/login-form"
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/hooks/use-toast"
 
-export default function LoginPage() {
+function LoginPageContent() {
   const searchParams = useSearchParams()
   const message = searchParams.get("message")
   const { toast } = useToast()
 
-  // 显示成功消息
-  if (message) {
-    // 使用useEffect来避免hydration问题
-    React.useEffect(() => {
+  // 显示成功消息 - 使用useEffect来避免hydration问题
+  React.useEffect(() => {
+    if (message) {
       toast({
         title: "成功",
         description: message,
       })
-    }, [message, toast])
-  }
+    }
+  }, [message, toast])
 
   const handleLoginSuccess = () => {
     toast({
@@ -46,18 +45,27 @@ export default function LoginPage() {
               立即注册
             </Link>
           </p>
-          <p className="text-xs text-muted-foreground">
-            <Link
-              href="/forgot-password"
-              className="hover:underline"
+          <Link href="/forgot-password">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="w-full mt-2 text-xs"
             >
               忘记密码？
-            </Link>
-          </p>
+            </Button>
+          </Link>
         </div>
       }
     >
       <LoginForm onSuccess={handleLoginSuccess} />
     </AuthLayout>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <LoginPageContent />
+    </Suspense>
   )
 }
