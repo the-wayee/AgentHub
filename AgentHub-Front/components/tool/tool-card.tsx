@@ -121,11 +121,17 @@ export function ToolCard({ tool, type, onActionComplete, onCardClick }: ToolCard
     router.push(`/marketplace/${toolId}`)
   }
 
+  const handleViewDetailWithDrawer = () => {
+    onCardClick?.(tool)
+  }
+
   const handleCardClick = (e: React.MouseEvent) => {
     // 防止冒泡到卡片点击事件
     if ((e.target as HTMLElement).closest('[data-dropdown-trigger]')) {
       return
     }
+    
+    // 点击卡片都打开drawer
     onCardClick?.(tool)
   }
 
@@ -227,10 +233,6 @@ export function ToolCard({ tool, type, onActionComplete, onCardClick }: ToolCard
                 )}
                 {type === 'installed' && (
                   <>
-                    <DropdownMenuItem onClick={handleUpdateTool} className="cursor-pointer">
-                      <RefreshCw className="h-4 w-4 mr-2" />
-                      更新工具
-                    </DropdownMenuItem>
                     <DropdownMenuItem onClick={handleViewDetail} className="cursor-pointer">
                       <Info className="h-4 w-4 mr-2" />
                       查看详情

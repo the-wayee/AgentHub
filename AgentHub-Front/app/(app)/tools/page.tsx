@@ -66,7 +66,7 @@ export default function ToolsPage() {
     loadData() // 重新加载数据
   }
 
-  const handleCardClick = (tool: Tool | UserTool, type: 'market' | 'installed') => {
+  const handleCardClick = (tool: Tool | UserTool, type: 'market' | 'installed' | 'created') => {
     setSelectedTool(tool)
     setDrawerType(type)
     setDrawerOpen(true)

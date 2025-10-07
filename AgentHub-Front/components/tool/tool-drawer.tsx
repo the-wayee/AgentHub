@@ -27,7 +27,7 @@ interface ToolDrawerProps {
   tool: Tool | UserTool | null
   open: boolean
   onOpenChange: (open: boolean) => void
-  type: 'market' | 'installed'
+  type: 'market' | 'installed' | 'created'
   onActionComplete?: () => void
 }
 
@@ -103,7 +103,21 @@ export function ToolDrawer({ tool, open, onOpenChange, type, onActionComplete }:
     }
   }
 
-  const toolVersion = isUserTool(tool) ? tool.version : '1.0.0'
+  // 根据工具类型获取版本信息
+  const getToolVersion = () => {
+    if (type === 'installed' && isUserTool(tool)) {
+      // 已安装的工具使用currentVersion字段
+      return tool.currentVersion || tool.version || '1.0.0'
+    } else if (type === 'created') {
+      // 创建的工具使用version字段
+      return isUserTool(tool) ? tool.version : '1.0.0'
+    } else {
+      // 市场工具使用默认版本
+      return '1.0.0'
+    }
+  }
+  
+  const toolVersion = getToolVersion()
   const installCount = isUserTool(tool) ? 0 : (tool as Tool).installCount || 0
 
   return (
@@ -204,6 +218,41 @@ export function ToolDrawer({ tool, open, onOpenChange, type, onActionComplete }:
                 </div>
               </div>
 
+              {/* 工具列表 */}
+              {(tool.toolList && tool.toolList.length > 0) && (
+                <div>
+                  <h3 className="font-semibold mb-3">工具列表</h3>
+                  <div className="space-y-2">
+                    {tool.toolList.map((toolItem: any, index: number) => (
+                      <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                            <span className="text-xs font-medium text-blue-600">
+                              {(toolItem.name || toolItem.title || `工具${index + 1}`)[0]}
+                            </span>
+                          </div>
+                          <div>
+                            <div className="font-medium text-sm">
+                              {toolItem.name || toolItem.title || `工具${index + 1}`}
+                            </div>
+                            {toolItem.description && (
+                              <div className="text-xs text-muted-foreground truncate max-w-[200px]">
+                                {toolItem.description}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        {type === 'installed' && toolItem.currentVersion && (
+                          <Badge variant="outline" className="text-xs">
+                            v{toolItem.currentVersion}
+                          </Badge>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* GitHub链接 - 模拟数据 */}
               <div>
                 <h3 className="font-semibold mb-3">项目信息</h3>
@@ -249,7 +298,7 @@ export function ToolDrawer({ tool, open, onOpenChange, type, onActionComplete }:
                 <Download className="w-4 h-4 mr-2" />
                 {loading ? "安装中..." : "安装工具"}
               </Button>
-            ) : (
+            ) : type === 'installed' ? (
               <div className="flex gap-3">
                 <Button variant="outline" className="flex-1 cursor-pointer" size="lg">
                   <Settings className="w-4 h-4 mr-2" />
@@ -264,6 +313,23 @@ export function ToolDrawer({ tool, open, onOpenChange, type, onActionComplete }:
                 >
                   <X className="w-4 w-4 mr-2" />
                   {loading ? "卸载中..." : "卸载"}
+                </Button>
+              </div>
+            ) : (
+              <div className="flex gap-3">
+                <Button variant="outline" className="flex-1 cursor-pointer" size="lg">
+                  <Settings className="w-4 h-4 mr-2" />
+                  设置
+                </Button>
+                <Button 
+                  variant="destructive" 
+                  onClick={handleUninstall}
+                  disabled={loading}
+                  className="flex-1 cursor-pointer"
+                  size="lg"
+                >
+                  <X className="w-4 w-4 mr-2" />
+                  {loading ? "删除中..." : "删除"}
                 </Button>
               </div>
             )}

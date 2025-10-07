@@ -501,7 +501,7 @@ CREATE TABLE tools
     description        TEXT,
     user_id            VARCHAR(36)  NOT NULL,
     labels             JSONB,
-    tool_type          VARCHAR(50)  NOT NULL,
+    tool_type          VARCHAR(50)  NOT ULL,
     upload_type        VARCHAR(20)  NOT NULL,
     upload_url         VARCHAR(255),
     install_command    JSONB,

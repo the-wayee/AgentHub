@@ -27,6 +27,6 @@ public class ToolVersionDomainService {
                 .eq(ToolVersionEntity::getToolId, toolId)
                 .eq(ToolVersionEntity::getUserId, userId);
 
-        toolVersionRepository.checkDelete(wrapper);
+        toolVersionRepository.delete(wrapper);
     }
 }

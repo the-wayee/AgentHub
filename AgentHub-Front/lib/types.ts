@@ -76,6 +76,7 @@ export interface UserTool {
   subtitle?: string
   toolId: string
   version: string
+  currentVersion?: string  // 已安装工具的当前版本
   toolList?: any[]
   labels?: string[]
   isOffice: boolean
