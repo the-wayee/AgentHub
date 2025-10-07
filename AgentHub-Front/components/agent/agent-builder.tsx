@@ -32,7 +32,7 @@ export function AgentBuilder({ agent, onSave, showTitle = true, onCancel }: { ag
   const [isSaving, setIsSaving] = useState(false)
 
   const [draft, setDraft] = useState<Agent>(
-    agent || {
+    agent || ({
       id: "custom",
       name: "我的 Agent",
       description: "个性化的智能助手",
@@ -45,7 +45,7 @@ export function AgentBuilder({ agent, onSave, showTitle = true, onCancel }: { ag
       tools: { webSearch: false, calculator: true, http: false },
       systemPrompt: "你是一个专业且友好的助手。",
       welcomeMessage: "你好！我是你的 AI 助手，有什么可以帮你的吗？",
-    },
+    } as Agent),
   )
 
   useEffect(() => {

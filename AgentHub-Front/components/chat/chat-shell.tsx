@@ -539,7 +539,7 @@ export function ChatShell({ agentId }: { agentId: string }) {
                   <Square className="w-4 h-4" />
                 </Button>
               ) : (
-                <Button size="icon" className="rounded-full" onClick={sendMessage} title="发送">
+                <Button size="icon" className="rounded-full cursor-pointer" onClick={sendMessage} title="发送">
                   <Send className="w-4 h-4" />
                 </Button>
               )}

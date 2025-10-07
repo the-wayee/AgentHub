@@ -230,7 +230,7 @@ export function ForgotPasswordForm({ onSuccess, className }: ForgotPasswordFormP
 
           <Input type="hidden" {...step1Form.register("captchaUuid")} />
 
-          <Button type="submit" className="w-full" disabled={isLoading}>
+          <Button type="submit" className="w-full cursor-pointer" disabled={isLoading}>
             {isLoading ? "发送中..." : "发送验证码"}
             {!isLoading && <ArrowRight className="ml-2 h-4 w-4" />}
           </Button>
@@ -306,7 +306,7 @@ export function ForgotPasswordForm({ onSuccess, className }: ForgotPasswordFormP
               <ArrowLeft className="mr-2 h-4 w-4" />
               返回上一步
             </Button>
-            <Button type="submit" className="flex-1" disabled={isLoading}>
+            <Button type="submit" className="flex-1 cursor-pointer" disabled={isLoading}>
               {isLoading ? "重置中..." : "重置密码"}
             </Button>
           </div>

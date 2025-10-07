@@ -1,4 +1,6 @@
 // API工具函数，用于在容器环境中直接调用后端API
+import { Tool } from './types';
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
 // 401状态码处理函数
@@ -373,4 +375,162 @@ export const api = {
       method: "DELETE",
     });
   },
+
+  // 工具相关 API (使用模拟数据)
+  tools: {
+    // 获取用户已安装的工具
+    getUserTools: async () => {
+      // 模拟API延迟
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      try {
+        // 导入模拟数据
+        const { mockUserTools } = await import('./mock-data');
+        return { 
+          success: true, 
+          message: '获取成功', 
+          data: mockUserTools 
+        };
+      } catch (error) {
+        console.error('获取用户工具失败:', error);
+        return { success: false, message: '获取用户工具失败', data: [] };
+      }
+    },
+
+    // 获取工具市场工具列表
+    getMarketTools: async (params?: { 
+      page?: number;
+      size?: number;
+      keyword?: string;
+      category?: string;
+      isOffice?: boolean;
+    }) => {
+      // 模拟API延迟
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      try {
+        // 导入模拟数据和过滤函数
+        const { mockMarketTools, filterTools, paginateTools } = await import('./mock-data');
+        
+        // 应用筛选条件
+        const filteredTools = filterTools(mockMarketTools, {
+          keyword: params?.keyword,
+          category: params?.category,
+          isOffice: params?.isOffice,
+          status: 'approved' // 只显示已审核的工具
+        });
+        
+        // 应用分页
+        const page = params?.page || 1;
+        const size = params?.size || 12;
+        const paginatedResult = paginateTools(filteredTools, page, size);
+        
+        return { 
+          success: true, 
+          message: '获取成功', 
+          data: paginatedResult.data,
+          pagination: {
+            total: paginatedResult.total,
+            totalPages: paginatedResult.totalPages,
+            currentPage: paginatedResult.currentPage,
+            hasNext: paginatedResult.hasNext,
+            hasPrev: paginatedResult.hasPrev
+          }
+        };
+      } catch (error) {
+        console.error('获取市场工具失败:', error);
+        return { success: false, message: '获取市场工具失败', data: [] };
+      }
+    },
+
+    // 安装工具
+    installTool: async (toolId: string, version?: string) => {
+      // 模拟API延迟
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      try {
+        // 模拟安装过程
+        const { mockMarketTools, mockUserTools } = await import('./mock-data');
+        
+        // 查找要安装的工具
+        const toolToInstall = mockMarketTools.find(tool => tool.id === toolId);
+        if (!toolToInstall) {
+          return { success: false, message: '工具不存在', data: null };
+        }
+        
+        // 检查是否已安装
+        const isInstalled = mockUserTools.some(userTool => userTool.toolId === toolId);
+        if (isInstalled) {
+          return { success: false, message: '工具已安装', data: null };
+        }
+        
+        // 模拟成功安装
+        console.log(`模拟安装工具: ${toolToInstall.name} (${toolId})`);
+        return { 
+          success: true, 
+          message: `${toolToInstall.name} 安装成功`, 
+          data: { toolId, version: version || '1.0.0' }
+        };
+      } catch (error) {
+        console.error('安装工具失败:', error);
+        return { success: false, message: '安装工具失败', data: null };
+      }
+    },
+
+    // 卸载工具
+    uninstallTool: async (userToolId: string) => {
+      // 模拟API延迟
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      try {
+        // 动态导入并修改模拟数据
+        const mockDataModule = await import('./mock-data');
+        const { mockUserTools } = mockDataModule;
+        
+        // 查找要卸载的工具
+        const toolIndex = mockUserTools.findIndex(userTool => userTool.id === userToolId);
+        if (toolIndex === -1) {
+          return { success: false, message: '工具不存在', data: null };
+        }
+        
+        const toolToUninstall = mockUserTools[toolIndex];
+        
+        // 从数组中删除工具
+        mockUserTools.splice(toolIndex, 1);
+        
+        console.log(`成功卸载工具: ${toolToUninstall.name} (${userToolId})`);
+        return { 
+          success: true, 
+          message: `${toolToUninstall.name} 卸载成功`, 
+          data: { userToolId }
+        };
+      } catch (error) {
+        console.error('卸载工具失败:', error);
+        return { success: false, message: '卸载工具失败', data: null };
+      }
+    },
+
+    // 获取工具详情
+    getToolDetail: async (toolId: string): Promise<Tool> => {
+      // 模拟API延迟
+      await new Promise(resolve => setTimeout(resolve, 200));
+      
+      try {
+        // 导入模拟数据
+        const { mockMarketTools } = await import('./mock-data');
+        
+        // 查找工具详情
+        const tool = mockMarketTools.find(t => t.id === toolId);
+        if (!tool) {
+          throw new Error('工具不存在');
+        }
+        
+        console.log('获取工具详情:', toolId);
+        return tool;
+      } catch (error) {
+        console.error('获取工具详情失败:', error);
+        throw error;
+      }
+    }
+  }
 };

@@ -29,3 +29,79 @@ export type Agent = {
   publishStatusLabel?: string
   updatedAt?: string
 }
+
+// 工具相关类型定义
+export interface Tool {
+  id: string
+  name: string
+  icon?: string
+  subtitle?: string
+  description?: string
+  userId: string
+  labels?: string[]
+  toolType: string
+  uploadType: string
+  uploadUrl?: string
+  installCommand?: any
+  toolList?: any[]
+  rejectReason?: string
+  failedStepStatus?: string
+  status: 'pending' | 'approved' | 'rejected' | 'draft'
+  isOffice: boolean
+  createdAt: string
+  updatedAt: string
+  deletedAt?: string
+  // 新增字段
+  installCount?: number
+  author?: {
+    name: string
+    avatar?: string
+  }
+  changelog?: string
+  versions?: ToolVersionHistory[]
+}
+
+export interface ToolVersionHistory {
+  version: string
+  date: string
+  changelog: string
+}
+
+export interface UserTool {
+  id: string
+  userId: string
+  name: string
+  description?: string
+  icon?: string
+  subtitle?: string
+  toolId: string
+  version: string
+  toolList?: any[]
+  labels?: string[]
+  isOffice: boolean
+  publicState: boolean
+  createdAt: string
+  updatedAt: string
+  deletedAt?: string
+}
+
+export interface ToolVersion {
+  id: string
+  name: string
+  icon?: string
+  subtitle?: string
+  description?: string
+  userId: string
+  version: string
+  toolId: string
+  uploadType: string
+  changeLog?: string
+  uploadUrl?: string
+  toolList?: any[]
+  labels?: string[]
+  isOffice: boolean
+  publicStatus: boolean
+  createdAt: string
+  updatedAt: string
+  deletedAt?: string
+}

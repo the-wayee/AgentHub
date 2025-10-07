@@ -486,6 +486,125 @@ COMMENT ON COLUMN users.updated_at IS '更新时间';
 COMMENT ON COLUMN users.deleted_at IS '逻辑删除时间';
 
 
+-- 工具相关表
+
+-- 工具表
+CREATE TABLE tools (
+                       id VARCHAR(36) PRIMARY KEY,
+                       name VARCHAR(255) NOT NULL,
+                       icon VARCHAR(255),
+                       subtitle VARCHAR(255),
+                       description TEXT,
+                       user_id VARCHAR(36) NOT NULL,
+                       labels JSONB,
+                       tool_type VARCHAR(50) NOT NULL,
+                       upload_type VARCHAR(20) NOT NULL,
+                       upload_url VARCHAR(255),
+                       install_command JSONB,
+                       tool_list JSONB,
+                       reject_reason TEXT,
+                       failed_step_status VARCHAR(20),
+                       status VARCHAR(20) NOT NULL,
+                       office BOOLEAN DEFAULT FALSE,
+                       created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                       updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                       deleted_at TIMESTAMP
+);
+CREATE INDEX idx_tools_user_id ON tools(user_id);
+
+
+COMMENT ON TABLE tools IS '工具实体类';
+COMMENT ON COLUMN tools.id IS '工具唯一ID';
+COMMENT ON COLUMN tools.name IS '工具名称';
+COMMENT ON COLUMN tools.icon IS '工具图标';
+COMMENT ON COLUMN tools.subtitle IS '副标题';
+COMMENT ON COLUMN tools.description IS '工具描述';
+COMMENT ON COLUMN tools.user_id IS '用户ID';
+COMMENT ON COLUMN tools.labels IS '标签列表，JSON数组格式';
+COMMENT ON COLUMN tools.tool_type IS '工具类型';
+COMMENT ON COLUMN tools.upload_type IS '上传方式';
+COMMENT ON COLUMN tools.upload_url IS '上传URL';
+COMMENT ON COLUMN tools.install_command IS '安装命令，JSON格式';
+COMMENT ON COLUMN tools.tool_list IS '工具列表，JSON数组格式';
+COMMENT ON COLUMN tools.status IS '审核状态';
+COMMENT ON COLUMN tools.office IS '是否官方工具';
+COMMENT ON COLUMN tools.created_at IS '创建时间';
+COMMENT ON COLUMN tools.updated_at IS '更新时间';
+COMMENT ON COLUMN tools.deleted_at IS '逻辑删除时间';
+
+-- 工具版本表
+CREATE TABLE tool_versions (
+                               id VARCHAR(36) PRIMARY KEY,
+                               name VARCHAR(255) NOT NULL,
+                               icon VARCHAR(255),
+                               subtitle VARCHAR(255),
+                               description TEXT,
+                               user_id VARCHAR(36) NOT NULL,
+                               version VARCHAR(50) NOT NULL,
+                               tool_id VARCHAR(36) NOT NULL,
+                               upload_type VARCHAR(20) NOT NULL,
+                               change_log TEXT,
+                               upload_url VARCHAR(255),
+                               tool_list JSONB,
+                               labels JSONB,
+                               office BOOLEAN DEFAULT FALSE,
+                               public_status BOOLEAN DEFAULT FALSE,
+                               created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                               updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                               deleted_at TIMESTAMP
+);
+COMMENT ON TABLE tool_versions IS '工具版本实体类';
+COMMENT ON COLUMN tool_versions.id IS '版本唯一ID';
+COMMENT ON COLUMN tool_versions.name IS '工具名称';
+COMMENT ON COLUMN tool_versions.icon IS '工具图标';
+COMMENT ON COLUMN tool_versions.subtitle IS '副标题';
+COMMENT ON COLUMN tool_versions.description IS '工具描述';
+COMMENT ON COLUMN tool_versions.user_id IS '用户ID';
+COMMENT ON COLUMN tool_versions.version IS '版本号';
+COMMENT ON COLUMN tool_versions.tool_id IS '工具ID';
+COMMENT ON COLUMN tool_versions.upload_type IS '上传方式';
+COMMENT ON COLUMN tool_versions.upload_url IS '上传URL';
+COMMENT ON COLUMN tool_versions.tool_list IS '工具列表，JSON数组格式';
+COMMENT ON COLUMN tool_versions.labels IS '标签列表，JSON数组格式';
+COMMENT ON COLUMN tool_versions.office IS '是否官方工具';
+COMMENT ON COLUMN tool_versions.public_status IS '公开状态';
+COMMENT ON COLUMN tool_versions.created_at IS '创建时间';
+COMMENT ON COLUMN tool_versions.updated_at IS '更新时间';
+COMMENT ON COLUMN tool_versions.deleted_at IS '逻辑删除时间';
+
+
+-- 用户工具关联表
+CREATE TABLE user_tools (
+                            id VARCHAR(36) PRIMARY KEY,
+                            user_id VARCHAR(36) NOT NULL,
+                            name VARCHAR(255) NOT NULL,
+                            description TEXT,
+                            icon VARCHAR(255),
+                            subtitle VARCHAR(255),
+                            tool_id VARCHAR(36) NOT NULL,
+                            version VARCHAR(50) NOT NULL,
+                            tool_list JSONB,
+                            labels JSONB,
+                            office BOOLEAN DEFAULT FALSE,
+                            public_state BOOLEAN DEFAULT FALSE,
+                            created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                            updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                            deleted_at TIMESTAMP
+);
+
+COMMENT ON TABLE user_tools IS '用户工具关联实体类';
+COMMENT ON COLUMN user_tools.id IS '唯一ID';
+COMMENT ON COLUMN user_tools.user_id IS '用户ID';
+COMMENT ON COLUMN user_tools.tool_id IS '工具ID';
+COMMENT ON COLUMN user_tools.version IS '版本号';
+COMMENT ON COLUMN user_tools.tool_list IS '工具列表，JSON数组格式';
+COMMENT ON COLUMN user_tools.labels IS '标签列表，JSON数组格式';
+COMMENT ON COLUMN user_tools.office IS '是否官方工具';
+COMMENT ON COLUMN user_tools.public_state IS '公开状态';
+COMMENT ON COLUMN user_tools.created_at IS '创建时间';
+COMMENT ON COLUMN user_tools.updated_at IS '更新时间';
+COMMENT ON COLUMN user_tools.deleted_at IS '逻辑删除时间';
+
 
 INSERT INTO public.agent_workspace (id, agent_id, user_id, llm_model_config, created_at, updated_at, deleted_at) VALUES ('ead8686aef44524dd9d3b89fdfbdb24a', 'c3e412cb5da36b9709ccbcb120207f1d', '1', '{"modelId": "e3580d308d375eac56ca0a96b922fe5d", "maxTokens": 1000, "reserveRatio": 60.0, "strategyType": "NONE", "summaryThreshold": 2}', '2025-09-08 17:39:14.955310', '2025-09-08 17:41:25.637744', null);
 INSERT INTO public.agents (id, name, avatar, description, system_prompt, welcome_message, published_version, enabled, agent_type, user_id, created_at, updated_at, deleted_at) VALUES ('c3e412cb5da36b9709ccbcb120207f1d', '小乖', '', '小乖', '你是一个有帮助的助手', '你好，请问我能帮到你什么', null, true, 'FUNCTIONAL_AGENT', '1', '2025-09-08 17:39:14.952646', '2025-09-08 17:39:14.952646', null);
