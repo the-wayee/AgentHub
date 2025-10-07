@@ -16,6 +16,7 @@ import {
   Github
 } from 'lucide-react'
 import { toast } from 'sonner'
+import { api } from '@/lib/api'
 
 export default function UploadToolClient() {
   const router = useRouter()
@@ -101,14 +102,16 @@ export default function UploadToolClient() {
         installCommand: JSON.parse(installCommand.trim())
       }
       
-      // 模拟API调用
-      await new Promise(resolve => setTimeout(resolve, 2000))
+      // 调用上传工具API
+      const result = await api.tools.uploadTool(toolData)
       
-      console.log('提交的工具数据:', toolData)
-      toast.success('工具上传成功！等待审核...')
-      
-      // 跳转回工具中心
-      router.push('/tools')
+      if (result.success) {
+        toast.success('工具上传成功！等待审核...')
+        // 跳转回工具中心
+        router.push('/tools')
+      } else {
+        throw new Error(result.message || '上传失败')
+      }
       
     } catch (error) {
       console.error('上传工具失败:', error)

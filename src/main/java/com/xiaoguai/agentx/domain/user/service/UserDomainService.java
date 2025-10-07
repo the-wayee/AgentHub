@@ -79,8 +79,11 @@ public class UserDomainService {
     public UserEntity findUserByAccount(String account) {
         LambdaQueryWrapper<UserEntity> wrapper = Wrappers.<UserEntity>lambdaQuery().eq(UserEntity::getEmail, account)
                 .or().eq(UserEntity::getPhone, account);
-
-        return userRepository.selectOne(wrapper);
+        UserEntity user = userRepository.selectOne(wrapper);
+        if (user== null) {
+            throw new BusinessException("用户不存在：" + account);
+        }
+        return user;
     }
 
     /**
@@ -90,6 +93,18 @@ public class UserDomainService {
         user.setPassword(PasswordUtils.encode(newPassword));
 
         userRepository.checkUpdateById(user);
+    }
+
+    /**
+     * 根据id查找用户
+     */
+    public UserEntity getUserById(String userId) {
+        UserEntity userEntity = userRepository.selectById(userId);
+        if (userEntity == null) {
+            throw new BusinessException("用户不存在：" + userId);
+
+        }
+        return userEntity;
     }
 
     private String generateNickname() {

@@ -376,10 +376,10 @@ export const api = {
     });
   },
 
-  // 工具相关 API (使用模拟数据)
+  // 工具相关 API
   tools: {
-    // 获取用户已安装的工具
-    getUserTools: async () => {
+    // 获取用户已安装的工具（暂时使用模拟数据，等待后端接口）
+    getInstalledTools: async () => {
       // 模拟API延迟
       await new Promise(resolve => setTimeout(resolve, 500));
       
@@ -392,9 +392,31 @@ export const api = {
           data: mockUserTools 
         };
       } catch (error) {
-        console.error('获取用户工具失败:', error);
-        return { success: false, message: '获取用户工具失败', data: [] };
+        console.error('获取已安装工具失败:', error);
+        return { success: false, message: '获取已安装工具失败', data: [] };
       }
+    },
+
+    // 获取用户创建的工具
+    getCreatedTools: async () => {
+      try {
+        const result = await apiFetch('/api/tools/user');
+        console.log('获取用户创建的工具成功:', result);
+        
+        return { 
+          success: true, 
+          message: '获取成功', 
+          data: result.data || [] 
+        };
+      } catch (error) {
+        console.error('获取用户创建的工具失败:', error);
+        return { success: false, message: '获取用户创建的工具失败', data: [] };
+      }
+    },
+
+    // 兼容性方法 - 默认获取用户创建的工具
+    getUserTools: async () => {
+      return api.tools.getCreatedTools();
     },
 
     // 获取工具市场工具列表
@@ -498,8 +520,7 @@ export const api = {
         // 从数组中删除工具
         mockUserTools.splice(toolIndex, 1);
         
-        console.log(`成功卸载工具: ${toolToUninstall.name} (${userToolId})`);
-        return { 
+        return {
           success: true, 
           message: `${toolToUninstall.name} 卸载成功`, 
           data: { userToolId }
@@ -512,24 +533,78 @@ export const api = {
 
     // 获取工具详情
     getToolDetail: async (toolId: string): Promise<Tool> => {
-      // 模拟API延迟
-      await new Promise(resolve => setTimeout(resolve, 200));
-      
       try {
-        // 导入模拟数据
-        const { mockMarketTools } = await import('./mock-data');
-        
-        // 查找工具详情
-        const tool = mockMarketTools.find(t => t.id === toolId);
-        if (!tool) {
-          throw new Error('工具不存在');
-        }
-        
-        console.log('获取工具详情:', toolId);
-        return tool;
+        const result = await apiFetch(`/api/tools/${toolId}`);
+        console.log('获取工具详情成功:', result);
+
+        return result.data;
       } catch (error) {
-        console.error('获取工具详情失败:', error);
         throw error;
+      }
+    },
+
+    // 上传工具
+    uploadTool: async (toolData: {
+      name: string;
+      icon?: string;
+      subtitle: string;
+      description: string;
+      labels: string[];
+      githubUrl: string;
+      installCommand: any;
+    }) => {
+      try {
+        const result = await apiFetch('/api/tools', {
+          method: 'POST',
+          body: JSON.stringify({
+            name: toolData.name,
+            icon: toolData.icon,
+            subtitle: toolData.subtitle,
+            description: toolData.description,
+            labels: toolData.labels,
+            uploadUrl: toolData.githubUrl,
+            installCommand: toolData.installCommand
+          })
+        });
+        
+        console.log('上传工具成功:', result);
+        
+        return {
+          success: true,
+          message: '工具上传成功',
+          data: result.data
+        };
+      } catch (error) {
+        console.error('上传工具失败:', error);
+        return {
+          success: false,
+          message: '上传工具失败',
+          data: null
+        };
+      }
+    },
+
+    // 删除用户创建的工具
+    deleteTool: async (toolId: string) => {
+      try {
+        const result = await apiFetch(`/api/tools/${toolId}`, {
+          method: 'DELETE'
+        });
+        
+        console.log('删除工具成功:', result);
+        
+        return {
+          success: true,
+          message: '工具删除成功',
+          data: null
+        };
+      } catch (error) {
+        console.error('删除工具失败:', error);
+        return {
+          success: false,
+          message: '删除工具失败',
+          data: null
+        };
       }
     }
   }

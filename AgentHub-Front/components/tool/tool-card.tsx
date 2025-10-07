@@ -30,7 +30,7 @@ import { useToast } from "@/hooks/use-toast"
 
 interface ToolCardProps {
   tool: Tool | UserTool
-  type: 'market' | 'installed'
+  type: 'market' | 'installed' | 'created'
   onActionComplete?: () => void
   onCardClick?: (tool: Tool | UserTool) => void
 }
@@ -76,27 +76,38 @@ export function ToolCard({ tool, type, onActionComplete, onCardClick }: ToolCard
   }
 
   const handleUninstall = async () => {
-    if (type !== 'installed' || !isUserTool(tool)) return
+    if (type === 'market') return
 
     setLoading(true)
     try {
-      const result = await api.tools.uninstallTool(tool.id)
-      if (result.success) {
+      let result;
+      if (type === 'installed') {
+        // 卸载已安装的工具
+        result = await api.tools.uninstallTool(tool.id)
+      } else if (type === 'created') {
+        // 删除用户创建的工具
+        result = await api.tools.deleteTool(tool.id)
+      }
+
+      if (result?.success) {
+        const actionText = type === 'installed' ? '卸载' : '删除'
         toast({
-          title: "卸载成功",
-          description: `${tool.name} 已成功卸载`,
+          title: `${actionText}成功`,
+          description: `${tool.name} 已成功${actionText}`,
         })
         onActionComplete?.()
       } else {
+        const actionText = type === 'installed' ? '卸载' : '删除'
         toast({
-          title: "卸载失败",
-          description: result.message || "工具卸载失败",
+          title: `${actionText}失败`,
+          description: result?.message || `工具${actionText}失败`,
           variant: "destructive"
         })
       }
     } catch (error) {
+      const actionText = type === 'installed' ? '卸载' : '删除'
       toast({
-        title: "卸载失败",
+        title: `${actionText}失败`,
         description: "网络错误，请稍后重试",
         variant: "destructive"
       })
@@ -220,6 +231,27 @@ export function ToolCard({ tool, type, onActionComplete, onCardClick }: ToolCard
                       <RefreshCw className="h-4 w-4 mr-2" />
                       更新工具
                     </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleViewDetail} className="cursor-pointer">
+                      <Info className="h-4 w-4 mr-2" />
+                      查看详情
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem 
+                      onClick={handleUninstall} 
+                      disabled={loading}
+                      className="text-red-600 focus:text-red-600 cursor-pointer"
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      {loading ? "卸载中..." : "卸载工具"}
+                    </DropdownMenuItem>
+                  </>
+                )}
+                {type === 'created' && (
+                  <>
+                    <DropdownMenuItem onClick={handleViewDetail} className="cursor-pointer">
+                      <Info className="h-4 w-4 mr-2" />
+                      查看详情
+                    </DropdownMenuItem>
                     <DropdownMenuItem onClick={handlePublishTool} className="cursor-pointer">
                       <Share className="h-4 w-4 mr-2" />
                       发布工具
@@ -235,7 +267,7 @@ export function ToolCard({ tool, type, onActionComplete, onCardClick }: ToolCard
                       className="text-red-600 focus:text-red-600 cursor-pointer"
                     >
                       <Trash2 className="h-4 w-4 mr-2" />
-                      {loading ? "卸载中..." : "卸载工具"}
+                      {loading ? "删除中..." : "删除工具"}
                     </DropdownMenuItem>
                   </>
                 )}

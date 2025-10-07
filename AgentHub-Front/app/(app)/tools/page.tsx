@@ -8,6 +8,7 @@ import { ToolCard } from "@/components/tool/tool-card"
 import { ToolDrawer } from "@/components/tool/tool-drawer"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Search, ArrowRight, Package, Sparkles, Plus } from "lucide-react"
 import { Tool, UserTool } from "@/lib/types"
 import { api } from "@/lib/api"
@@ -15,12 +16,14 @@ import { useToast } from "@/hooks/use-toast"
 
 export default function ToolsPage() {
   const [loading, setLoading] = useState(true)
-  const [userTools, setUserTools] = useState<UserTool[]>([])
+  const [installedTools, setInstalledTools] = useState<UserTool[]>([])
+  const [createdTools, setCreatedTools] = useState<Tool[]>([])
   const [marketTools, setMarketTools] = useState<Tool[]>([])
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedTool, setSelectedTool] = useState<Tool | UserTool | null>(null)
   const [drawerOpen, setDrawerOpen] = useState(false)
-  const [drawerType, setDrawerType] = useState<'market' | 'installed'>('installed')
+  const [drawerType, setDrawerType] = useState<'market' | 'installed' | 'created'>('installed')
+  const [activeTab, setActiveTab] = useState("installed")
   const { toast } = useToast()
 
   useEffect(() => {
@@ -30,14 +33,19 @@ export default function ToolsPage() {
   const loadData = async () => {
     setLoading(true)
     try {
-      // 并行加载用户工具和市场推荐工具
-      const [userResult, marketResult] = await Promise.all([
-        api.tools.getUserTools(),
+      // 并行加载已安装工具、创建的工具和市场推荐工具
+      const [installedResult, createdResult, marketResult] = await Promise.all([
+        api.tools.getInstalledTools(),
+        api.tools.getCreatedTools(),
         api.tools.getMarketTools({ size: 6, isOffice: true }) // 只显示官方推荐的前6个
       ])
 
-      if (userResult.success) {
-        setUserTools(userResult.data || [])
+      if (installedResult.success) {
+        setInstalledTools(installedResult.data || [])
+      }
+
+      if (createdResult.success) {
+        setCreatedTools(createdResult.data || [])
       }
 
       if (marketResult.success) {
@@ -118,51 +126,90 @@ export default function ToolsPage() {
         </div>
       </div>
 
-      {/* 我的工具区域 */}
+      {/* 我的工具区域 - 使用 Tabs 区分已安装和创建的工具 */}
       <section className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <h2 className="text-xl font-semibold">我的工具</h2>
-            <Badge variant="secondary">{userTools.length}</Badge>
-          </div>
-          {userTools.length > 6 && (
-            <Button variant="ghost" size="sm" className="gap-1 cursor-pointer">
-              查看全部 <ArrowRight className="w-4 h-4" />
-            </Button>
-          )}
-        </div>
+        <h2 className="text-xl font-semibold">我的工具</h2>
         
-        {userTools.length > 0 ? (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {userTools.slice(0, 6).map((tool) => (
-              <ToolCard
-                key={tool.id}
-                tool={tool}
-                type="installed"
-                onActionComplete={handleActionComplete}
-                onCardClick={(tool) => handleCardClick(tool, 'installed')}
-              />
-            ))}
-          </div>
-        ) : (
-          <Card className="p-8 text-center">
-            <div className="flex flex-col items-center gap-4">
-              <Package className="w-12 h-12 text-muted-foreground" />
-              <div>
-                <p className="font-medium text-lg mb-2">还没有安装任何工具</p>
-                <p className="text-muted-foreground text-sm mb-4">
-                  从下方推荐中选择，或者浏览完整的工具市场
-                </p>
-                <Link href="/marketplace">
-                  <Button className="gap-2 cursor-pointer">
-                    <Search className="w-4 h-4" />
-                    探索工具市场
-                  </Button>
-                </Link>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="installed" className="flex items-center gap-2">
+              已安装的工具
+              <Badge variant="secondary">{installedTools.length}</Badge>
+            </TabsTrigger>
+            <TabsTrigger value="created" className="flex items-center gap-2">
+              我创建的工具
+              <Badge variant="secondary">{createdTools.length}</Badge>
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="installed" className="space-y-4">
+            {installedTools.length > 0 ? (
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {installedTools.map((tool) => (
+                  <ToolCard
+                    key={tool.id}
+                    tool={tool}
+                    type="installed"
+                    onActionComplete={handleActionComplete}
+                    onCardClick={(tool) => handleCardClick(tool, 'installed')}
+                  />
+                ))}
               </div>
-            </div>
-          </Card>
-        )}
+            ) : (
+              <Card className="p-8 text-center">
+                <div className="flex flex-col items-center gap-4">
+                  <Package className="w-12 h-12 text-muted-foreground" />
+                  <div>
+                    <p className="font-medium text-lg mb-2">还没有安装任何工具</p>
+                    <p className="text-muted-foreground text-sm mb-4">
+                      从下方推荐中选择，或者浏览完整的工具市场
+                    </p>
+                    <Link href="/marketplace">
+                      <Button className="gap-2 cursor-pointer">
+                        <Search className="w-4 h-4" />
+                        探索工具市场
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+              </Card>
+            )}
+          </TabsContent>
+
+          <TabsContent value="created" className="space-y-4">
+            {createdTools.length > 0 ? (
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {createdTools.map((tool) => (
+                  <ToolCard
+                    key={tool.id}
+                    tool={tool}
+                    type="created"
+                    onActionComplete={handleActionComplete}
+                    onCardClick={(tool) => handleCardClick(tool, 'created')}
+                  />
+                ))}
+              </div>
+            ) : (
+              <Card className="p-8 text-center">
+                <div className="flex flex-col items-center gap-4">
+                  <Plus className="w-12 h-12 text-muted-foreground" />
+                  <div>
+                    <p className="font-medium text-lg mb-2">还没有创建任何工具</p>
+                    <p className="text-muted-foreground text-sm mb-4">
+                      上传您的第一个工具，与社区分享
+                    </p>
+                    <Link href="/marketplace/upload">
+                      <Button className="gap-2 cursor-pointer">
+                        <Plus className="w-4 h-4" />
+                        上传工具
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+              </Card>
+            )}
+          </TabsContent>
+        </Tabs>
       </section>
 
       {/* 推荐工具区域 */}
