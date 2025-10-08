@@ -16,12 +16,14 @@ import {
   Zap,
   Settings,
   X,
-  ExternalLink
+  ExternalLink,
+  Info
 } from "lucide-react"
 import { Tool, UserTool } from "@/lib/types"
 import { api } from "@/lib/api"
 import { useToast } from "@/hooks/use-toast"
 import { MarkdownMessage } from "@/components/chat/markdown-message"
+import { useRouter } from "next/navigation"
 
 interface ToolDrawerProps {
   tool: Tool | UserTool | null
@@ -34,6 +36,9 @@ interface ToolDrawerProps {
 export function ToolDrawer({ tool, open, onOpenChange, type, onActionComplete }: ToolDrawerProps) {
   const [loading, setLoading] = useState(false)
   const { toast } = useToast()
+  const router = useRouter()
+
+
 
   if (!tool) return null
 
@@ -42,11 +47,14 @@ export function ToolDrawer({ tool, open, onOpenChange, type, onActionComplete }:
   }
 
   const handleInstall = async () => {
-    if (type !== 'market' || isUserTool(tool)) return
+    if (type !== 'market') return
     
     setLoading(true)
     try {
-      const result = await api.tools.installTool(tool.id)
+      // 安装市场工具，需要传递toolId和version
+      const toolId = (tool as any).toolId || tool.id
+      const version = tool.version || '1.0.0'
+      const result = await api.tools.installTool(toolId, version)
       if (result.success) {
         toast({
           title: "安装成功",
@@ -73,11 +81,13 @@ export function ToolDrawer({ tool, open, onOpenChange, type, onActionComplete }:
   }
 
   const handleUninstall = async () => {
-    if (type !== 'installed' || !isUserTool(tool)) return
+    if (type !== 'installed') return
 
     setLoading(true)
     try {
-      const result = await api.tools.uninstallTool(tool.id)
+      // 卸载已安装的工具，需要传递toolId
+      const toolId = (tool as any).toolId || tool.id
+      const result = await api.tools.uninstallTool(toolId)
       if (result.success) {
         toast({
           title: "卸载成功",
@@ -103,22 +113,49 @@ export function ToolDrawer({ tool, open, onOpenChange, type, onActionComplete }:
     }
   }
 
-  // 根据工具类型获取版本信息
-  const getToolVersion = () => {
-    if (type === 'installed' && isUserTool(tool)) {
-      // 已安装的工具使用currentVersion字段
-      return tool.currentVersion || tool.version || '1.0.0'
-    } else if (type === 'created') {
-      // 创建的工具使用version字段
-      return isUserTool(tool) ? tool.version : '1.0.0'
-    } else {
-      // 市场工具使用默认版本
-      return '1.0.0'
+  // 跳转详情页面
+  const handleViewDetail = () => {
+    const toolId = isUserTool(tool) ? tool.toolId : tool.id
+    router.push(`/marketplace/${toolId}`)
+  }
+
+
+
+  // 删除用户创建的工具
+  const handleDeleteTool = async () => {
+    if (type !== 'created') return
+
+    setLoading(true)
+    try {
+      const result = await api.tools.deleteTool(tool.id)
+      if (result.success) {
+        toast({
+          title: "删除成功",
+          description: `${tool.name} 已成功删除`,
+        })
+        onActionComplete?.()
+        onOpenChange(false)
+      } else {
+        toast({
+          title: "删除失败",
+          description: result.message || "工具删除失败",
+          variant: "destructive"
+        })
+      }
+    } catch (error) {
+      toast({
+        title: "删除失败",
+        description: "网络错误，请稍后重试",
+        variant: "destructive"
+      })
+    } finally {
+      setLoading(false)
     }
   }
-  
-  const toolVersion = getToolVersion()
-  const installCount = isUserTool(tool) ? 0 : (tool as Tool).installCount || 0
+
+  // 直接使用后端返回的version字段
+  const toolVersion = tool.version || '1.0.0'
+  const installCount = tool.installCount || 0
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -136,7 +173,7 @@ export function ToolDrawer({ tool, open, onOpenChange, type, onActionComplete }:
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
                   <SheetTitle className="text-xl truncate">{tool.name}</SheetTitle>
-                  {tool.isOffice && (
+                  {tool.office && (
                     <Badge 
                       variant="outline" 
                       className="gap-1 text-xs border-red-200 bg-red-50 text-red-700"
@@ -169,11 +206,11 @@ export function ToolDrawer({ tool, open, onOpenChange, type, onActionComplete }:
           <ScrollArea className="flex-1 px-6">
             <div className="py-6 space-y-6">
               {/* 描述 */}
-              {tool.description && (
+              {tool.subtitle && (
                 <div>
                   <h3 className="font-semibold mb-3">工具描述</h3>
                   <MarkdownMessage 
-                    content={tool.description}
+                    content={tool.subtitle}
                     className="text-sm text-gray-700 bg-gray-50 p-4 rounded-lg"
                   />
                 </div>
@@ -193,35 +230,10 @@ export function ToolDrawer({ tool, open, onOpenChange, type, onActionComplete }:
                 </div>
               )}
 
-              {/* 工具列表 - 模拟数据 */}
-              <div>
-                <h3 className="font-semibold mb-3">功能列表</h3>
-                <div className="space-y-3">
-                  <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
-                    <div>
-                      <p className="font-medium text-sm">主要功能</p>
-                      <p className="text-xs text-muted-foreground">
-                        提供核心功能实现，支持多种参数配置
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
-                    <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
-                    <div>
-                      <p className="font-medium text-sm">扩展功能</p>
-                      <p className="text-xs text-muted-foreground">
-                        提供额外的扩展能力和定制化选项
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* 工具列表 */}
+              {/* 功能列表 */}
               {(tool.toolList && tool.toolList.length > 0) && (
                 <div>
-                  <h3 className="font-semibold mb-3">工具列表</h3>
+                  <h3 className="font-semibold mb-3">功能列表</h3>
                   <div className="space-y-2">
                     {tool.toolList.map((toolItem: any, index: number) => (
                       <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
@@ -253,17 +265,24 @@ export function ToolDrawer({ tool, open, onOpenChange, type, onActionComplete }:
                 </div>
               )}
 
-              {/* GitHub链接 - 模拟数据 */}
-              <div>
-                <h3 className="font-semibold mb-3">项目信息</h3>
-                <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
-                  <Github className="w-4 h-4 text-gray-600" />
-                  <span className="text-sm text-blue-600 hover:text-blue-800 cursor-pointer">
-                    https://github.com/example/{tool.name.toLowerCase()}
-                  </span>
-                  <ExternalLink className="w-3 h-3 text-gray-400" />
+              {/* 项目信息 */}
+              {tool.uploadUrl && (
+                <div>
+                  <h3 className="font-semibold mb-3">项目信息</h3>
+                  <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
+                    <Github className="w-4 h-4 text-gray-600" />
+                    <a 
+                      href={tool.uploadUrl} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-sm text-blue-600 hover:text-blue-800 cursor-pointer truncate flex-1"
+                    >
+                      {tool.uploadUrl}
+                    </a>
+                    <ExternalLink className="w-3 h-3 text-gray-400" />
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* 统计信息 */}
               <div>
@@ -289,15 +308,26 @@ export function ToolDrawer({ tool, open, onOpenChange, type, onActionComplete }:
           {/* Footer Actions */}
           <div className="px-6 py-4 border-t">
             {type === 'market' ? (
-              <Button 
-                onClick={handleInstall} 
-                disabled={loading}
-                className="w-full cursor-pointer"
-                size="lg"
-              >
-                <Download className="w-4 h-4 mr-2" />
-                {loading ? "安装中..." : "安装工具"}
-              </Button>
+              <div className="flex gap-3">
+                <Button 
+                  onClick={handleInstall}
+                  disabled={loading}
+                  className="flex-1 cursor-pointer"
+                  size="lg"
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  {loading ? "安装中..." : "安装"}
+                </Button>
+                <Button 
+                  variant="outline"
+                  onClick={handleViewDetail}
+                  className="flex-1 cursor-pointer"
+                  size="lg"
+                >
+                  <Info className="w-4 h-4 mr-2" />
+                  详情
+                </Button>
+              </div>
             ) : type === 'installed' ? (
               <div className="flex gap-3">
                 <Button variant="outline" className="flex-1 cursor-pointer" size="lg">
@@ -323,7 +353,7 @@ export function ToolDrawer({ tool, open, onOpenChange, type, onActionComplete }:
                 </Button>
                 <Button 
                   variant="destructive" 
-                  onClick={handleUninstall}
+                  onClick={handleDeleteTool}
                   disabled={loading}
                   className="flex-1 cursor-pointer"
                   size="lg"

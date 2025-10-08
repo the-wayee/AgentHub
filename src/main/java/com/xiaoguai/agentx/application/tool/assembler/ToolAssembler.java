@@ -1,9 +1,11 @@
-package com.xiaoguai.agentx.application.user.assembler;
+package com.xiaoguai.agentx.application.tool.assembler;
 
 
-import com.xiaoguai.agentx.application.user.dto.ToolDTO;
-import com.xiaoguai.agentx.domain.tool.constants.ToolStatus;
+import com.xiaoguai.agentx.application.tool.dto.ToolDTO;
+import com.xiaoguai.agentx.application.tool.dto.ToolVersionDTO;
 import com.xiaoguai.agentx.domain.tool.model.ToolEntity;
+import com.xiaoguai.agentx.domain.tool.model.ToolVersionEntity;
+import com.xiaoguai.agentx.domain.tool.model.UserToolEntity;
 import com.xiaoguai.agentx.infrastrcture.utils.JsonUtils;
 import com.xiaoguai.agentx.interfaces.dto.tool.CreateToolRequest;
 import com.xiaoguai.agentx.interfaces.dto.tool.UpdateToolRequest;
@@ -53,5 +55,17 @@ public class ToolAssembler {
             dtos.add(toDTO(tool, userName));
         });
         return dtos;
+    }
+
+    public static ToolVersionDTO toDTO(ToolVersionEntity entity) {
+        ToolVersionDTO dto = new ToolVersionDTO();
+        BeanUtils.copyProperties(entity, dto);
+        return dto;
+    }
+
+    public static ToolVersionDTO toDTO(UserToolEntity entity) {
+        ToolVersionDTO dto = new ToolVersionDTO();
+        BeanUtils.copyProperties(entity, dto);
+        return dto;
     }
 }

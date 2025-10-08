@@ -2,7 +2,10 @@ package com.xiaoguai.agentx.domain.user.service;
 
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.xiaoguai.agentx.domain.tool.model.UserToolEntity;
+import com.xiaoguai.agentx.domain.tool.repository.UserToolRepository;
 import com.xiaoguai.agentx.domain.user.model.UserEntity;
 import com.xiaoguai.agentx.domain.user.repository.UserRepository;
 import com.xiaoguai.agentx.infrastrcture.exception.BusinessException;
@@ -10,7 +13,12 @@ import com.xiaoguai.agentx.infrastrcture.utils.PasswordUtils;
 import com.xiaoguai.agentx.interfaces.api.common.Result;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * @Author: the-way
@@ -74,13 +82,14 @@ public class UserDomainService {
 
     /**
      * 根据账号查找用户
+     *
      * @param account 邮箱or手机号
      */
     public UserEntity findUserByAccount(String account) {
         LambdaQueryWrapper<UserEntity> wrapper = Wrappers.<UserEntity>lambdaQuery().eq(UserEntity::getEmail, account)
                 .or().eq(UserEntity::getPhone, account);
         UserEntity user = userRepository.selectOne(wrapper);
-        if (user== null) {
+        if (user == null) {
             throw new BusinessException("用户不存在：" + account);
         }
         return user;
@@ -105,6 +114,17 @@ public class UserDomainService {
 
         }
         return userEntity;
+    }
+
+    public Map<String, UserEntity> getUsers(List<String> userIds) {
+        if (userIds == null || userIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        LambdaQueryWrapper<UserEntity> wrapper = Wrappers.<UserEntity>lambdaQuery()
+                .in(UserEntity::getId, userIds);
+        return userRepository.selectList(wrapper)
+                .stream()
+                .collect(Collectors.toMap(UserEntity::getId, Function.identity()));
     }
 
     private String generateNickname() {

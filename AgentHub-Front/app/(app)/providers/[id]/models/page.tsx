@@ -69,7 +69,7 @@ export default function ProviderModelsPage() {
       // 通过Next.js API代理获取服务商信息
       const result = await api.getProviders()
       
-      if (result.code === 200 && Array.isArray(result.data)) {
+      if (result.success && Array.isArray(result.data)) {
         const currentProvider = result.data.find((p: any) => p.id === providerId)
         
         if (currentProvider) {
@@ -105,7 +105,7 @@ export default function ProviderModelsPage() {
     try {
       const result = await api.getModelsByProvider(providerId)
 
-      if (result.code === 200 && Array.isArray(result.data)) {
+      if (result.success && Array.isArray(result.data)) {
         setModels(result.data)
       } else {
         throw new Error(result.message || "获取模型列表失败")
@@ -125,7 +125,7 @@ export default function ProviderModelsPage() {
       const res = await fetch('/api/llm/models/types', { cache: 'no-store' })
       const result = await res.json()
       
-      if (result.code === 200 && Array.isArray(result.data)) {
+      if (result.success && Array.isArray(result.data)) {
         setModelTypes(result.data)
         return result.data // 返回加载的类型数据
       } else {
@@ -170,7 +170,7 @@ export default function ProviderModelsPage() {
       
       const result = await res.json()
       
-      if (result.code === 200) {
+      if (result.success) {
         toast({
           title: "添加成功",
           description: `模型 "${addForm.name}" 已添加`
@@ -231,7 +231,7 @@ export default function ProviderModelsPage() {
     try {
       const result = await api.toggleModelStatus(modelId)
 
-      if (result?.code === 200) {
+      if (result?.success) {
         // 更新本地状态
         setModels(prev => prev.map(model =>
           model.id === modelId ? { ...model, status: !currentStatus } : model

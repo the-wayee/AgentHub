@@ -106,7 +106,7 @@ export default function AdminProvidersPage() {
       
       // 处理后端响应格式：支持 {success, data} 和 {code, data} 两种格式
       const data = result.data || result
-      if (((result.success || result.code === 200) || result.code === 200) && Array.isArray(data)) {
+      if (result.success && Array.isArray(data)) {
         setProviderAggregates(data)
       } else {
         throw new Error(result.message || "API返回错误")
@@ -132,7 +132,7 @@ export default function AdminProvidersPage() {
     try {
       const result = await api.getProviderProtocols()
       
-      if ((result.success || result.code === 200) && Array.isArray(result.data)) {
+      if (result.success && Array.isArray(result.data)) {
         setProtocols(result.data)
       } else {
         // 使用默认协议列表作为后备
@@ -159,7 +159,7 @@ export default function AdminProvidersPage() {
 
       const result = await api.createAdminProvider(payload)
 
-      if (result.success || result.code === 200) {
+      if (result.success) {
         toast({
           title: "创建成功",
           description: "服务商已成功创建"
@@ -205,7 +205,7 @@ export default function AdminProvidersPage() {
 
       const result = await api.updateAdminProvider(editingProvider.id, payload)
 
-      if (result.success || result.code === 200) {
+      if (result.success) {
         toast({
           title: "更新成功",
           description: "服务商信息已更新"
@@ -234,7 +234,7 @@ export default function AdminProvidersPage() {
     try {
       const result = await api.deleteAdminProvider(provider.id)
 
-      if (result.success || result.code === 200) {
+      if (result.success) {
         setProviderAggregates(prev => prev.filter(agg => agg.provider.id !== provider.id))
         toast({
           title: "删除成功",
@@ -262,7 +262,7 @@ export default function AdminProvidersPage() {
     try {
       const result = await api.toggleProviderStatus(providerId)
 
-      if (result.success || result.code === 200) {
+      if (result.success) {
         setProviderAggregates(prev => prev.map(agg => 
           agg.provider.id === providerId 
             ? { ...agg, provider: { ...agg.provider, status } }

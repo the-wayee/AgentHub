@@ -61,16 +61,14 @@ export default function MarketplaceClient() {
     setLoading(true)
     try {
       const result = await api.tools.getMarketTools({
-        page: currentPage,
+        current: currentPage,
         size: 12,
-        category: selectedCategory !== 'all' ? selectedCategory : undefined,
-        isOffice: selectedType === 'official' ? true : selectedType === 'community' ? false : undefined,
-        keyword: searchQuery || undefined,
+        toolName: searchQuery || undefined,
       })
       
       if (result.success) {
         setTools(result.data || [])
-        setTotalPages(Math.ceil((result.data?.length || 0) / 12))
+        setTotalPages(result.pagination?.pages || 1)
       } else {
         toast({
           title: "加载失败",

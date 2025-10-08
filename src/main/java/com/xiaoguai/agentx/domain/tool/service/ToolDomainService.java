@@ -102,4 +102,16 @@ public class ToolDomainService {
                 .eq(ToolEntity::getUserId, userId);
         toolRepository.checkDelete(wrapper);
     }
+
+    public ToolEntity getTool(String toolId, String userId) {
+        LambdaQueryWrapper<ToolEntity> wrapper = Wrappers.<ToolEntity>lambdaQuery()
+                .eq(ToolEntity::getId, toolId)
+                .eq(ToolEntity::getUserId, userId);
+
+        ToolEntity entity = toolRepository.selectOne(wrapper);
+        if (entity == null) {
+            throw new BusinessException("工具不存在：" + toolId);
+        }
+        return entity;
+    }
 }

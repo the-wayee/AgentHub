@@ -501,7 +501,7 @@ CREATE TABLE tools
     description        TEXT,
     user_id            VARCHAR(36)  NOT NULL,
     labels             JSONB,
-    tool_type          VARCHAR(50)  NOT ULL,
+    tool_type          VARCHAR(50)  NOT NULL,
     upload_type        VARCHAR(20)  NOT NULL,
     upload_url         VARCHAR(255),
     install_command    JSONB,
@@ -632,7 +632,7 @@ VALUES ('e3580d308d375eac56ca0a96b922fe5d', '1', 'eab86898ebda4226a2dc1558af8d37
         '阿里云热门模型', false, 'NORMAL', true, '2025-09-08 17:40:26.884930', '2025-09-08 17:40:26.884930', null);
 INSERT INTO public.providers (id, user_id, protocol, name, description, config, official, status, created_at,
                               updated_at, deleted_at)
-VALUES ('eab86898ebda4226a2dc1558af8d37b9', '1', 'DASHSCOPE', '阿里云百炼',
+VALUES ('eab86898ebda4226a2dc1558af8d37b9', '1', 'OPENAI', '阿里云百炼',
         '阿里云一站式大模型服务平台，支持快速搭建内容创作、数据分析、智能问答等AI专业应用',
         'MyJVTjmz9uhTX6xcSsvq5Ox1Kxjtsr7xYgHS5GbGnMZKYLBudQQTumaK7DLgQiKSNihDpQHULbjm51gVZRsEyKen350abGZwLot8siOZmr3flBbrUVl1mihNyU3NAdGRcM5btNrPnK9jcTy4IQKdqCbM6WO5bsn9nJiNRpdb0Ejn5Eel3Gxa4uXLlLAoqFIf',
         false, true, '2025-09-08 17:40:10.800460', '2025-09-08 17:40:10.800460', null);

@@ -236,7 +236,7 @@ export default function AdminProviderModelsPage() {
     try {
       const result = await api.toggleModelStatus(modelId)
 
-      if (result?.code === 200) {
+      if (result?.success) {
         setModels(prev => prev.map(m =>
           m.id === modelId ? { ...m, status } : m
         ))

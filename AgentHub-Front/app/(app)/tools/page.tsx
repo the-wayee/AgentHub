@@ -33,11 +33,11 @@ export default function ToolsPage() {
   const loadData = async () => {
     setLoading(true)
     try {
-      // 并行加载已安装工具、创建的工具和市场推荐工具
-      const [installedResult, createdResult, marketResult] = await Promise.all([
-        api.tools.getInstalledTools(),
+      // 并行加载已安装工具、创建的工具和推荐工具
+      const [installedResult, createdResult, recommendResult] = await Promise.all([
+        api.tools.getInstalledTools({ current: 1, size: 10 }),
         api.tools.getCreatedTools(),
-        api.tools.getMarketTools({ size: 6, isOffice: true }) // 只显示官方推荐的前6个
+        api.tools.getRecommendTools() // 获取推荐工具
       ])
 
       if (installedResult.success) {
@@ -48,8 +48,8 @@ export default function ToolsPage() {
         setCreatedTools(createdResult.data || [])
       }
 
-      if (marketResult.success) {
-        setMarketTools(marketResult.data || [])
+      if (recommendResult.success) {
+        setMarketTools(recommendResult.data || [])
       }
     } catch (error) {
       toast({

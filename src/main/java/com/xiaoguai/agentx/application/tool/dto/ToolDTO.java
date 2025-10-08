@@ -1,4 +1,4 @@
-package com.xiaoguai.agentx.application.user.dto;
+package com.xiaoguai.agentx.application.tool.dto;
 
 
 import com.xiaoguai.agentx.domain.tool.constants.ToolStatus;

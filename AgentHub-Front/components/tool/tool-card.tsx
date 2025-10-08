@@ -46,11 +46,14 @@ export function ToolCard({ tool, type, onActionComplete, onCardClick }: ToolCard
   }
 
   const handleInstall = async () => {
-    if (type !== 'market' || isUserTool(tool)) return
+    if (type !== 'market') return
     
     setLoading(true)
     try {
-      const result = await api.tools.installTool(tool.id)
+      // 安装市场工具，需要传递toolId和version
+      const toolId = (tool as any).toolId || tool.id
+      const version = tool.version || '1.0.0'
+      const result = await api.tools.installTool(toolId, version)
       if (result.success) {
         toast({
           title: "安装成功",
@@ -82,8 +85,9 @@ export function ToolCard({ tool, type, onActionComplete, onCardClick }: ToolCard
     try {
       let result;
       if (type === 'installed') {
-        // 卸载已安装的工具
-        result = await api.tools.uninstallTool(tool.id)
+        // 卸载已安装的工具，需要传递toolId
+        const toolId = isUserTool(tool) ? tool.toolId : tool.id
+        result = await api.tools.uninstallTool(toolId)
       } else if (type === 'created') {
         // 删除用户创建的工具
         result = await api.tools.deleteTool(tool.id)
@@ -127,11 +131,14 @@ export function ToolCard({ tool, type, onActionComplete, onCardClick }: ToolCard
 
   const handleCardClick = (e: React.MouseEvent) => {
     // 防止冒泡到卡片点击事件
-    if ((e.target as HTMLElement).closest('[data-dropdown-trigger]')) {
+    if (
+      (e.target as HTMLElement).closest('[data-dropdown-trigger]') ||
+      (e.target as HTMLElement).closest('button')
+    ) {
       return
     }
     
-    // 点击卡片都打开drawer
+    // 所有工具类型点击卡片都打开抽屉
     onCardClick?.(tool)
   }
 
@@ -184,7 +191,7 @@ export function ToolCard({ tool, type, onActionComplete, onCardClick }: ToolCard
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
               <CardTitle className="text-lg truncate">{tool.name}</CardTitle>
-              {tool.isOffice && (
+              {tool.office && (
                 <Badge 
                   variant="outline" 
                   className="gap-1 text-xs border-red-200 bg-red-50 text-red-700 hover:bg-red-100"
@@ -202,92 +209,78 @@ export function ToolCard({ tool, type, onActionComplete, onCardClick }: ToolCard
           </div>
           <div className="flex flex-col items-end gap-1">
             {renderStatusBadge()}
-            {/* 更多选项按钮 */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild data-dropdown-trigger>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="h-8 w-8 p-0 hover:bg-gray-100 cursor-pointer"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <MoreHorizontal className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                {type === 'market' && (
-                  <>
-                    <DropdownMenuItem onClick={handleInstall} disabled={loading} className="cursor-pointer">
-                      <Download className="h-4 w-4 mr-2" />
-                      {loading ? "安装中..." : "安装工具"}
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleViewDetail} className="cursor-pointer">
-                      <Info className="h-4 w-4 mr-2" />
-                      查看详情
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleShareTool} className="cursor-pointer">
-                      <Share className="h-4 w-4 mr-2" />
-                      分享工具
-                    </DropdownMenuItem>
-                  </>
-                )}
-                {type === 'installed' && (
-                  <>
-                    <DropdownMenuItem onClick={handleViewDetail} className="cursor-pointer">
-                      <Info className="h-4 w-4 mr-2" />
-                      查看详情
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem 
-                      onClick={handleUninstall} 
-                      disabled={loading}
-                      className="text-red-600 focus:text-red-600 cursor-pointer"
-                    >
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      {loading ? "卸载中..." : "卸载工具"}
-                    </DropdownMenuItem>
-                  </>
-                )}
-                {type === 'created' && (
-                  <>
-                    <DropdownMenuItem onClick={handleViewDetail} className="cursor-pointer">
-                      <Info className="h-4 w-4 mr-2" />
-                      查看详情
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handlePublishTool} className="cursor-pointer">
-                      <Share className="h-4 w-4 mr-2" />
-                      发布工具
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleViewDetail} className="cursor-pointer">
-                      <Settings className="h-4 w-4 mr-2" />
-                      工具设置
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem 
-                      onClick={handleUninstall} 
-                      disabled={loading}
-                      className="text-red-600 focus:text-red-600 cursor-pointer"
-                    >
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      {loading ? "删除中..." : "删除工具"}
-                    </DropdownMenuItem>
-                  </>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
+            {/* 更多选项按钮 - 只显示给已安装和创建的工具 */}
+            {(type === 'installed' || type === 'created') && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild data-dropdown-trigger>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-8 w-8 p-0 hover:bg-gray-100 cursor-pointer"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  {type === 'installed' && (
+                    <>
+                      <DropdownMenuItem onClick={handleViewDetail} className="cursor-pointer">
+                        <Info className="h-4 w-4 mr-2" />
+                        查看详情
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem 
+                        onClick={handleUninstall} 
+                        disabled={loading}
+                        className="text-red-600 focus:text-red-600 cursor-pointer"
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        {loading ? "卸载中..." : "卸载工具"}
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                  {type === 'created' && (
+                    <>
+                      <DropdownMenuItem onClick={handleViewDetail} className="cursor-pointer">
+                        <Info className="h-4 w-4 mr-2" />
+                        查看详情
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={handlePublishTool} className="cursor-pointer">
+                        <Share className="h-4 w-4 mr-2" />
+                        发布工具
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={handleViewDetail} className="cursor-pointer">
+                        <Settings className="h-4 w-4 mr-2" />
+                        工具设置
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem 
+                        onClick={handleUninstall} 
+                        disabled={loading}
+                        className="text-red-600 focus:text-red-600 cursor-pointer"
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        {loading ? "删除中..." : "删除工具"}
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
         </div>
       </CardHeader>
       
       <CardContent className="flex-1">
-        {tool.description && (
+        {tool.subtitle && (
           <p className="text-sm text-muted-foreground mb-3" style={{
             display: '-webkit-box',
             WebkitLineClamp: 3,
             WebkitBoxOrient: 'vertical',
             overflow: 'hidden'
           }}>
-            {tool.description}
+            {tool.subtitle}
           </p>
         )}
         
@@ -307,9 +300,55 @@ export function ToolCard({ tool, type, onActionComplete, onCardClick }: ToolCard
         )}
       </CardContent>
 
-      <CardFooter className="pt-2">
-        {/* 保持footer的最小高度，但不显示按钮 */}
-        <div className="w-full h-2"></div>
+      <CardFooter className="pt-2 min-h-[60px] flex items-end">
+        {/* 鼠标悬停时显示的按钮 */}
+        {type === 'market' && (
+          <div className={`w-full transition-all duration-200 ${isHovered ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+            <div className="flex gap-2">
+              <Button 
+                size="sm" 
+                className="flex-1 cursor-pointer h-8" 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleInstall();
+                }}
+                disabled={loading}
+              >
+                <Download className="w-4 h-4 mr-1" />
+                {loading ? "安装中..." : "安装"}
+              </Button>
+              <Button 
+                size="sm" 
+                variant="outline" 
+                className="flex-1 cursor-pointer h-8" 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleViewDetail();
+                }}
+              >
+                <Info className="w-4 h-4 mr-1" />
+                详情
+              </Button>
+            </div>
+          </div>
+        )}
+        {type === 'installed' && (
+          <div className={`w-full transition-all duration-200 ${isHovered ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+            <Button 
+              size="sm" 
+              variant="destructive"
+              className="w-full cursor-pointer h-8" 
+              onClick={(e) => {
+                e.stopPropagation();
+                handleUninstall();
+              }}
+              disabled={loading}
+            >
+              <Trash2 className="w-4 h-4 mr-1" />
+              {loading ? "卸载中..." : "卸载"}
+            </Button>
+          </div>
+        )}
       </CardFooter>
     </Card>
   )

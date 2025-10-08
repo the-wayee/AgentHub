@@ -82,7 +82,7 @@ export default function ProvidersPage() {
   async function loadFilterTypes() {
     try {
       const result = await api.getProviderTypes()
-      if (result.code === 200 && Array.isArray(result.data)) {
+      if (result.success && Array.isArray(result.data)) {
         setFilterTypes(result.data)
       }
     } catch (error) {
@@ -99,7 +99,7 @@ export default function ProvidersPage() {
       
       const result = await api.getProviders()
       
-      if (result.code === 200 && Array.isArray(result.data)) {
+      if (result.success && Array.isArray(result.data)) {
         setProviders(result.data)
       } else {
         throw new Error(result.message || "API返回错误")
@@ -120,7 +120,7 @@ export default function ProvidersPage() {
     try {
       const result = await api.toggleProviderStatus(providerId)
 
-      if (result?.code === 200) {
+      if (result?.success) {
         // 更新本地状态
         setProviders(prev => prev.map(provider =>
           provider.id === providerId
@@ -183,7 +183,7 @@ export default function ProvidersPage() {
 
       const result = await api.createProvider(payload)
 
-      if (result?.code === 200) {
+      if (result?.success) {
         // 更新本地状态
         setProviders(prev => prev.map(provider => 
           provider.id === editingProvider.id 
@@ -229,7 +229,7 @@ export default function ProvidersPage() {
     try {
       const result = await api.deleteProvider(provider.id)
 
-      if (result?.code === 200) {
+      if (result?.success) {
         // 从本地状态中移除
         setProviders(prev => prev.filter(p => p.id !== provider.id))
         
@@ -507,7 +507,7 @@ export default function ProvidersPage() {
                     // 使用api.ts中的getModelsByProvider方法加载模型列表
                     const result = await api.getModelsByProvider(provider.id)
 
-                    if (result.code === 200) {
+                    if (result.success) {
                       // 成功加载模型列表后跳转
                       window.location.href = `/providers/${provider.id}/models`
                     } else {
