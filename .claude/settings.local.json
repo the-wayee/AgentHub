@@ -7,11 +7,7 @@
       "Bash(npm run build:*)",
       "Bash(node:*)",
       "Bash(timeout:*)",
-      "Bash(mvn:*)",
-      "Bash(java:*)",
-      "Bash(npm run lint)",
-      "Bash(npm run type-check:*)",
-      "Bash(curl:*)"
+      "Bash(tree:*)"
     ],
     "deny": [],
     "ask": []

@@ -190,7 +190,7 @@ public abstract class AbstractMessageHandler implements MessageHandler {
         if (StringUtils.isNotBlank(summary)) {
             memory.add(new AiMessage(summary));
         }
-        memory.add(new SystemMessage(context.getAgentEntity().getSystemPrompt() + "\n" + AgentPromptTemplates.getIgnoreSensitiveInfoPrompt()));
+        memory.add(new SystemMessage(context.getAgentEntity().getSystemPrompt()));
         for (MessageEntity message : context.getHistoryMessages()) {
             if (message.isUserMessage()) {
                 memory.add(new UserMessage(message.getContent()));
