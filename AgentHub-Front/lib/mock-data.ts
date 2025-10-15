@@ -33,8 +33,8 @@ export const mockUserTools: UserTool[] = [
       }
     ],
     labels: ["搜索", "信息", "实用工具"],
-    isOffice: true,
-    publicState: true,
+    office: true,
+    publicStatus: true,
     createdAt: "2024-01-15T08:00:00Z",
     updatedAt: "2024-01-20T10:30:00Z"
   },
@@ -58,14 +58,14 @@ export const mockUserTools: UserTool[] = [
       }
     ],
     labels: ["开发", "代码", "生产力"],
-    isOffice: false,
-    publicState: true,
+    office: false,
+    publicStatus: true,
     createdAt: "2024-02-01T09:15:00Z",
     updatedAt: "2024-02-05T14:20:00Z"
   },
   {
     id: "user-tool-3",
-    userId: "user-123", 
+    userId: "user-123",
     name: "文档转换",
     description: "支持多种文档格式之间的互相转换，包括PDF、Word、Markdown等",
     icon: "📄",
@@ -84,8 +84,8 @@ export const mockUserTools: UserTool[] = [
       }
     ],
     labels: ["文档", "转换", "办公"],
-    isOffice: true,
-    publicState: true,
+    office: true,
+    publicStatus: true,
     createdAt: "2024-01-25T11:00:00Z",
     updatedAt: "2024-02-10T16:45:00Z"
   }
@@ -100,14 +100,12 @@ export const mockMarketTools: Tool[] = [
     icon: "🔍",
     subtitle: "实时搜索引擎",
     userId: "admin",
+    userName: "AgentHub 官方",
     labels: ["搜索", "信息", "实用工具"],
-    toolType: "search",
-    uploadType: "api",
+    toolType: "CUSTOM",
+    uploadType: "GITHUB",
     uploadUrl: "https://api.example.com/search",
-    installCommand: {
-      type: "npm",
-      command: "npm install web-search-tool"
-    },
+    installCommand: "npm install web-search-tool",
     toolList: [
       {
         name: "web_search",
@@ -119,17 +117,9 @@ export const mockMarketTools: Tool[] = [
         }
       }
     ],
-    status: "approved",
-    isOffice: true,
+    status: "APPROVED",
+    office: true,
     installCount: 15420,
-    author: mockAuthors['admin'],
-    changelog: "v2.1.0: 新增语义搜索功能，优化搜索结果排序算法",
-    versions: [
-      { version: "2.1.0", date: "2024-01-15", changelog: "新增语义搜索功能，优化搜索结果排序算法" },
-      { version: "2.0.0", date: "2024-01-01", changelog: "重构搜索引擎，支持多种搜索模式" },
-      { version: "1.5.0", date: "2023-12-15", changelog: "添加图片搜索功能" },
-      { version: "1.0.0", date: "2023-11-01", changelog: "初始版本发布" }
-    ],
     createdAt: "2024-01-01T00:00:00Z",
     updatedAt: "2024-01-15T12:00:00Z"
   },
@@ -140,20 +130,13 @@ export const mockMarketTools: Tool[] = [
     icon: "🌤️",
     subtitle: "全球天气预报",
     userId: "admin",
+    userName: "AgentHub 官方",
     labels: ["天气", "预报", "实用工具"],
-    toolType: "weather",
-    uploadType: "api",
-    status: "approved",
-    isOffice: true,
+    toolType: "CUSTOM",
+    uploadType: "GITHUB",
+    status: "APPROVED",
+    office: true,
     installCount: 8943,
-    author: mockAuthors['admin'],
-    changelog: "v1.3.0: 新增空气质量指数和紫外线指数查询功能",
-    versions: [
-      { version: "1.3.0", date: "2024-01-16", changelog: "新增空气质量指数和紫外线指数查询功能" },
-      { version: "1.2.0", date: "2023-12-20", changelog: "支持7天天气预报" },
-      { version: "1.1.0", date: "2023-11-30", changelog: "添加多语言支持" },
-      { version: "1.0.0", date: "2023-11-01", changelog: "初始版本发布" }
-    ],
     toolList: [
       {
         name: "get_weather",
@@ -183,20 +166,13 @@ export const mockMarketTools: Tool[] = [
     icon: "🌐",
     subtitle: "多语言翻译工具",
     userId: "admin",
+    userName: "AgentHub 官方",
     labels: ["翻译", "语言", "国际化"],
-    toolType: "translation",
-    uploadType: "api",
-    status: "approved",
-    isOffice: true,
+    toolType: "CUSTOM",
+    uploadType: "GITHUB",
+    status: "APPROVED",
+    office: true,
     installCount: 12567,
-    author: mockAuthors['admin'],
-    changelog: "v2.2.0: 新增OCR图片文字识别翻译功能",
-    versions: [
-      { version: "2.2.0", date: "2024-01-17", changelog: "新增OCR图片文字识别翻译功能" },
-      { version: "2.1.0", date: "2024-01-05", changelog: "支持语音翻译功能" },
-      { version: "2.0.0", date: "2023-12-10", changelog: "升级到神经网络翻译引擎" },
-      { version: "1.0.0", date: "2023-10-15", changelog: "初始版本发布" }
-    ],
     toolList: [
       {
         name: "translate_text",
@@ -226,20 +202,13 @@ export const mockMarketTools: Tool[] = [
     icon: "🧮",
     subtitle: "科学计算工具",
     userId: "admin",
+    userName: "AgentHub 官方",
     labels: ["计算", "数学", "实用工具"],
-    toolType: "calculator",
-    uploadType: "builtin",
-    status: "approved",
-    isOffice: true,
+    toolType: "CUSTOM",
+    uploadType: "CODE",
+    status: "APPROVED",
+    office: true,
     installCount: 6789,
-    author: mockAuthors['admin'],
-    changelog: "v1.4.0: 新增单位转换和表达式计算功能",
-    versions: [
-      { version: "1.4.0", date: "2024-01-18", changelog: "新增单位转换和表达式计算功能" },
-      { version: "1.3.0", date: "2024-01-08", changelog: "添加科学计算函数" },
-      { version: "1.2.0", date: "2023-12-01", changelog: "优化界面和计算精度" },
-      { version: "1.0.0", date: "2023-10-01", changelog: "初始版本发布" }
-    ],
     toolList: [
       {
         name: "calculate",
@@ -269,11 +238,12 @@ export const mockMarketTools: Tool[] = [
     icon: "💻",
     subtitle: "智能代码助手",
     userId: "dev-user-1",
+    userName: "张开发",
     labels: ["开发", "代码", "生产力"],
-    toolType: "development",
-    uploadType: "package",
-    status: "approved",
-    isOffice: false,
+    toolType: "CUSTOM",
+    uploadType: "FILE",
+    status: "APPROVED",
+    office: false,
     createdAt: "2024-01-05T00:00:00Z",
     updatedAt: "2024-01-19T12:00:00Z"
   },
@@ -284,11 +254,12 @@ export const mockMarketTools: Tool[] = [
     icon: "🎨",
     subtitle: "多功能图片编辑器",
     userId: "dev-user-2",
+    userName: "李设计",
     labels: ["图片", "编辑", "多媒体"],
-    toolType: "media",
-    uploadType: "package",
-    status: "approved",
-    isOffice: false,
+    toolType: "CUSTOM",
+    uploadType: "FILE",
+    status: "APPROVED",
+    office: false,
     createdAt: "2024-01-06T00:00:00Z",
     updatedAt: "2024-01-20T12:00:00Z"
   },
@@ -299,11 +270,12 @@ export const mockMarketTools: Tool[] = [
     icon: "📧",
     subtitle: "邮件发送助手",
     userId: "dev-user-3",
+    userName: "王工程师",
     labels: ["邮件", "通讯", "办公"],
-    toolType: "communication",
-    uploadType: "api",
-    status: "approved",
-    isOffice: false,
+    toolType: "CUSTOM",
+    uploadType: "GITHUB",
+    status: "APPROVED",
+    office: false,
     createdAt: "2024-01-07T00:00:00Z",
     updatedAt: "2024-01-21T12:00:00Z"
   },
@@ -314,20 +286,13 @@ export const mockMarketTools: Tool[] = [
     icon: "📄",
     subtitle: "文档格式转换工具",
     userId: "admin",
+    userName: "AgentHub 官方",
     labels: ["文档", "转换", "办公"],
-    toolType: "document",
-    uploadType: "api",
-    status: "approved",
-    isOffice: true,
+    toolType: "CUSTOM",
+    uploadType: "GITHUB",
+    status: "APPROVED",
+    office: true,
     installCount: 5432,
-    author: mockAuthors['admin'],
-    changelog: "v1.5.0: 支持批量转换和更多文档格式",
-    versions: [
-      { version: "1.5.0", date: "2024-01-22", changelog: "支持批量转换和更多文档格式" },
-      { version: "1.4.0", date: "2024-01-12", changelog: "优化PDF转换质量" },
-      { version: "1.3.0", date: "2023-12-25", changelog: "添加Markdown支持" },
-      { version: "1.0.0", date: "2023-11-08", changelog: "初始版本发布" }
-    ],
     toolList: [
       {
         name: "convert_document",
@@ -357,11 +322,12 @@ export const mockMarketTools: Tool[] = [
     icon: "📊",
     subtitle: "数据处理分析工具",
     userId: "dev-user-4",
+    userName: "数据科学家",
     labels: ["数据", "分析", "统计"],
-    toolType: "analytics",
-    uploadType: "package",
-    status: "pending",
-    isOffice: false,
+    toolType: "CUSTOM",
+    uploadType: "FILE",
+    status: "PENDING",
+    office: false,
     createdAt: "2024-01-09T00:00:00Z",
     updatedAt: "2024-01-23T12:00:00Z"
   },
@@ -372,11 +338,12 @@ export const mockMarketTools: Tool[] = [
     icon: "⏰",
     subtitle: "个人时间管理助手",
     userId: "dev-user-5",
+    userName: "效率专家",
     labels: ["时间", "管理", "生产力"],
-    toolType: "productivity",
-    uploadType: "package",
-    status: "approved",
-    isOffice: false,
+    toolType: "CUSTOM",
+    uploadType: "FILE",
+    status: "APPROVED",
+    office: false,
     createdAt: "2024-01-10T00:00:00Z",
     updatedAt: "2024-01-24T12:00:00Z"
   },
@@ -387,19 +354,13 @@ export const mockMarketTools: Tool[] = [
     icon: "🔐",
     subtitle: "安全密码工具",
     userId: "admin",
+    userName: "AgentHub 官方",
     labels: ["安全", "密码", "实用工具"],
-    toolType: "security",
-    uploadType: "builtin",
-    status: "approved",
-    isOffice: true,
+    toolType: "CUSTOM",
+    uploadType: "CODE",
+    status: "APPROVED",
+    office: true,
     installCount: 9876,
-    author: mockAuthors['admin'],
-    changelog: "v1.2.0: 新增密码强度检测和安全存储功能",
-    versions: [
-      { version: "1.2.0", date: "2024-01-25", changelog: "新增密码强度检测和安全存储功能" },
-      { version: "1.1.0", date: "2024-01-15", changelog: "添加自定义密码规则" },
-      { version: "1.0.0", date: "2023-11-11", changelog: "初始版本发布" }
-    ],
     toolList: [
       {
         name: "generate_password",
@@ -430,11 +391,12 @@ export const mockMarketTools: Tool[] = [
     icon: "📝",
     subtitle: "文本编辑处理工具",
     userId: "dev-user-6",
+    userName: "文本大师",
     labels: ["文本", "处理", "编辑"],
-    toolType: "text",
-    uploadType: "package",
-    status: "approved",
-    isOffice: false,
+    toolType: "CUSTOM",
+    uploadType: "FILE",
+    status: "APPROVED",
+    office: false,
     createdAt: "2024-01-12T00:00:00Z",
     updatedAt: "2024-01-26T12:00:00Z"
   }
@@ -442,7 +404,7 @@ export const mockMarketTools: Tool[] = [
 
 // 根据筛选条件过滤工具
 export function filterTools(
-  tools: Tool[], 
+  tools: Tool[],
   filters: {
     keyword?: string
     category?: string
@@ -469,14 +431,14 @@ export function filterTools(
         media: ['多媒体', '图片', '媒体', 'media'],
         utility: ['实用工具', '计算', '密码', '文本']
       }
-      
+
       const categoryKeywords = categoryMap[filters.category] || []
-      const hasCategory = categoryKeywords.some(keyword => 
+      const hasCategory = categoryKeywords.some(keyword =>
         tool.labels?.some(label => label.includes(keyword)) ||
-        tool.toolType.includes(keyword) ||
+        (tool.toolType && tool.toolType.includes(keyword)) ||
         (tool.description && tool.description.includes(keyword))
       )
-      
+
       if (!hasCategory) {
         return false
       }
@@ -484,7 +446,7 @@ export function filterTools(
 
     // 官方/社区筛选
     if (filters.isOffice !== undefined) {
-      if (tool.isOffice !== filters.isOffice) {
+      if (tool.office !== filters.isOffice) {
         return false
       }
     }

@@ -333,7 +333,7 @@ export default function ToolDetailClient({ toolId }: ToolDetailClientProps) {
                 <div className="flex items-center justify-between pt-2 border-t border-gray-200">
                   <span className="text-gray-600">发布时间</span>
                   <span className="text-gray-800">
-                    {versions.length > 0 && versions[0].createdAt ? formatDate(versions[0].createdAt) : formatDate(tool.createdAt)}
+                    {versions.length > 0 && versions[0].createdAt ? formatDate(versions[0].createdAt) : tool.createdAt ? formatDate(tool.createdAt) : '未知'}
                   </span>
                 </div>
 
@@ -374,7 +374,7 @@ export default function ToolDetailClient({ toolId }: ToolDetailClientProps) {
                           )}
                         </div>
                         <span className="text-xs text-gray-500">
-                          {formatDate(version.createdAt)}
+                          {version.createdAt ? formatDate(version.createdAt) : '未知'}
                         </span>
                       </div>
 
@@ -433,11 +433,11 @@ export default function ToolDetailClient({ toolId }: ToolDetailClientProps) {
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-gray-600">创建时间</span>
-                  <span className="text-gray-800">{formatDate(tool.createdAt)}</span>
+                  <span className="text-gray-800">{tool.createdAt ? formatDate(tool.createdAt) : '未知'}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-gray-600">最后更新</span>
-                  <span className="text-gray-800">{formatDate(tool.updatedAt)}</span>
+                  <span className="text-gray-800">{tool.updatedAt ? formatDate(tool.updatedAt) : '未知'}</span>
                 </div>
               </div>
             </div>
