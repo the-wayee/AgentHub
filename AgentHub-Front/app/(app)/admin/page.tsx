@@ -96,7 +96,6 @@ export default function AdminPage() {
       // 更新操作后，重新加载当前列表和统计数据
       await Promise.all([reload(), loadCounts()])
     } catch (error) {
-      console.error('更新状态失败:', error)
     }
   }
 

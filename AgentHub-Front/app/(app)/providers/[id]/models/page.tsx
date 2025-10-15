@@ -122,9 +122,8 @@ export default function ProviderModelsPage() {
   async function loadModelTypes() {
     setModelTypesLoading(true)
     try {
-      const res = await fetch('/api/llm/models/types', { cache: 'no-store' })
-      const result = await res.json()
-      
+      const result = await api.getModelTypes()
+
       if (result.success && Array.isArray(result.data)) {
         setModelTypes(result.data)
         return result.data // 返回加载的类型数据
@@ -149,27 +148,19 @@ export default function ProviderModelsPage() {
     }
 
     try {
-      const res = await fetch('/api/llm/models', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          providerId: providerId,
-          modelId: addForm.modelId,
-          name: addForm.name,
-          description: addForm.description,
-          type: addForm.modelType,
-          config: {
-            maxContextLength: addForm.maxContextLength,
-            temperature: addForm.temperature,
-            enable_search: addForm.enable_search
-          }
-        })
+      const result = await api.createModel({
+        providerId: providerId,
+        modelId: addForm.modelId,
+        name: addForm.name,
+        description: addForm.description,
+        type: addForm.modelType,
+        config: {
+          maxContextLength: addForm.maxContextLength,
+          temperature: addForm.temperature,
+          enable_search: addForm.enable_search
+        }
       })
-      
-      const result = await res.json()
-      
+
       if (result.success) {
         toast({
           title: "添加成功",

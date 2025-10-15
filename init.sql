@@ -199,7 +199,7 @@ create table if not exists public.agent_versions
     tools              text,
     knowledge_base_ids text,
     change_log         text,
-    agent_type         integer   default 1,
+    agent_type         varchar(32)   default 'CHAT_ASSISTANT',
     publish_status     integer   default 1,
     reject_reason      text,
     review_time        timestamp,
@@ -642,6 +642,6 @@ VALUES ('f48c9f0cbd873dbdee155ee86b2d5229', '新会话', '1', 'c3e412cb5da36b970
         '2025-09-08 17:42:07.990875', '2025-09-08 17:42:07.990875', null);
 INSERT INTO public.users (id, nickname, email, phone, password, created_at, updated_at, deleted_at, github_id,
                           github_login, avatar_url)
-VALUES ('1', 'AgentHub-54ff8b', '2216783205@qq.com', null,
+VALUES ('1', 'AgentHub-54ff8b', 'test@123.com', null,
         '$2a$10$rNwMm/EH6xwJatbFt9J8kuNpnY2LyjcNLCjNi9.yu9GFxlw9LJDkC', '2025-10-06 20:51:57.355564',
         '2025-10-06 20:51:57.355564', null, null, null, null);

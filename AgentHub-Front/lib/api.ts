@@ -1,29 +1,6 @@
 // API工具函数，用于在容器环境中直接调用后端API
 import { Tool } from './types';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
-
-// 401状态码处理函数
-function handleUnauthorized() {
-  // 清除本地存储的认证信息
-  if (typeof window !== 'undefined') {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-
-    // 重定向到登录页面，并添加当前页面作为重定向参数
-    const currentPath = window.location.pathname + window.location.search;
-    const loginUrl = `/login${currentPath !== '/' ? `?redirect=${encodeURIComponent(currentPath)}` : ''}`;
-    window.location.href = loginUrl;
-  }
-}
-
-// 获取认证Token
-function getAuthToken(): string | null {
-  if (typeof window !== 'undefined') {
-    return localStorage.getItem('token');
-  }
-  return null;
-}
+import { httpClient } from './http-client';
 
 // 公共的响应处理函数
 function handleApiResponse(result: any) {
@@ -44,99 +21,76 @@ function handleApiResponse(result: any) {
 
 // 不需要认证的API调用
 export async function apiFetchPublic(path: string, options?: RequestInit) {
-  const url = `${API_URL}${path}`;
+  try {
+    const { method = 'GET', body, ...restOptions } = options || {};
 
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-    ...(options?.headers as Record<string, string> || {}),
-  };
+    let result;
+    switch (method.toUpperCase()) {
+      case 'POST':
+        result = await httpClient.post(path, body ? JSON.parse(body) : undefined, {
+          ...restOptions,
+          skipAuth: true
+        });
+        break;
+      case 'PUT':
+        result = await httpClient.put(path, body ? JSON.parse(body) : undefined, {
+          ...restOptions,
+          skipAuth: true
+        });
+        break;
+      case 'DELETE':
+        result = await httpClient.delete(path, { ...restOptions, skipAuth: true });
+        break;
+      default:
+        result = await httpClient.get(path, { ...restOptions, skipAuth: true });
+    }
 
-  const res = await fetch(url, {
-    ...options,
-    headers,
-  });
-
-  const result = await res.json();
-
-  // 即使状态码不是200，也尝试解析后端返回的错误信息
-  if (!res.ok) {
-    // 处理后端错误响应格式，将错误信息转换为前端期望的格式
-    const errorResponse = handleApiResponse(result);
-    throw new Error(errorResponse.message || `API error: ${res.status}`);
+    return handleApiResponse(result);
+  } catch (error) {
+    // 错误已经在http-client中处理
+    throw error;
   }
-
-  return handleApiResponse(result);
 }
 
 // 需要认证的API调用
 export async function apiFetch(path: string, options?: RequestInit) {
-  const url = `${API_URL}${path}`;
+  try {
+    const { method = 'GET', body, ...restOptions } = options || {};
 
-  // 添加认证头
-  const token = getAuthToken();
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-    ...(options?.headers as Record<string, string> || {}),
-  };
+    let result;
+    switch (method.toUpperCase()) {
+      case 'POST':
+        result = await httpClient.post(path, body ? JSON.parse(body) : undefined, restOptions);
+        break;
+      case 'PUT':
+        result = await httpClient.put(path, body ? JSON.parse(body) : undefined, restOptions);
+        break;
+      case 'DELETE':
+        result = await httpClient.delete(path, restOptions);
+        break;
+      default:
+        result = await httpClient.get(path, restOptions);
+    }
 
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
+    return handleApiResponse(result);
+  } catch (error) {
+    // 错误已经在http-client中处理
+    throw error;
   }
-
-  const res = await fetch(url, {
-    ...options,
-    headers,
-  });
-
-  const result = await res.json();
-
-  // 处理401状态码
-  if (res.status === 401) {
-    handleUnauthorized();
-    return Promise.reject(new Error('Unauthorized - redirecting to login'));
-  }
-
-  // 即使状态码不是200，也尝试解析后端返回的错误信息
-  if (!res.ok) {
-    // 处理后端错误响应格式，将错误信息转换为前端期望的格式
-    const errorResponse = handleApiResponse(result);
-    throw new Error(errorResponse.message || `API error: ${res.status}`);
-  }
-
-  return handleApiResponse(result);
 }
 
 // 专门用于SSE聊天的函数，不走JSON解析
 export async function apiFetchSSE(path: string, options?: RequestInit) {
-  const url = `${API_URL}${path}`;
-
-  // 添加认证头
-  const token = getAuthToken();
-  const headers: Record<string, string> = {
-    ...(options?.headers as Record<string, string> || {}),
-  };
-
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
+  try {
+    return await httpClient.sse(path, {
+      ...options,
+      skipAuth: false,
+      skipErrorHandler: false
+    });
+  } catch (error) {
+    // 错误已经在http-client中处理
+    throw error;
   }
-
-  const res = await fetch(url, {
-    ...options,
-    headers,
-  });
-
-  // 处理401状态码
-  if (res.status === 401) {
-    handleUnauthorized();
-    return Promise.reject(new Error('Unauthorized - redirecting to login'));
-  }
-
-  if (!res.ok) {
-    const errorText = await res.text();
-    throw new Error(`API SSE error: ${res.status} - ${errorText}`);
-  }
-
-  return res;
 }
 
 // 便捷的API调用函数
@@ -154,10 +108,7 @@ export const api = {
   
   // 创建会话
   createSession: (agentId: string) => {
-    return apiFetch(`/api/agent/session/${agentId}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-    });
+    return httpClient.post(`/api/agent/session/${agentId}`);
   },
   
   // 创建新会话 (sessions接口)
@@ -165,6 +116,24 @@ export const api = {
     return apiFetch(`/api/sessions/${agentId}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+    });
+  },
+
+  // 创建Agent
+  createAgent: (payload: any) => {
+    return apiFetch(`/api/agent`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+  },
+
+  // 更新Agent
+  updateAgent: (agentId: string, payload: any) => {
+    return apiFetch(`/api/agent/${encodeURIComponent(agentId)}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
     });
   },
   
@@ -176,11 +145,6 @@ export const api = {
   // 聊天接口（SSE）
   chat: (message: string, sessionId: string, enableThink: boolean = false, signal?: AbortSignal) => {
     return apiFetchSSE(`/api/agent/session/chat`, {
-      method: "POST",
-      headers: { 
-        "Content-Type": "application/json", 
-        "Accept": "text/event-stream" 
-      },
       body: JSON.stringify({ message, sessionId, enableThink }),
       signal,
     });
@@ -284,6 +248,20 @@ export const api = {
     return apiFetch(`/api/llm/providers/types`);
   },
   
+  // 获取模型类型
+  getModelTypes: () => {
+    return apiFetch(`/api/llm/models/types`);
+  },
+
+  // 创建模型
+  createModel: (modelData: any) => {
+    return apiFetch(`/api/llm/models`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(modelData),
+    });
+  },
+
   // 获取模型列表
   getModels: () => {
     return apiFetch(`/api/llm/models`);
@@ -376,21 +354,61 @@ export const api = {
     });
   },
 
+  // 更新会话标题
+  updateSessionTitle: (sessionId: string, title: string) => {
+    return apiFetch(`/api/session/${sessionId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title }),
+    });
+  },
+
+  // 管理员模型相关 API
+  adminModels: {
+    // 获取管理员模型列表
+    getModelsByProvider: (providerId: string) => {
+      return apiFetch(`/api/admin/llm/models/${providerId}`, { cache: "no-store" });
+    },
+
+    // 创建管理员模型
+    createModel: (payload: any) => {
+      return apiFetch('/api/admin/llm/models', {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+    },
+
+    // 更新管理员模型
+    updateModel: (payload: any) => {
+      return apiFetch('/api/admin/llm/models', {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+    },
+
+    // 删除管理员模型
+    deleteModel: (modelId: string) => {
+      return apiFetch(`/api/admin/llm/models/delete/${modelId}`, {
+        method: "DELETE",
+      });
+    },
+  },
+
   // 工具相关 API
   tools: {
     // 获取用户创建的工具列表
     getUserTools: async () => {
       try {
         const result = await apiFetch('/api/tools/user');
-        console.log('获取用户创建的工具成功:', result);
-        
-        return { 
-          success: true, 
-          message: '获取成功', 
-          data: result.data || [] 
+
+        return {
+          success: true,
+          message: '获取成功',
+          data: result.data || []
         };
       } catch (error) {
-        console.error('获取用户创建的工具失败:', error);
         return { success: false, message: '获取用户创建的工具失败', data: [] };
       }
     },
@@ -416,8 +434,7 @@ export const api = {
         const url = `/api/tools/installed${query ? `?${query}` : ''}`;
         
         const result = await apiFetch(url);
-        console.log('获取已安装工具成功:', result);
-        
+          
         return { 
           success: true, 
           message: '获取成功', 
@@ -430,8 +447,7 @@ export const api = {
           }
         };
       } catch (error) {
-        console.error('获取已安装工具失败:', error);
-        return { success: false, message: '获取已安装工具失败', data: [] };
+            return { success: false, message: '获取已安装工具失败', data: [] };
       }
     },
 
@@ -451,7 +467,6 @@ export const api = {
         const url = `/api/tools/market${query ? `?${query}` : ''}`;
         
         const result = await apiFetch(url);
-        console.log('获取市场工具成功:', result);
         
         return { 
           success: true, 
@@ -465,7 +480,6 @@ export const api = {
           }
         };
       } catch (error) {
-        console.error('获取市场工具失败:', error);
         return { success: false, message: '获取市场工具失败', data: [] };
       }
     },
@@ -474,7 +488,6 @@ export const api = {
     getRecommendTools: async () => {
       try {
         const result = await apiFetch('/api/tools/recommend');
-        console.log('获取推荐工具成功:', result);
         
         return { 
           success: true, 
@@ -482,7 +495,6 @@ export const api = {
           data: result.data || [] 
         };
       } catch (error) {
-        console.error('获取推荐工具失败:', error);
         return { success: false, message: '获取推荐工具失败', data: [] };
       }
     },
@@ -491,7 +503,6 @@ export const api = {
     getToolDetail: async (toolId: string) => {
       try {
         const result = await apiFetch(`/api/tools/${toolId}`);
-        console.log('获取工具详情成功:', result);
 
         return {
           success: true,
@@ -499,7 +510,6 @@ export const api = {
           data: result.data
         };
       } catch (error) {
-        console.error('获取工具详情失败:', error);
         throw error;
       }
     },
@@ -523,7 +533,6 @@ export const api = {
           body: JSON.stringify(toolData)
         });
         
-        console.log('创建工具成功:', result);
         
         return {
           success: true,
@@ -531,7 +540,6 @@ export const api = {
           data: result.data
         };
       } catch (error) {
-        console.error('创建工具失败:', error);
         return {
           success: false,
           message: '创建工具失败',
@@ -579,7 +587,6 @@ export const api = {
           body: JSON.stringify(toolData)
         });
         
-        console.log('更新工具成功:', result);
         
         return {
           success: true,
@@ -587,7 +594,6 @@ export const api = {
           data: result.data
         };
       } catch (error) {
-        console.error('更新工具失败:', error);
         return {
           success: false,
           message: '更新工具失败',
@@ -603,7 +609,6 @@ export const api = {
           method: 'DELETE'
         });
         
-        console.log('删除工具成功:', result);
         
         return {
           success: true,
@@ -611,7 +616,6 @@ export const api = {
           data: null
         };
       } catch (error) {
-        console.error('删除工具失败:', error);
         return {
           success: false,
           message: '删除工具失败',
@@ -631,7 +635,6 @@ export const api = {
           body: JSON.stringify(marketData)
         });
         
-        console.log('上架工具成功:', result);
         
         return {
           success: true,
@@ -639,7 +642,6 @@ export const api = {
           data: result.data
         };
       } catch (error) {
-        console.error('上架工具失败:', error);
         return {
           success: false,
           message: '上架工具失败',
@@ -658,7 +660,6 @@ export const api = {
           data: { toolId, version }
         };
       } catch (error) {
-        console.error('安装工具失败:', error);
         return { success: false, message: '安装工具失败', data: null };
       }
     },
@@ -670,7 +671,6 @@ export const api = {
           method: 'DELETE'
         });
         
-        console.log('卸载工具成功:', result);
         
         return {
           success: true, 
@@ -678,7 +678,6 @@ export const api = {
           data: { toolId }
         };
       } catch (error) {
-        console.error('卸载工具失败:', error);
         return { success: false, message: '卸载工具失败', data: null };
       }
     },
@@ -687,7 +686,6 @@ export const api = {
     getToolVersions: async (toolId: string) => {
       try {
         const result = await apiFetch(`/api/tools/market/${toolId}/versions`);
-        console.log('获取工具版本成功:', result);
         
         return { 
           success: true, 
@@ -695,7 +693,6 @@ export const api = {
           data: result.data || [] 
         };
       } catch (error) {
-        console.error('获取工具版本失败:', error);
         return { success: false, message: '获取工具版本失败', data: [] };
       }
     }

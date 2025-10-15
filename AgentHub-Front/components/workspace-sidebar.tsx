@@ -200,15 +200,11 @@ export function WorkspaceSidebar({
                         if (e.key === 'Enter') {
                           const title = editingTitle.trim()
                           if (!title) return setEditingId(null)
-                          const r = await fetch(`/api/session/${c.id}`, {
-                            method: 'PUT',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ title }),
-                          })
-                          if (r.ok) {
+                          try {
+                            await api.updateSessionTitle(c.id, title)
                             renameConversation(c.id, title)
                             toast({ title: '已更新会话标题' })
-                          } else {
+                          } catch (error) {
                             toast({ title: '更新失败', description: '请稍后重试' })
                           }
                           setEditingId(null)

@@ -53,7 +53,6 @@ export default function ToolDetailClient({ toolId }: ToolDetailClientProps) {
         setVersions(versionsResult.data)
       }
     } catch (error) {
-      console.error('获取工具详情失败:', error)
       toast.error('获取工具详情失败')
     } finally {
       setLoading(false)
@@ -76,7 +75,6 @@ export default function ToolDetailClient({ toolId }: ToolDetailClientProps) {
         toast.error(result.message || '安装失败')
       }
     } catch (error) {
-      console.error('安装工具失败:', error)
       toast.error('安装工具失败')
     } finally {
       setInstalling(false)

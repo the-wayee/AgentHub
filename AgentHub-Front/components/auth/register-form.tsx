@@ -70,7 +70,6 @@ export function RegisterForm({ onSuccess, className }: RegisterFormProps) {
         setValue("captchaCode", "")
       }
     } catch (err) {
-      console.error("获取验证码失败:", err)
     }
   }
 

@@ -192,31 +192,24 @@ export function AgentQuickSettings({ open, onOpenChange, agent }: Props) {
         currentTools.http !== newTools.http
 
       if (toolsChanged) {
-        const toolsResponse = await fetch(`/api/agent/${agent.id}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
+        try {
+          const toolsResult = await api.updateAgent(agent.id, {
             tools: draft.tools,
-          }),
-        })
+          })
 
-        if (!toolsResponse.ok) {
+          // 检查工具配置响应状态
+          if (toolsResult.code !== 200 && toolsResult.code !== undefined) {
+            toast({
+              title: "部分保存失败",
+              description: toolsResult.message || "模型配置已保存，但工具配置保存失败",
+              variant: "destructive",
+            })
+            return
+          }
+        } catch (error) {
           toast({
             title: "部分保存失败",
             description: "模型配置已保存，但工具配置保存失败",
-            variant: "destructive",
-          })
-          return
-        }
-
-        // 检查工具配置响应状态
-        const toolsResult = await toolsResponse.json()
-        if (toolsResult.code !== 200 && toolsResult.code !== undefined) {
-          toast({
-            title: "部分保存失败",
-            description: toolsResult.message || "模型配置已保存，但工具配置保存失败",
             variant: "destructive",
           })
           return

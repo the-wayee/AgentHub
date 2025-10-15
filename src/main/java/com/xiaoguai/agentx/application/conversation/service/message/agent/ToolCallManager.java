@@ -52,7 +52,7 @@ public class ToolCallManager {
      * @return urls
      */
     public List<String> getAvailableTools() {
-//        return List.of("http://localhost:8005/sse?api_key=123456&workspaceId=1");
-        return new ArrayList<>();
+        return List.of("http://localhost:8005/sse?api_key=123456&workspaceId=1");
+//        return new ArrayList<>();
     }
 }

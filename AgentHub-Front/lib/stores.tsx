@@ -113,12 +113,11 @@ export const useConvoStore = create<ConvoState>()(
         
         // 先尝试从后端获取现有会话
         try {
-          const res = await fetch(`/api/agent/session/${agentId}`, { cache: "no-store" })
-          const data = await res.json()
-          
-          if (res.ok && Array.isArray(data) && data.length > 0) {
+          const data = await api.getSessions(agentId)
+
+          if (data && Array.isArray(data.data) && data.data.length > 0) {
             // 使用第一个现有会话
-            const existingSession = data[0]
+            const existingSession = data.data[0]
             const c: Conversation = {
               id: existingSession.id,
               agentId,
@@ -260,7 +259,14 @@ export const useAgentCatalog = create<CatalogState>()(
       setAll: (list) => set({ agents: list }),
       setLoading: (v) => set({ loading: v }),
     }),
-    { name: "agenthub_catalog_v2" },
+    {
+      name: "agenthub_catalog_v2",
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          state.rehydrated = true
+        }
+      },
+    },
   ),
 )
 

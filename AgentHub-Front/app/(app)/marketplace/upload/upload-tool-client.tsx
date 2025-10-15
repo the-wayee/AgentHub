@@ -114,7 +114,6 @@ export default function UploadToolClient() {
       }
       
     } catch (error) {
-      console.error('上传工具失败:', error)
       toast.error('上传工具失败')
     } finally {
       setLoading(false)

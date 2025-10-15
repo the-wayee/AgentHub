@@ -74,9 +74,8 @@ export default function AdminProviderModelsPage() {
   async function loadModels() {
     setLoading(true)
     try {
-      const res = await fetch(`/api/admin/llm/models/${providerId}`, { cache: 'no-store' })
-      const result = await res.json()
-      
+      const result = await api.adminModels.getModelsByProvider(providerId)
+
       if (result.success && Array.isArray(result.data)) {
         setModels(result.data)
       } else {
@@ -109,15 +108,9 @@ export default function AdminProviderModelsPage() {
         }
       }
 
-      const res = await fetch('/api/admin/llm/models', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      })
+      const result = await api.adminModels.createModel(payload)
 
-      const result = await res.json()
-
-      if (res.ok && result.success) {
+      if (result.success) {
         toast({
           title: "创建成功",
           description: "模型已成功创建"
@@ -168,14 +161,8 @@ export default function AdminProviderModelsPage() {
         status: editForm.status
       }
 
-      const res = await fetch('/api/admin/llm/models', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      })
-
-      const result = await res.json()
-      if (res.ok && result.success) {
+      const result = await api.adminModels.updateModel(payload)
+      if (result.success) {
         toast({
           title: "更新成功",
           description: "模型信息已更新"
@@ -202,13 +189,9 @@ export default function AdminProviderModelsPage() {
   // 删除模型
   async function deleteModel(model: Model) {
     try {
-      const res = await fetch(`/api/admin/llm/models/delete/${model.id}`, {
-        method: 'DELETE'
-      })
+      const result = await api.adminModels.deleteModel(model.id)
 
-      const result = await res.json()
-
-      if (res.ok && result.success) {
+      if (result.success) {
         setModels(prev => prev.filter(m => m.id !== model.id))
         toast({
           title: "删除成功",

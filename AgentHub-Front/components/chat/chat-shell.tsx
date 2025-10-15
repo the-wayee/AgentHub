@@ -191,7 +191,6 @@ export function ChatShell({ agentId }: { agentId: string }) {
           lastLoadedSessionId.current = derivedActiveConvo.id
         }
       } catch (error) {
-        console.error('Failed to load messages:', error)
       } finally {
         isLoadingMessages.current = false
       }
@@ -248,19 +247,12 @@ export function ChatShell({ agentId }: { agentId: string }) {
       let buffer = ""
 
       const handlePayload = (payload: string, evtName?: string) => {
-        console.log('=== 收到消息 ===', {
-          rawPayload: payload,
-          eventName: evtName,
-          payloadLength: payload.length
-        })
-
+  
         let obj: any
         try {
           obj = JSON.parse(payload)
-          console.log('JSON解析成功:', obj)
-        } catch (error) {
-          console.log('JSON解析失败，使用原始内容:', error)
-          obj = { content: payload }
+          } catch (error) {
+              obj = { content: payload }
         }
 
         const content: string = obj?.content ?? ""
@@ -270,16 +262,7 @@ export function ChatShell({ agentId }: { agentId: string }) {
         const taskId: string = obj?.taskId
         const taskName: string = obj?.taskName
 
-        console.log('解析后的消息数据:', {
-          content,
-          done,
-          reasoning,
-          messageType,
-          taskId,
-          taskName,
-          所有字段: Object.keys(obj)
-        })
-
+  
         // 处理任务状态更新
         if (messageType === MessageType.TASK_STATUS_TO_LOADING && taskId) {
           setTasks(prev => {
@@ -312,12 +295,10 @@ export function ChatShell({ agentId }: { agentId: string }) {
         // 处理任务拆分完成消息 - 添加单个任务到列表
         if (messageType === MessageType.TASK_SPLIT_FINISH && taskId) {
           const finalTaskName = taskName || content || `任务 ${taskId.slice(0, 8)}`
-          console.log('收到 TASK_SPLIT_FINISH 消息:', { taskId, taskName: finalTaskName, content })
-          setTasks(prev => {
+                setTasks(prev => {
             const existing = prev.find(t => t.id === taskId)
             if (!existing) {
-              console.log('添加新任务到列表:', { taskId, taskName: finalTaskName })
-              // 显示任务列表
+                // 显示任务列表
               setShowTaskList(true)
               return [...prev, {
                 id: taskId,
@@ -328,8 +309,7 @@ export function ChatShell({ agentId }: { agentId: string }) {
                 updatedAt: new Date()
               }]
             }
-            console.log('任务已存在，跳过:', taskId)
-            return prev
+              return prev
           })
         }
 

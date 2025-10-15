@@ -77,7 +77,6 @@ export default function MarketplaceClient() {
         })
       }
     } catch (error) {
-      console.error('Failed to load tools:', error)
       toast({
         title: "加载失败",
         description: "无法加载工具市场，请稍后重试",

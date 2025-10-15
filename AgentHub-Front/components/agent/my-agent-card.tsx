@@ -43,18 +43,16 @@ export function MyAgentCard({
   const [latest, setLatest] = useState<any | null>(null)
   async function loadVersions() {
     try {
-      const r = await fetch(`/api/agent/${encodeURIComponent(agent.id)}/versions`, { cache: "no-store" })
-      const list = await r.json()
-      setVersions(Array.isArray(list) ? list : list?.data ?? [])
+      const result = await api.getAgentVersions(agent.id)
+      setVersions(Array.isArray(result) ? result : result?.data ?? [])
     } catch {
       setVersions([])
     }
   }
   async function loadLatest() {
     try {
-      const r = await fetch(`/api/agent/${encodeURIComponent(agent.id)}/versions/latest`, { cache: "no-store" })
-      const j = await r.json().catch(() => ({}))
-      setLatest(j?.data ?? j ?? null)
+      const result = await api.getLatestVersion(agent.id)
+      setLatest(result?.data ?? result ?? null)
     } catch {
       setLatest(null)
     }

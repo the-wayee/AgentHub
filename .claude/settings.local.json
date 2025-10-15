@@ -7,7 +7,11 @@
       "Bash(npm run build:*)",
       "Bash(node:*)",
       "Bash(timeout:*)",
-      "Bash(tree:*)"
+      "Bash(tree:*)",
+      "Bash(git checkout:*)",
+      "Bash(for:*)",
+      "Bash(do sed:*)",
+      "Bash(done)"
     ],
     "deny": [],
     "ask": []

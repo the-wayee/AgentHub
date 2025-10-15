@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useAgentCatalog, useKnowledgeStore } from "@/lib/stores"
+import { api } from "@/lib/api"
 import type { Agent } from "@/lib/types"
 import { AgentTypeSelector } from "./agent-type-selector"
 import { AgentPreview } from "./agent-preview"
@@ -76,31 +77,22 @@ export function AgentBuilder({ agent, onSave, showTitle = true, onCancel }: { ag
 
       // if it has an id other than "custom", treat as update, else create
       if (draft.id && draft.id !== "custom") {
-        await fetch(`/api/agent/${encodeURIComponent(draft.id)}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name: payload.name,
-            avatar: payload.avatar,
-            description: payload.description,
-            enabled: draft.enabled ?? (draft.visibility === "public"),
-            systemPrompt: payload.systemPrompt,
-            welcomeMessage: payload.welcomeMessage,
-            modelConfig: payload.modelConfig,
-            tools: payload.tools,
-            knowledgeBaseIds: payload.knowledgeBaseIds,
-          }),
+        await api.updateAgent(draft.id, {
+          name: payload.name,
+          avatar: payload.avatar,
+          description: payload.description,
+          enabled: draft.enabled ?? (draft.visibility === "public"),
+          systemPrompt: payload.systemPrompt,
+          welcomeMessage: payload.welcomeMessage,
+          modelConfig: payload.modelConfig,
+          tools: payload.tools,
+          knowledgeBaseIds: payload.knowledgeBaseIds,
         })
       } else {
-        const res = await fetch(`/api/agent`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        })
-        const created = await res.json().catch(() => ({}))
-        if (created?.id) {
+        const created = await api.createAgent(payload)
+        if (created?.data?.id) {
           // assign returned id for local store
-          draft.id = created.id
+          draft.id = created.data.id
         }
       }
 
