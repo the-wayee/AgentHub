@@ -68,3 +68,14 @@ mail:
 logging:
   level:
     org.springframework.web: DEBUG
+
+
+
+s3:
+  provider: aliyun # 服务提供商
+  aliyun:
+    endpoint: ${S3_ALIYUN_ENDPOINT}
+    access-key: ${S3_ALIYUN_ACCESS_KEY}
+    secret-key: ${S3_ALIYUN_SECRET_KEY}
+    bucket-name: ${S3_ALIYUN_BUCKET_NAME}
+    region: ${S3_ALIYUN_REGION}

@@ -22,10 +22,25 @@ export default function ExplorePage() {
       try {
         const params = new URLSearchParams()
         if (q.trim()) params.set("name", q.trim())
-        const list = await api.getPublishedAgents(params)
-        if (!cancelled && Array.isArray(list)) {
-          setAgents(list)
-          setAll(list)
+        const result = await api.getPublishedAgents(params)
+        const raw = Array.isArray(result) ? result : (result?.data ?? [])
+        const mapped = raw.map((v: any) => ({
+          id: v.agentId || v.id,
+          name: v.name,
+          description: v.description,
+          version: v.versionNumber || v.version || "",
+          visibility: "public" as const,
+          type: v.agentType === 'FUNCTIONAL_AGENT' ? 'function' : 'chat',
+          tags: v.tags || [],
+          systemPrompt: v.systemPrompt,
+          welcomeMessage: v.welcomeMessage,
+          publishStatus: v.publishStatus,
+          publishStatusLabel: v.publishStatusText || v.publishStatusLabel,
+          updatedAt: v.publishedAt || v.updatedAt,
+        }))
+        if (!cancelled) {
+          setAgents(mapped)
+          setAll(mapped)
         }
       } catch {}
       finally {
@@ -39,7 +54,7 @@ export default function ExplorePage() {
 
   const list = useMemo(() => {
     const lower = q.trim().toLowerCase()
-    const data = agents.filter((a) => a.visibility === "public")
+    const data = agents
     if (!lower) return data
     return data.filter(
       (a) =>

@@ -8,11 +8,11 @@ function handleApiResponse(result: any) {
   // 后端格式: { code: 200, message: "操作成功", data: {...} }
   // 前端期望: { success: boolean, message: string, data: T }
   if (result && typeof result === 'object' && 'code' in result) {
-    return {
-      success: result.code === 200,
-      message: result.message || (result.code === 200 ? '操作成功' : '操作失败'),
-      data: result.data
-    };
+      return {
+          success: result.code === 200,
+          message: result.message || (result.code === 200 ? '操作成功' : '操作失败'),
+          data: result.data
+      };
   }
 
   // 如果已经是前端期望的格式，直接返回
@@ -27,16 +27,20 @@ export async function apiFetchPublic(path: string, options?: RequestInit) {
     let result;
     switch (method.toUpperCase()) {
       case 'POST':
-        result = await httpClient.post(path, body ? JSON.parse(body) : undefined, {
-          ...restOptions,
-          skipAuth: true
-        });
+          if (typeof body === "string") {
+              result = await httpClient.post(path, body ? JSON.parse(body) : undefined, {
+                  ...restOptions,
+                  skipAuth: true
+              });
+          }
         break;
       case 'PUT':
-        result = await httpClient.put(path, body ? JSON.parse(body) : undefined, {
-          ...restOptions,
-          skipAuth: true
-        });
+          if (typeof body === "string") {
+              result = await httpClient.put(path, body ? JSON.parse(body) : undefined, {
+                  ...restOptions,
+                  skipAuth: true
+              });
+          }
         break;
       case 'DELETE':
         result = await httpClient.delete(path, { ...restOptions, skipAuth: true });
@@ -60,10 +64,14 @@ export async function apiFetch(path: string, options?: RequestInit) {
     let result;
     switch (method.toUpperCase()) {
       case 'POST':
-        result = await httpClient.post(path, body ? JSON.parse(body) : undefined, restOptions);
+          if (typeof body === "string") {
+              result = await httpClient.post(path, body ? JSON.parse(body) : undefined, restOptions);
+          }
         break;
       case 'PUT':
-        result = await httpClient.put(path, body ? JSON.parse(body) : undefined, restOptions);
+          if (typeof body === "string") {
+              result = await httpClient.put(path, body ? JSON.parse(body) : undefined, restOptions);
+          }
         break;
       case 'DELETE':
         result = await httpClient.delete(path, restOptions);

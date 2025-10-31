@@ -11,19 +11,25 @@ import { Plus } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { StudioPageSkeleton } from "@/components/ui/page-skeleton"
 import { api } from "@/lib/api"
+import { useToast } from "@/hooks/use-toast"
 
 function PublishDialog({ agentId, onPublished }: { agentId: string; onPublished?: () => void }) {
   const [open, setOpen] = useState(false)
   const [versionNumber, setVersionNumber] = useState("")
   const [changeLog, setChangeLog] = useState("")
   const [submitting, setSubmitting] = useState(false)
+  const { toast } = useToast()
   async function submit() {
     if (!versionNumber.trim()) return
     setSubmitting(true)
     try {
       await api.publishAgent(agentId, versionNumber, changeLog)
+      toast({ title: '发布成功', description: `版本 v${versionNumber} 已提交` })
       onPublished?.()
       setOpen(false)
+    } catch (error: any) {
+      const msg = typeof error?.message === 'string' && error.message.trim() ? error.message : '发布失败，请稍后重试'
+      toast({ title: '发布失败', description: msg })
     } finally {
       setSubmitting(false)
     }
@@ -67,6 +73,7 @@ export default function StudioPage() {
   const [enabled, setEnabled] = useState<string>("all")
   const [selectedAgent, setSelectedAgent] = useState<any | null>(null)
   const [loading, setLoading] = useState(true)
+  const { toast } = useToast()
 
   async function reload() {
     setLoading(true)
@@ -77,7 +84,11 @@ export default function StudioPage() {
       const response = await api.getAgents(params)
       const list = Array.isArray(response) ? response : (response?.data || [])
       if (Array.isArray(list)) setMyAgents(list)
-    } catch (error) {
+    } catch (error: any) {
+      const msg = typeof error?.message === 'string' && error.message.trim()
+        ? error.message
+        : '加载失败，请稍后重试'
+      toast({ title: '获取 Agent 列表失败', description: msg })
     } finally {
       setLoading(false)
     }
@@ -115,11 +126,20 @@ export default function StudioPage() {
               <Plus className="w-4 h-4 mr-2" /> 创建 Agent
             </Button>
           </DialogTrigger>
-          <DialogContent className="w-[95vw] max-w-[1100px] sm:max-w-[1100px] md:max-w-[1100px] lg:max-w-[1100px]">
-            <DialogHeader>
-              <DialogTitle>{selectedAgent ? '编辑助理' : '创建助理'}</DialogTitle>
-            </DialogHeader>
-            <AgentBuilder agent={selectedAgent ?? undefined} showTitle={false} onCancel={() => setOpenCreate(false)} onSave={() => { setOpenCreate(false); reload() }} />
+          <DialogContent className="w-[96vw] max-w-[96vw] md:max-w-[1024px] lg:max-w-[1100px] p-0 md:p-6 max-h-[90vh] overflow-y-auto">
+            <div className="flex flex-col">
+              <DialogHeader className="px-4 pt-4 md:px-0 md:pt-0">
+                <DialogTitle>{selectedAgent ? '编辑助理' : '创建助理'}</DialogTitle>
+              </DialogHeader>
+              <div className="px-4 pb-4 md:px-0 md:pb-0">
+                <AgentBuilder
+                  agent={selectedAgent ?? undefined}
+                  showTitle={false}
+                  onCancel={() => setOpenCreate(false)}
+                  onSave={() => { setOpenCreate(false); reload() }}
+                />
+              </div>
+            </div>
           </DialogContent>
         </Dialog>
       </div>
@@ -128,8 +148,14 @@ export default function StudioPage() {
         {myAgents.map((a) => (
           <div key={a.id} className="relative">
             <MyAgentCard agent={a} onEdit={() => { setSelectedAgent(a); setOpenCreate(true) }} onDelete={async ()=>{
-              await api.deleteAgent(a.id)
-              reload()
+              try {
+                await api.deleteAgent(a.id)
+                toast({ title: '已删除 Agent' })
+                reload()
+              } catch (error: any) {
+                const msg = typeof error?.message === 'string' && error.message.trim() ? error.message : '删除失败，请稍后重试'
+                toast({ title: '删除失败', description: msg })
+              }
             }} onToggle={() => reload()} onPublish={() => {
               const trigger = document.getElementById(`publish-${a.id}`)
               trigger?.click()
