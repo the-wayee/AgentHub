@@ -645,3 +645,156 @@ INSERT INTO public.users (id, nickname, email, phone, password, created_at, upda
 VALUES ('1', 'AgentHub-54ff8b', 'test@123.com', null,
         '$2a$10$rNwMm/EH6xwJatbFt9J8kuNpnY2LyjcNLCjNi9.yu9GFxlw9LJDkC', '2025-10-06 20:51:57.355564',
         '2025-10-06 20:51:57.355564', null, null, null, null);
+
+-- ==========================================
+-- RAG 知识库相关表
+-- ==========================================
+
+-- 可选：向量扩展（用于 knowledge_embedding.embedding 字段）
+-- 若数据库无权限安装扩展，可手动移除此语句
+-- CREATE EXTENSION IF NOT EXISTS vector;
+
+-- 知识库主表
+drop table if exists public.knowledge_base;
+create table if not exists public.knowledge_base
+(
+    id                 varchar(36)                         not null primary key,
+    user_id            varchar(36)                         not null,
+    name               varchar(255)                        not null,
+    description        text,
+    visibility         varchar(20) default 'PRIVATE',
+    status             varchar(20) default 'DRAFT',
+    publish_record_id  varchar(36),
+    published_at       timestamp,
+    created_at         timestamp default CURRENT_TIMESTAMP not null,
+    updated_at         timestamp default CURRENT_TIMESTAMP not null,
+    deleted_at         timestamp
+);
+
+comment on table public.knowledge_base is '知识库主表';
+comment on column public.knowledge_base.visibility is 'PRIVATE=仅自己可见, PUBLIC=公开知识库';
+comment on column public.knowledge_base.status is '知识库状态: 草稿/已提交/已通过/已驳回/已下架';
+comment on column public.knowledge_base.publish_record_id is '最新一次发布记录ID';
+
+create index if not exists idx_kb_user_id on public.knowledge_base (user_id);
+create index if not exists idx_kb_visibility on public.knowledge_base (visibility);
+create index if not exists idx_kb_status on public.knowledge_base (status);
+
+-- 知识库文件表
+drop table if exists public.knowledge_file;
+create table if not exists public.knowledge_file
+(
+    id                 varchar(36)                         not null primary key,
+    knowledge_base_id  varchar(36)                         not null references public.knowledge_base(id),
+    file_name          varchar(255)                        not null,
+    file_path          text                                not null,
+    file_type          varchar(50),
+    file_size          bigint,
+    status             varchar(20) default 'PENDING',
+    chunk_count        integer     default 0,
+    created_at         timestamp   default CURRENT_TIMESTAMP not null,
+    updated_at         timestamp   default CURRENT_TIMESTAMP not null,
+    deleted_at         timestamp
+);
+
+comment on table public.knowledge_file is '知识库文件表';
+comment on column public.knowledge_file.status is '文件状态：PENDING=待处理, PROCESSING=处理中, COMPLETED=已完成, FAILED=失败';
+
+create index if not exists idx_kf_kb_id on public.knowledge_file (knowledge_base_id);
+create index if not exists idx_kf_status on public.knowledge_file (status);
+
+-- 知识向量表
+drop table if exists public.knowledge_embedding;
+create table if not exists public.knowledge_embedding
+(
+    embedding_id  text        not null primary key,
+    file_id       varchar(36) not null references public.knowledge_file(id),
+    text          text        not null,
+    metadata      jsonb       default '{}'::jsonb,
+    embedding     text,
+    created_at    timestamp   default CURRENT_TIMESTAMP not null,
+    updated_at    timestamp   default CURRENT_TIMESTAMP not null,
+    deleted_at    timestamp
+);
+
+comment on table public.knowledge_embedding is '知识文件拆分后生成的向量信息';
+comment on column public.knowledge_embedding.metadata is '元数据（jsonb），包含来源、页码、文档ID等';
+
+create index if not exists idx_ke_file_id on public.knowledge_embedding (file_id);
+
+-- 知识库发布记录表
+drop table if exists public.knowledge_publish_record;
+create table if not exists public.knowledge_publish_record
+(
+    id                 varchar(36)                         not null primary key,
+    name               varchar(255)                        not null,
+    description        text,
+    knowledge_base_id  varchar(36)                         not null references public.knowledge_base(id),
+    version_number     varchar(20)                         default 'v1.0',
+    submitter_id       varchar(36)                         not null,
+    reviewer_id        varchar(36),
+    status             varchar(20)                         default 'REVIEWING',
+    reject_reason      text,
+    change_log         text,
+    reviewed_at        timestamp,
+    created_at         timestamp                           default CURRENT_TIMESTAMP not null,
+    updated_at         timestamp                           default CURRENT_TIMESTAMP not null,
+    deleted_at         timestamp
+);
+
+comment on table public.knowledge_publish_record is '知识库发布记录表（包含知识库字段快照，方便展示历史版本）';
+comment on column public.knowledge_publish_record.status is '审核状态: REVIEWING=审核中, APPROVED=通过, REJECTED=驳回';
+
+create index if not exists idx_kpr_kb_id on public.knowledge_publish_record (knowledge_base_id);
+create index if not exists idx_kpr_status on public.knowledge_publish_record (status);
+
+
+-- 用户知识库关联表
+create table user_knowledge
+(
+    id               varchar(36)                         not null
+        primary key,
+    user_id          varchar(36)                         not null,  -- 用户ID
+    knowledge_base_id varchar(36)                        not null,  -- 关联的知识库ID
+    name             varchar(255)                        not null,  -- 知识库名称快照
+    description      text,                                          -- 知识库描述快照
+    icon             varchar(255),                                   -- 知识库图标（可选）
+    version          varchar(50)                         not null,  -- 当前安装版本号
+    is_official      boolean      default false,                     -- 是否官方知识库
+    status           varchar(20)  default 'ACTIVE'        not null,  -- 状态：ACTIVE / DISABLED / REMOVED
+    metadata         jsonb,                                          -- 元信息，如安装时间、来源用户、备注等
+    last_synced_at   timestamp,                                      -- 最近同步时间（知识库更新同步）
+    created_at       timestamp     default CURRENT_TIMESTAMP not null,
+    updated_at       timestamp     default CURRENT_TIMESTAMP not null,
+    deleted_at       timestamp
+);
+
+comment on table user_knowledge is '用户知识库关联表，用于记录用户安装、使用的知识库';
+
+comment on column user_knowledge.id is '唯一ID';
+
+comment on column user_knowledge.user_id is '用户ID';
+
+comment on column user_knowledge.knowledge_base_id is '知识库ID';
+
+comment on column user_knowledge.name is '知识库名称快照';
+
+comment on column user_knowledge.description is '知识库描述快照';
+
+comment on column user_knowledge.icon is '知识库图标（用于展示）';
+
+comment on column user_knowledge.version is '当前安装的知识库版本号';
+
+comment on column user_knowledge.is_official is '是否为官方知识库';
+
+comment on column user_knowledge.status is '状态：ACTIVE=启用, DISABLED=停用, REMOVED=已卸载';
+
+comment on column user_knowledge.metadata is '元信息，JSON格式（例如安装方式、备注、邀请来源等）';
+
+comment on column user_knowledge.last_synced_at is '最近同步时间';
+
+comment on column user_knowledge.created_at is '创建时间';
+
+comment on column user_knowledge.updated_at is '更新时间';
+
+comment on column user_knowledge.deleted_at is '逻辑删除时间';
