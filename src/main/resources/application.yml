@@ -79,3 +79,15 @@ s3:
     secret-key: ${S3_ALIYUN_SECRET_KEY}
     bucket-name: ${S3_ALIYUN_BUCKET_NAME}
     region: ${S3_ALIYUN_REGION}
+
+knowledge:
+  chunk:
+    size: ${KNOWLEDGE_CHUNK_SIZE:1200}
+    overlap: ${KNOWLEDGE_CHUNK_OVERLAP:200}
+    max-tokens: ${KNOWLEDGE_CHUNK_MAX_TOKENS:800}
+  embedding:
+    protocol: ${KNOWLEDGE_EMBED_PROTOCOL:OPENAI}
+    base-url: ${KNOWLEDGE_EMBED_BASE_URL:https://api.siliconflow.cn/v1}
+    api-key: ${KNOWLEDGE_EMBED_API_KEY:}
+    model: ${KNOWLEDGE_EMBED_MODEL:text-embedding-3-small}
+    batch-size: ${KNOWLEDGE_EMBED_BATCH:8}

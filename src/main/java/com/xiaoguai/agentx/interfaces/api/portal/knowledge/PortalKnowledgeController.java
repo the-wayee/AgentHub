@@ -10,7 +10,9 @@ import com.xiaoguai.agentx.interfaces.dto.knowledge.CreateKnowledgeBaseRequest;
 import com.xiaoguai.agentx.interfaces.dto.knowledge.CreateKnowledgeFileRequest;
 import com.xiaoguai.agentx.interfaces.dto.knowledge.SubmitPublishRequest;
 import jakarta.validation.Valid;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -54,6 +56,13 @@ public class PortalKnowledgeController {
         return Result.success(knowledgeAppService.createKnowledgeFile(request, userId));
     }
 
+    @PostMapping(value = "/files/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public Result<KnowledgeFileDTO> uploadKnowledgeFile(@RequestParam("knowledgeBaseId") String knowledgeBaseId,
+                                                        @RequestPart("file") MultipartFile file) {
+        String userId = UserContext.getUserId();
+        return Result.success(knowledgeAppService.uploadKnowledgeFile(knowledgeBaseId, file, userId));
+    }
+
     @GetMapping("/{kbId}/files")
     public Result<List<KnowledgeFileDTO>> listKnowledgeFiles(@PathVariable String kbId) {
         String userId = UserContext.getUserId();
@@ -66,4 +75,3 @@ public class PortalKnowledgeController {
         return Result.success(knowledgeAppService.submitPublish(request, userId));
     }
 }
-

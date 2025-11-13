@@ -1,7 +1,7 @@
 package com.xiaoguai.agentx.application.knowledge.service;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiaoguai.agentx.application.knowledge.KnowledgeAssembler;
+import com.xiaoguai.agentx.application.knowledge.assembler.KnowledgeFileAssembler;
 import com.xiaoguai.agentx.application.knowledge.dto.KnowledgeBaseDTO;
 import com.xiaoguai.agentx.application.knowledge.dto.KnowledgeFileDTO;
 import com.xiaoguai.agentx.application.knowledge.dto.KnowledgePublishRecordDTO;
@@ -14,29 +14,42 @@ import com.xiaoguai.agentx.domain.knowledge.repository.KnowledgeBaseRepository;
 import com.xiaoguai.agentx.domain.knowledge.repository.KnowledgeFileRepository;
 import com.xiaoguai.agentx.domain.knowledge.repository.KnowledgePublishRecordRepository;
 import com.xiaoguai.agentx.domain.knowledge.service.KnowledgeDomainService;
+import com.xiaoguai.agentx.infrastrcture.exception.BusinessException;
 import com.xiaoguai.agentx.infrastrcture.exception.EntityNotFoundException;
+import com.xiaoguai.agentx.infrastrcture.s3.S3ObjectReference;
+import com.xiaoguai.agentx.infrastrcture.s3.S3ObjectStorageService;
 import com.xiaoguai.agentx.interfaces.dto.knowledge.CreateKnowledgeBaseRequest;
 import com.xiaoguai.agentx.interfaces.dto.knowledge.CreateKnowledgeFileRequest;
 import com.xiaoguai.agentx.interfaces.dto.knowledge.ReviewPublishRequest;
 import com.xiaoguai.agentx.interfaces.dto.knowledge.SubmitPublishRequest;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
+import java.util.*;
 
 @Service
 public class KnowledgeAppService {
 
+    private static final long MAX_UPLOAD_SIZE_BYTES = 20L * 1024 * 1024;
+
     private final KnowledgeDomainService knowledgeDomainService;
+    private final KnowledgeBaseRepository knowledgeBaseRepository;
+    private final KnowledgeFileRepository knowledgeFileRepository;
+    private final KnowledgeFileProcessingService knowledgeFileProcessingService;
+    private final S3ObjectStorageService storageService;
 
     public KnowledgeAppService(KnowledgeDomainService knowledgeDomainService, KnowledgeBaseRepository knowledgeBaseRepository,
                                KnowledgeFileRepository knowledgeFileRepository,
-                               KnowledgePublishRecordRepository publishRecordRepository) {
+                               KnowledgePublishRecordRepository publishRecordRepository,
+                               KnowledgeFileProcessingService knowledgeFileProcessingService,
+                               S3ObjectStorageService storageService) {
         this.knowledgeDomainService = knowledgeDomainService;
+        this.knowledgeBaseRepository = knowledgeBaseRepository;
+        this.knowledgeFileRepository = knowledgeFileRepository;
+        this.knowledgeFileProcessingService = knowledgeFileProcessingService;
+        this.storageService = storageService;
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -60,22 +73,47 @@ public class KnowledgeAppService {
 
     @Transactional(rollbackFor = Exception.class)
     public KnowledgeFileDTO createKnowledgeFile(CreateKnowledgeFileRequest request, String userId) {
-        KnowledgeBaseEntity kb = new KnowledgeBaseEntity();
-        if (kb == null || !Objects.equals(kb.getUserId(), userId)) {
-            throw new EntityNotFoundException("知识库不存在或无权限");
+        KnowledgeBaseEntity kb = getOwnedKnowledgeBase(request.getKnowledgeBaseId(), userId);
+        if (request.getFileSize() != null) {
+            validateFileSize(request.getFileSize());
         }
         KnowledgeFileEntity file = new KnowledgeFileEntity();
-        file.setKnowledgeBaseId(request.getKnowledgeBaseId());
+        file.setKnowledgeBaseId(kb.getId());
         file.setFileName(request.getFileName());
         file.setFilePath(request.getFilePath());
         file.setFileType(request.getFileType());
         file.setFileSize(request.getFileSize());
-        // todo insert
-        return null;
+        knowledgeFileRepository.checkInsert(file);
+        knowledgeFileProcessingService.enqueue(file);
+        return KnowledgeFileAssembler.toDTO(file);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public KnowledgeFileDTO uploadKnowledgeFile(String knowledgeBaseId, MultipartFile multipartFile, String userId) {
+        KnowledgeBaseEntity kb = getOwnedKnowledgeBase(knowledgeBaseId, userId);
+        if (multipartFile.isEmpty()) {
+            throw new BusinessException("文件不能为空");
+        }
+        validateFileSize(multipartFile.getSize());
+        String directory = "knowledge/" + knowledgeBaseId;
+        S3ObjectReference reference = storageService.upload(directory, multipartFile);
+        KnowledgeFileEntity file = new KnowledgeFileEntity();
+        file.setKnowledgeBaseId(kb.getId());
+        file.setFileName(reference.getFileName());
+        file.setFilePath(reference.getFileUrl());
+        file.setFileType(resolveFileType(reference.getFileName()));
+        file.setFileSize(reference.getSize());
+        knowledgeFileRepository.checkInsert(file);
+        knowledgeFileProcessingService.enqueue(file);
+        return KnowledgeFileAssembler.toDTO(file);
     }
 
     public List<KnowledgeFileDTO> listKnowledgeFiles(String kbId, String userId) {
-        return new ArrayList<>();
+        KnowledgeBaseEntity kb = getOwnedKnowledgeBase(kbId, userId);
+        return knowledgeFileRepository.selectList(
+                com.baomidou.mybatisplus.core.toolkit.Wrappers.<KnowledgeFileEntity>lambdaQuery()
+                        .eq(KnowledgeFileEntity::getKnowledgeBaseId, kb.getId())
+        ).stream().map(KnowledgeFileAssembler::toDTO).toList();
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -107,5 +145,23 @@ public class KnowledgeAppService {
         dto.setUpdatedAt(e.getUpdatedAt());
         return dto;
     }
-}
 
+    private KnowledgeBaseEntity getOwnedKnowledgeBase(String knowledgeBaseId, String userId) {
+        KnowledgeBaseEntity kb = knowledgeBaseRepository.selectById(knowledgeBaseId);
+        if (kb == null || !Objects.equals(kb.getUserId(), userId)) {
+            throw new EntityNotFoundException("知识库不存在或无权限");
+        }
+        return kb;
+    }
+
+    private void validateFileSize(long size) {
+        if (size > MAX_UPLOAD_SIZE_BYTES) {
+            throw new BusinessException("文件大小超过20MB限制");
+        }
+    }
+
+    private String resolveFileType(String fileName) {
+        String extension = StringUtils.getFilenameExtension(fileName);
+        return extension != null ? extension.toLowerCase(Locale.ROOT) : "txt";
+    }
+}
