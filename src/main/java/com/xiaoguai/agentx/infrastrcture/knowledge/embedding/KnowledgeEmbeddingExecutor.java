@@ -33,7 +33,7 @@ public class KnowledgeEmbeddingExecutor {
         for (int i = 0; i < segments.size(); i += batchSize) {
             List<TextSegment> batch = segments.subList(i, Math.min(i + batchSize, segments.size()));
             Response<List<Embedding>> response = embeddingModel.embedAll(batch);
-            if (response == null || response.content() == null || response.content().isEmpty()) {
+            if (response == null || response.content().isEmpty()) {
                 throw new BusinessException("嵌入模型返回为空");
             }
             result.addAll(response.content());

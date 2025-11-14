@@ -12,10 +12,6 @@ public class KnowledgeBaseDTO {
     private String description;
     private Visibility visibility;
     private KnowledgeBaseStatus status;
-    private String publishRecordId;
-    private LocalDateTime publishedAt;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
 
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
@@ -29,13 +25,5 @@ public class KnowledgeBaseDTO {
     public void setVisibility(Visibility visibility) { this.visibility = visibility; }
     public KnowledgeBaseStatus getStatus() { return status; }
     public void setStatus(KnowledgeBaseStatus status) { this.status = status; }
-    public String getPublishRecordId() { return publishRecordId; }
-    public void setPublishRecordId(String publishRecordId) { this.publishRecordId = publishRecordId; }
-    public LocalDateTime getPublishedAt() { return publishedAt; }
-    public void setPublishedAt(LocalDateTime publishedAt) { this.publishedAt = publishedAt; }
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 }
 

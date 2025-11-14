@@ -7,7 +7,9 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Maintains a Reactor sink so multiple subscribers can receive file status events in real time.
@@ -15,17 +17,24 @@ import java.util.Objects;
 @Component
 public class KnowledgeFileEventPublisher {
 
-    private final Sinks.Many<KnowledgeFileStatusEvent> sink =
-            Sinks.many().multicast().onBackpressureBuffer();
+    private final Map<String, Sinks.Many<KnowledgeFileStatusEvent>> sinkMap = new ConcurrentHashMap<>();
 
+    // 推送事件
     public void publish(KnowledgeFileStatusEvent event) {
         if (event.getTimestamp() == null) {
             event.setTimestamp(LocalDateTime.now());
         }
-        sink.tryEmitNext(event);
+        getSink(event.getFileId()).tryEmitNext(event);
     }
 
-    public Flux<KnowledgeFileStatusEvent> stream(String fileId) {
-        return sink.asFlux().filter(event -> Objects.equals(fileId, event.getFileId()));
+    // 订阅事件
+    public Flux<KnowledgeFileStatusEvent> subscribe(String fileId) {
+        return getSink(fileId).asFlux().filter(event -> Objects.equals(fileId, event.getFileId()));
+    }
+
+
+    private Sinks.Many<KnowledgeFileStatusEvent> getSink(String fileId) {
+        return sinkMap.computeIfAbsent(fileId,
+                id -> Sinks.many().replay().latest());
     }
 }

@@ -45,17 +45,26 @@ public class PortalKnowledgeController {
         return Result.success(knowledgeAppService.listMyKnowledges(userId));
     }
 
+    /**
+     * 获取已发布的知识库
+     */
     @GetMapping("/public")
     public Result<List<KnowledgeBaseDTO>> listPublicKnowledgeBases() {
         return Result.success(knowledgeAppService.listPublicKnowledgeBases());
     }
 
+    /**
+     * 创建文件
+     */
     @PostMapping("/files")
     public Result<KnowledgeFileDTO> createKnowledgeFile(@RequestBody @Valid CreateKnowledgeFileRequest request) {
         String userId = UserContext.getUserId();
         return Result.success(knowledgeAppService.createKnowledgeFile(request, userId));
     }
 
+    /**
+     * 上传文件
+     */
     @PostMapping(value = "/files/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public Result<KnowledgeFileDTO> uploadKnowledgeFile(@RequestParam("knowledgeBaseId") String knowledgeBaseId,
                                                         @RequestPart("file") MultipartFile file) {
@@ -63,12 +72,18 @@ public class PortalKnowledgeController {
         return Result.success(knowledgeAppService.uploadKnowledgeFile(knowledgeBaseId, file, userId));
     }
 
+    /**
+     * 获取知识库文件
+     */
     @GetMapping("/{kbId}/files")
     public Result<List<KnowledgeFileDTO>> listKnowledgeFiles(@PathVariable String kbId) {
         String userId = UserContext.getUserId();
         return Result.success(knowledgeAppService.listKnowledgeFiles(kbId, userId));
     }
 
+    /**
+     * 发布知识库
+     */
     @PostMapping("/publish")
     public Result<KnowledgePublishRecordDTO> submitPublish(@RequestBody @Valid SubmitPublishRequest request) {
         String userId = UserContext.getUserId();

@@ -24,9 +24,12 @@ public class KnowledgeFileEventController {
         this.eventPublisher = eventPublisher;
     }
 
-    @GetMapping(value = "/{fileId}/events", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public Flux<ServerSentEvent<KnowledgeFileStatusEvent>> streamStatus(@PathVariable String fileId) {
-        return eventPublisher.stream(fileId)
+    /**
+     * 订阅文件
+     */
+    @GetMapping(value = "/{fileId}/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Flux<ServerSentEvent<KnowledgeFileStatusEvent>> subscribeFileStatus(@PathVariable String fileId) {
+        return eventPublisher.subscribe(fileId)
                 .map(event -> ServerSentEvent.<KnowledgeFileStatusEvent>builder()
                         .id(event.getTimestamp().toString())
                         .event(event.getStatus().name())
