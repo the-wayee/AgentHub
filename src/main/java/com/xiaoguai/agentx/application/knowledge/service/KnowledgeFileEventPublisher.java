@@ -27,11 +27,24 @@ public class KnowledgeFileEventPublisher {
         getSink(event.getFileId()).tryEmitNext(event);
     }
 
-    // 订阅事件
+    // 订阅事件，调用方可自行 takeUntil
     public Flux<KnowledgeFileStatusEvent> subscribe(String fileId) {
-        return getSink(fileId).asFlux().filter(event -> Objects.equals(fileId, event.getFileId()));
+        return getSink(fileId)
+                .asFlux()
+                .filter(event -> Objects.equals(fileId, event.getFileId()));
     }
 
+    // 自动在文件进入终态(COMPLETED/FAILED)后结束的 Flux
+    public Flux<KnowledgeFileStatusEvent> subscribeUntilTerminal(String fileId) {
+        return subscribe(fileId).takeUntil(this::isTerminal);
+    }
+
+    private boolean isTerminal(KnowledgeFileStatusEvent event) {
+        return event.getStatus() != null && switch (event.getStatus()) {
+            case COMPLETED, FAILED -> true;
+            default -> false;
+        };
+    }
 
     private Sinks.Many<KnowledgeFileStatusEvent> getSink(String fileId) {
         return sinkMap.computeIfAbsent(fileId,

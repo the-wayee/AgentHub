@@ -24,6 +24,7 @@ import dev.langchain4j.store.embedding.EmbeddingStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.io.InputStream;
 import java.time.LocalDateTime;
@@ -50,6 +51,7 @@ public class KnowledgeFileProcessingService {
     private final KnowledgeFileEventPublisher eventPublisher;
     private final ObjectMapper objectMapper;
     private final EmbeddingStore<TextSegment> embeddingStore;
+    private final TransactionTemplate transactionTemplate;
 
     public KnowledgeFileProcessingService(ExecutorService executorService,
                                           KnowledgeFileRepository knowledgeFileRepository,
@@ -59,7 +61,8 @@ public class KnowledgeFileProcessingService {
                                           S3ObjectStorageService storageService,
                                           KnowledgeFileEventPublisher eventPublisher,
                                           ObjectMapper objectMapper,
-                                          EmbeddingStore<TextSegment> embeddingStore) {
+                                          EmbeddingStore<TextSegment> embeddingStore,
+                                          TransactionTemplate transactionTemplate) {
         this.executorService = executorService;
         this.knowledgeFileRepository = knowledgeFileRepository;
         this.knowledgeEmbeddingRepository = knowledgeEmbeddingRepository;
@@ -69,6 +72,7 @@ public class KnowledgeFileProcessingService {
         this.eventPublisher = eventPublisher;
         this.objectMapper = objectMapper;
         this.embeddingStore = embeddingStore;
+        this.transactionTemplate = transactionTemplate;
     }
 
     /**
@@ -86,7 +90,7 @@ public class KnowledgeFileProcessingService {
     private void processSplittingStage(String fileId) {
         try {
             // 文件上传完成，转换拆分状态
-            if (!transition(fileId, KnowledgeFileStatus.SPLITTING, KnowledgeFileStatus.UPLOADING, KnowledgeFileStatus.PENDING)) {
+            if (!transitionWithTx(fileId, KnowledgeFileStatus.SPLITTING, KnowledgeFileStatus.UPLOADING, KnowledgeFileStatus.PENDING)) {
                 LOGGER.info("Skip splitting stage for {} because it is not ready", fileId);
                 return;
             }
@@ -120,7 +124,7 @@ public class KnowledgeFileProcessingService {
      */
     private void processEmbeddingStage(String fileId, List<TextSegment> segments) {
         try {
-            if (!transition(fileId, KnowledgeFileStatus.EMBEDDING, KnowledgeFileStatus.SPLITTING)) {
+            if (!transitionWithTx(fileId, KnowledgeFileStatus.EMBEDDING, KnowledgeFileStatus.SPLITTING)) {
                 LOGGER.info("Skip embedding stage for {} because state is invalid", fileId);
                 return;
             }
@@ -128,7 +132,7 @@ public class KnowledgeFileProcessingService {
             List<Embedding> embeddings = embeddingExecutor.embedAll(segments);
             persistEmbeddings(fileId, segments, embeddings);
             updateChunkCount(fileId, embeddings.size());
-            if (!transition(fileId, KnowledgeFileStatus.COMPLETED, KnowledgeFileStatus.EMBEDDING)) {
+            if (!transitionWithTx(fileId, KnowledgeFileStatus.COMPLETED, KnowledgeFileStatus.EMBEDDING)) {
                 LOGGER.warn("Failed to mark knowledge file {} as COMPLETED", fileId);
                 return;
             }
@@ -144,11 +148,10 @@ public class KnowledgeFileProcessingService {
             throw new BusinessException("嵌入数量与文本分块数量不一致");
         }
 
-        // 清理旧数据
-        knowledgeEmbeddingRepository.delete(
+        transactionTemplate.executeWithoutResult(status -> knowledgeEmbeddingRepository.delete(
                 Wrappers.<KnowledgeEmbeddingEntity>lambdaQuery()
                         .eq(KnowledgeEmbeddingEntity::getFileId, fileId)
-        );
+        ));
 
         List<String> ids = new ArrayList<>(embeddings.size());
         List<TextSegment> enrichedSegments = new ArrayList<>(embeddings.size());
@@ -164,27 +167,30 @@ public class KnowledgeFileProcessingService {
         // 将向量批量写入 pgvector store
         embeddingStore.addAll(ids, embeddings, enrichedSegments);
 
-        // 更新额外字段
-        for (int i = 0; i < ids.size(); i++) {
-            TextSegment segment = enrichedSegments.get(i);
-            KnowledgeEmbeddingEntity update = new KnowledgeEmbeddingEntity();
-            update.setFileId(fileId);
-            update.setText(segment.text());
-            update.setMetadata(segment.metadata() != null ? segment.metadata().toMap() : Map.of());
-            knowledgeEmbeddingRepository.checkUpdate(
-                    update,
-                    Wrappers.<KnowledgeEmbeddingEntity>lambdaUpdate()
-                            .eq(KnowledgeEmbeddingEntity::getEmbeddingId, ids.get(i))
-            );
-        }
+        transactionTemplate.executeWithoutResult(status -> {
+            for (int i = 0; i < ids.size(); i++) {
+                TextSegment segment = enrichedSegments.get(i);
+                KnowledgeEmbeddingEntity update = new KnowledgeEmbeddingEntity();
+                update.setFileId(fileId);
+                update.setText(segment.text());
+                update.setMetadata(segment.metadata() != null ? segment.metadata().toMap() : Map.of());
+                knowledgeEmbeddingRepository.checkUpdate(
+                        update,
+                        Wrappers.<KnowledgeEmbeddingEntity>lambdaUpdate()
+                                .eq(KnowledgeEmbeddingEntity::getEmbeddingId, ids.get(i))
+                );
+            }
+        });
     }
 
     private void updateChunkCount(String fileId, int chunkCount) {
-        LambdaUpdateWrapper<KnowledgeFileEntity> wrapper = Wrappers.<KnowledgeFileEntity>lambdaUpdate()
-                .eq(KnowledgeFileEntity::getId, fileId)
-                .set(KnowledgeFileEntity::getChunkCount, chunkCount)
-                .set(KnowledgeFileEntity::getUpdatedAt, LocalDateTime.now());
-        knowledgeFileRepository.update(null, wrapper);
+        transactionTemplate.executeWithoutResult(status -> {
+            LambdaUpdateWrapper<KnowledgeFileEntity> wrapper = Wrappers.<KnowledgeFileEntity>lambdaUpdate()
+                    .eq(KnowledgeFileEntity::getId, fileId)
+                    .set(KnowledgeFileEntity::getChunkCount, chunkCount)
+                    .set(KnowledgeFileEntity::getUpdatedAt, LocalDateTime.now());
+            knowledgeFileRepository.update(null, wrapper);
+        });
     }
 
     private void markFailed(String fileId, String errorMessage) {
@@ -193,27 +199,31 @@ public class KnowledgeFileProcessingService {
         eventPublisher.publish(buildEvent(fileId, KnowledgeFileStatus.FAILED, 0, message));
     }
 
-    private boolean transition(String fileId, KnowledgeFileStatus targetStatus, KnowledgeFileStatus... previewStatus) {
-        LambdaUpdateWrapper<KnowledgeFileEntity> wrapper = Wrappers.<KnowledgeFileEntity>lambdaUpdate()
-                .eq(KnowledgeFileEntity::getId, fileId)
-                .in(KnowledgeFileEntity::getStatus, (Object[]) previewStatus)
-                .set(KnowledgeFileEntity::getStatus, targetStatus)
-                .set(KnowledgeFileEntity::getUpdatedAt, LocalDateTime.now());
-        return knowledgeFileRepository.update(null, wrapper) > 0;
+    private boolean transitionWithTx(String fileId, KnowledgeFileStatus targetStatus, KnowledgeFileStatus... previewStatus) {
+        return Boolean.TRUE.equals(transactionTemplate.execute(status -> {
+            LambdaUpdateWrapper<KnowledgeFileEntity> wrapper = Wrappers.<KnowledgeFileEntity>lambdaUpdate()
+                    .eq(KnowledgeFileEntity::getId, fileId)
+                    .in(KnowledgeFileEntity::getStatus, (Object[]) previewStatus)
+                    .set(KnowledgeFileEntity::getStatus, targetStatus)
+                    .set(KnowledgeFileEntity::getUpdatedAt, LocalDateTime.now());
+            return knowledgeFileRepository.update(null, wrapper) > 0;
+        }));
     }
 
     private void transitionToFailed(String fileId) {
-        LambdaUpdateWrapper<KnowledgeFileEntity> wrapper = Wrappers.<KnowledgeFileEntity>lambdaUpdate()
-                .eq(KnowledgeFileEntity::getId, fileId)
-                .in(KnowledgeFileEntity::getStatus,
-                        KnowledgeFileStatus.PENDING,
-                        KnowledgeFileStatus.UPLOADING,
-                        KnowledgeFileStatus.SPLITTING,
-                        KnowledgeFileStatus.EMBEDDING,
-                        KnowledgeFileStatus.PROCESSING)
-                .set(KnowledgeFileEntity::getStatus, KnowledgeFileStatus.FAILED)
-                .set(KnowledgeFileEntity::getUpdatedAt, LocalDateTime.now());
-        knowledgeFileRepository.update(null, wrapper);
+        transactionTemplate.executeWithoutResult(status -> {
+            LambdaUpdateWrapper<KnowledgeFileEntity> wrapper = Wrappers.<KnowledgeFileEntity>lambdaUpdate()
+                    .eq(KnowledgeFileEntity::getId, fileId)
+                    .in(KnowledgeFileEntity::getStatus,
+                            KnowledgeFileStatus.PENDING,
+                            KnowledgeFileStatus.UPLOADING,
+                            KnowledgeFileStatus.SPLITTING,
+                            KnowledgeFileStatus.EMBEDDING,
+                            KnowledgeFileStatus.PROCESSING)
+                    .set(KnowledgeFileEntity::getStatus, KnowledgeFileStatus.FAILED)
+                    .set(KnowledgeFileEntity::getUpdatedAt, LocalDateTime.now());
+            knowledgeFileRepository.update(null, wrapper);
+        });
     }
 
     private KnowledgeFileStatusEvent buildEvent(String fileId, KnowledgeFileStatus status, int progress, String message) {

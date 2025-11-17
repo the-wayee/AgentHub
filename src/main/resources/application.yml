@@ -74,10 +74,10 @@ logging:
 s3:
   provider: aliyun # 服务提供商
   aliyun:
-    endpoint: ${S3_ALIYUN_ENDPOINT}
-    access-key: ${S3_ALIYUN_ACCESS_KEY}
-    secret-key: ${S3_ALIYUN_SECRET_KEY}
-    bucket-name: ${S3_ALIYUN_BUCKET_NAME}
+    endpoint: ${S3_ALIYUN_ENDPOINT:xxx}
+    access-key: ${S3_ALIYUN_ACCESS_KEY:xxx}
+    secret-key: ${S3_ALIYUN_SECRET_KEY:xxx}
+    bucket-name: ${S3_ALIYUN_BUCKET_NAME:xxx}
     region: ${S3_ALIYUN_REGION}
 
 knowledge:

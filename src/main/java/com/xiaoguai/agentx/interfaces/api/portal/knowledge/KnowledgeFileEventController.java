@@ -29,7 +29,7 @@ public class KnowledgeFileEventController {
      */
     @GetMapping(value = "/{fileId}/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<ServerSentEvent<KnowledgeFileStatusEvent>> subscribeFileStatus(@PathVariable String fileId) {
-        return eventPublisher.subscribe(fileId)
+        return eventPublisher.subscribeUntilTerminal(fileId)
                 .map(event -> ServerSentEvent.<KnowledgeFileStatusEvent>builder()
                         .id(event.getTimestamp().toString())
                         .event(event.getStatus().name())
