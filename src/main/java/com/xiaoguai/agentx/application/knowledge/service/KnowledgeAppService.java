@@ -1,12 +1,15 @@
 package com.xiaoguai.agentx.application.knowledge.service;
 
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.xiaoguai.agentx.application.knowledge.KnowledgeAssembler;
 import com.xiaoguai.agentx.application.knowledge.assembler.KnowledgeFileAssembler;
 import com.xiaoguai.agentx.application.knowledge.dto.KnowledgeBaseDTO;
 import com.xiaoguai.agentx.application.knowledge.dto.KnowledgeFileDTO;
 import com.xiaoguai.agentx.application.knowledge.dto.KnowledgePublishRecordDTO;
 import com.xiaoguai.agentx.domain.knowledge.constants.KnowledgeBaseStatus;
+import com.xiaoguai.agentx.domain.knowledge.constants.KnowledgeFileStatus;
 import com.xiaoguai.agentx.domain.knowledge.constants.KnowledgePublishStatus;
+import com.xiaoguai.agentx.domain.knowledge.constants.Visibility;
 import com.xiaoguai.agentx.domain.knowledge.model.KnowledgeBaseEntity;
 import com.xiaoguai.agentx.domain.knowledge.model.KnowledgeFileEntity;
 import com.xiaoguai.agentx.domain.knowledge.model.KnowledgePublishRecordEntity;
@@ -22,12 +25,15 @@ import com.xiaoguai.agentx.interfaces.dto.knowledge.CreateKnowledgeBaseRequest;
 import com.xiaoguai.agentx.interfaces.dto.knowledge.CreateKnowledgeFileRequest;
 import com.xiaoguai.agentx.interfaces.dto.knowledge.ReviewPublishRequest;
 import com.xiaoguai.agentx.interfaces.dto.knowledge.SubmitPublishRequest;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
 
 @Service
 public class KnowledgeAppService {
@@ -37,6 +43,7 @@ public class KnowledgeAppService {
     private final KnowledgeDomainService knowledgeDomainService;
     private final KnowledgeBaseRepository knowledgeBaseRepository;
     private final KnowledgeFileRepository knowledgeFileRepository;
+    private final KnowledgePublishRecordRepository knowledgePublishRecordRepository;
     private final KnowledgeFileProcessingService knowledgeFileProcessingService;
     private final S3ObjectStorageService storageService;
 
@@ -48,6 +55,7 @@ public class KnowledgeAppService {
         this.knowledgeDomainService = knowledgeDomainService;
         this.knowledgeBaseRepository = knowledgeBaseRepository;
         this.knowledgeFileRepository = knowledgeFileRepository;
+        this.knowledgePublishRecordRepository = publishRecordRepository;
         this.knowledgeFileProcessingService = knowledgeFileProcessingService;
         this.storageService = storageService;
     }
@@ -64,11 +72,20 @@ public class KnowledgeAppService {
     }
 
     public List<KnowledgeBaseDTO> listMyKnowledges(String userId) {
-        return new ArrayList<>();
+        return knowledgeBaseRepository.selectList(
+                Wrappers.<KnowledgeBaseEntity>lambdaQuery()
+                        .eq(KnowledgeBaseEntity::getUserId, userId)
+                        .orderByDesc(KnowledgeBaseEntity::getUpdatedAt)
+        ).stream().map(KnowledgeAssembler::toDTO).toList();
     }
 
     public List<KnowledgeBaseDTO> listPublicKnowledgeBases() {
-        return new ArrayList<>();
+        return knowledgeBaseRepository.selectList(
+                Wrappers.<KnowledgeBaseEntity>lambdaQuery()
+                        .eq(KnowledgeBaseEntity::getVisibility, Visibility.PUBLIC)
+                        .eq(KnowledgeBaseEntity::getStatus, KnowledgeBaseStatus.APPROVED)
+                        .orderByDesc(KnowledgeBaseEntity::getPublishedAt)
+        ).stream().map(KnowledgeAssembler::toDTO).toList();
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -83,6 +100,7 @@ public class KnowledgeAppService {
         file.setFilePath(request.getFilePath());
         file.setFileType(request.getFileType());
         file.setFileSize(request.getFileSize());
+        file.setStatus(KnowledgeFileStatus.PENDING);
         knowledgeFileRepository.checkInsert(file);
         knowledgeFileProcessingService.enqueue(file);
         return KnowledgeFileAssembler.toDTO(file);
@@ -103,6 +121,7 @@ public class KnowledgeAppService {
         file.setFilePath(reference.getFileUrl());
         file.setFileType(resolveFileType(reference.getFileName()));
         file.setFileSize(reference.getSize());
+        file.setStatus(KnowledgeFileStatus.UPLOADING);
         knowledgeFileRepository.checkInsert(file);
         knowledgeFileProcessingService.enqueue(file);
         return KnowledgeFileAssembler.toDTO(file);
@@ -111,19 +130,63 @@ public class KnowledgeAppService {
     public List<KnowledgeFileDTO> listKnowledgeFiles(String kbId, String userId) {
         KnowledgeBaseEntity kb = getOwnedKnowledgeBase(kbId, userId);
         return knowledgeFileRepository.selectList(
-                com.baomidou.mybatisplus.core.toolkit.Wrappers.<KnowledgeFileEntity>lambdaQuery()
+                Wrappers.<KnowledgeFileEntity>lambdaQuery()
                         .eq(KnowledgeFileEntity::getKnowledgeBaseId, kb.getId())
+                        .orderByDesc(KnowledgeFileEntity::getCreatedAt)
         ).stream().map(KnowledgeFileAssembler::toDTO).toList();
     }
 
     @Transactional(rollbackFor = Exception.class)
     public KnowledgePublishRecordDTO submitPublish(SubmitPublishRequest request, String userId) {
-        return null;
+        KnowledgeBaseEntity kb = getOwnedKnowledgeBase(request.getKnowledgeBaseId(), userId);
+        KnowledgePublishRecordEntity record = new KnowledgePublishRecordEntity();
+        record.setName(kb.getName());
+        record.setDescription(kb.getDescription());
+        record.setKnowledgeBaseId(kb.getId());
+        record.setVersionNumber(resolveVersionNumber(request.getVersionNumber()));
+        record.setSubmitterId(userId);
+        record.setChangeLog(request.getChangeLog());
+        record.setStatus(KnowledgePublishStatus.REVIEWING);
+        knowledgePublishRecordRepository.checkInsert(record);
+
+        kb.setStatus(KnowledgeBaseStatus.SUBMITTED);
+        kb.setPublishRecordId(record.getId());
+        knowledgeDomainService.updateKnowLedge(kb);
+        return toDTO(record);
     }
 
     @Transactional(rollbackFor = Exception.class)
     public void reviewPublish(ReviewPublishRequest request, String reviewerId) {
+        KnowledgePublishRecordEntity record = knowledgePublishRecordRepository.selectById(request.getRecordId());
+        if (record == null) {
+            throw new EntityNotFoundException("发布记录不存在");
+        }
+        if (record.getStatus() != KnowledgePublishStatus.REVIEWING) {
+            throw new BusinessException("当前发布记录已审核");
+        }
+        KnowledgeBaseEntity kb = knowledgeBaseRepository.selectById(record.getKnowledgeBaseId());
+        if (kb == null) {
+            throw new EntityNotFoundException("关联的知识库不存在");
+        }
 
+        record.setReviewerId(reviewerId);
+        record.setReviewedAt(LocalDateTime.now());
+        if (request.isApprove()) {
+            record.setStatus(KnowledgePublishStatus.APPROVED);
+            record.setRejectReason(null);
+            kb.setStatus(KnowledgeBaseStatus.APPROVED);
+            kb.setPublishRecordId(record.getId());
+            kb.setPublishedAt(LocalDateTime.now());
+        } else {
+            if (!StringUtils.hasText(request.getRejectReason())) {
+                throw new BusinessException("请填写拒绝原因");
+            }
+            record.setStatus(KnowledgePublishStatus.REJECTED);
+            record.setRejectReason(request.getRejectReason());
+            kb.setStatus(KnowledgeBaseStatus.REJECTED);
+        }
+        knowledgePublishRecordRepository.checkUpdateById(record);
+        knowledgeDomainService.updateKnowLedge(kb);
     }
 
 
@@ -163,5 +226,9 @@ public class KnowledgeAppService {
     private String resolveFileType(String fileName) {
         String extension = StringUtils.getFilenameExtension(fileName);
         return extension != null ? extension.toLowerCase(Locale.ROOT) : "txt";
+    }
+
+    private String resolveVersionNumber(String versionNumber) {
+        return StringUtils.hasText(versionNumber) ? versionNumber : "v1.0";
     }
 }

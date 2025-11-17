@@ -17,8 +17,10 @@ import com.xiaoguai.agentx.infrastrcture.exception.BusinessException;
 import com.xiaoguai.agentx.infrastrcture.knowledge.document.DocumentProcessingService;
 import com.xiaoguai.agentx.infrastrcture.knowledge.embedding.KnowledgeEmbeddingExecutor;
 import com.xiaoguai.agentx.infrastrcture.s3.S3ObjectStorageService;
+import dev.langchain4j.data.document.Metadata;
 import dev.langchain4j.data.embedding.Embedding;
 import dev.langchain4j.data.segment.TextSegment;
+import dev.langchain4j.store.embedding.EmbeddingStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -47,6 +49,7 @@ public class KnowledgeFileProcessingService {
     private final S3ObjectStorageService storageService;
     private final KnowledgeFileEventPublisher eventPublisher;
     private final ObjectMapper objectMapper;
+    private final EmbeddingStore<TextSegment> embeddingStore;
 
     public KnowledgeFileProcessingService(ExecutorService executorService,
                                           KnowledgeFileRepository knowledgeFileRepository,
@@ -55,7 +58,8 @@ public class KnowledgeFileProcessingService {
                                           KnowledgeEmbeddingExecutor embeddingExecutor,
                                           S3ObjectStorageService storageService,
                                           KnowledgeFileEventPublisher eventPublisher,
-                                          ObjectMapper objectMapper) {
+                                          ObjectMapper objectMapper,
+                                          EmbeddingStore<TextSegment> embeddingStore) {
         this.executorService = executorService;
         this.knowledgeFileRepository = knowledgeFileRepository;
         this.knowledgeEmbeddingRepository = knowledgeEmbeddingRepository;
@@ -64,6 +68,7 @@ public class KnowledgeFileProcessingService {
         this.storageService = storageService;
         this.eventPublisher = eventPublisher;
         this.objectMapper = objectMapper;
+        this.embeddingStore = embeddingStore;
     }
 
     /**
@@ -71,42 +76,65 @@ public class KnowledgeFileProcessingService {
      */
     public void enqueue(KnowledgeFileEntity fileEntity) {
         KnowledgeFileStatus status = fileEntity.getStatus() != null ? fileEntity.getStatus() : KnowledgeFileStatus.PENDING;
-        KnowledgeFileStatusEvent event = buildEvent(fileEntity.getId(), status, 0, "等待处理");
-        eventPublisher.publish(event);
-        executorService.submit(() -> process(fileEntity.getId()));
+        eventPublisher.publish(buildEvent(fileEntity.getId(), status, 0, "等待任务执行"));
+        executorService.submit(() -> processSplittingStage(fileEntity.getId()));
     }
 
-    private void process(String fileId) {
-        if (!transition(fileId, KnowledgeFileStatus.PENDING, KnowledgeFileStatus.PROCESSING)) {
-            LOGGER.info("Skip knowledge file {} because status is not PENDING", fileId);
-            return;
-        }
-        eventPublisher.publish(buildEvent(fileId, KnowledgeFileStatus.PROCESSING, 10, "开始解析文件"));
-        KnowledgeFileEntity file = knowledgeFileRepository.selectById(fileId);
-        if (file == null) {
-            LOGGER.warn("Knowledge file {} removed before processing", fileId);
-            return;
-        }
-        String objectKey = storageService.extractObjectKey(file.getFilePath());
-        try (InputStream inputStream = storageService.openStream(objectKey)) {
-            List<TextSegment> segments = documentProcessingService.parseAndSplit(
-                    inputStream,
-                    file.getFileType()
-            );
-            if (segments.isEmpty()) {
-                throw new BusinessException("未在文件中解析到可用文本");
+    /**
+     * Stage 1: 文档拆分
+     */
+    private void processSplittingStage(String fileId) {
+        try {
+            // 文件上传完成，转换拆分状态
+            if (!transition(fileId, KnowledgeFileStatus.SPLITTING, KnowledgeFileStatus.UPLOADING, KnowledgeFileStatus.PENDING)) {
+                LOGGER.info("Skip splitting stage for {} because it is not ready", fileId);
+                return;
             }
-            eventPublisher.publish(buildEvent(fileId, KnowledgeFileStatus.PROCESSING, 40, "拆分完成,开始嵌入"));
+            // 通知前端进度
+            eventPublisher.publish(buildEvent(fileId, KnowledgeFileStatus.SPLITTING, 20, "开始拆分文档"));
 
+            KnowledgeFileEntity file = knowledgeFileRepository.selectById(fileId);
+            if (file == null) {
+                LOGGER.warn("Knowledge file {} removed before splitting", fileId);
+                return;
+            }
+            List<TextSegment> segments;
+            String objectKey = storageService.extractObjectKey(file.getFilePath());
+            try (InputStream inputStream = storageService.openStream(objectKey)) {
+                // 文档拆分
+                segments = documentProcessingService.parseAndSplit(inputStream, file.getFileType());
+            }
+            if (segments.isEmpty()) {
+                throw new BusinessException("未在文件中解析到可用片段");
+            }
+            eventPublisher.publish(buildEvent(fileId, KnowledgeFileStatus.SPLITTING, 50, "拆分完成，等待向量化"));
+            executorService.submit(() -> processEmbeddingStage(fileId, segments));
+        } catch (Exception ex) {
+            LOGGER.error("Splitting stage failed for {}", fileId, ex);
+            markFailed(fileId, ex.getMessage());
+        }
+    }
+
+    /**
+     * Stage 2: 文档嵌入
+     */
+    private void processEmbeddingStage(String fileId, List<TextSegment> segments) {
+        try {
+            if (!transition(fileId, KnowledgeFileStatus.EMBEDDING, KnowledgeFileStatus.SPLITTING)) {
+                LOGGER.info("Skip embedding stage for {} because state is invalid", fileId);
+                return;
+            }
+            eventPublisher.publish(buildEvent(fileId, KnowledgeFileStatus.EMBEDDING, 70, "向量化处理中"));
             List<Embedding> embeddings = embeddingExecutor.embedAll(segments);
             persistEmbeddings(fileId, segments, embeddings);
             updateChunkCount(fileId, embeddings.size());
-            if (!transition(fileId, KnowledgeFileStatus.PROCESSING, KnowledgeFileStatus.COMPLETED)) {
+            if (!transition(fileId, KnowledgeFileStatus.COMPLETED, KnowledgeFileStatus.EMBEDDING)) {
                 LOGGER.warn("Failed to mark knowledge file {} as COMPLETED", fileId);
+                return;
             }
             eventPublisher.publish(buildEvent(fileId, KnowledgeFileStatus.COMPLETED, 100, "处理完成"));
         } catch (Exception ex) {
-            LOGGER.error("Failed to process knowledge file {}", fileId, ex);
+            LOGGER.error("Embedding stage failed for {}", fileId, ex);
             markFailed(fileId, ex.getMessage());
         }
     }
@@ -115,23 +143,39 @@ public class KnowledgeFileProcessingService {
         if (embeddings.size() != segments.size()) {
             throw new BusinessException("嵌入数量与文本分块数量不一致");
         }
+
+        // 清理旧数据
         knowledgeEmbeddingRepository.delete(
-                Wrappers.<KnowledgeEmbeddingEntity>lambdaQuery().eq(KnowledgeEmbeddingEntity::getFileId, fileId)
+                Wrappers.<KnowledgeEmbeddingEntity>lambdaQuery()
+                        .eq(KnowledgeEmbeddingEntity::getFileId, fileId)
         );
-        List<KnowledgeEmbeddingEntity> batch = new ArrayList<>();
-        for (int i = 0; i < embeddings.size(); i++) {
-            Embedding embedding = embeddings.get(i);
-            TextSegment segment = segments.get(i);
-            KnowledgeEmbeddingEntity entity = new KnowledgeEmbeddingEntity();
-            entity.setEmbeddingId(UUID.randomUUID().toString());
-            entity.setFileId(fileId);
-            entity.setText(segment.text());
-            entity.setMetadata(segment.metadata() != null ? segment.metadata().toMap() : Map.of());
-            entity.setEmbedding(writeVector(embedding.vectorAsList()));
-            batch.add(entity);
+
+        List<String> ids = new ArrayList<>(embeddings.size());
+        List<TextSegment> enrichedSegments = new ArrayList<>(embeddings.size());
+        for (int i = 0; i < segments.size(); i++) {
+            ids.add(UUID.randomUUID().toString());
+            TextSegment original = segments.get(i);
+            Metadata metadata = original.metadata() != null ? original.metadata().copy() : new Metadata();
+            metadata.put("fileId", fileId);
+            metadata.put("chunkIndex", i);
+            enrichedSegments.add(TextSegment.textSegment(original.text(), metadata));
         }
-        for (KnowledgeEmbeddingEntity entity : batch) {
-            knowledgeEmbeddingRepository.checkInsert(entity);
+
+        // 将向量批量写入 pgvector store
+        embeddingStore.addAll(ids, embeddings, enrichedSegments);
+
+        // 更新额外字段
+        for (int i = 0; i < ids.size(); i++) {
+            TextSegment segment = enrichedSegments.get(i);
+            KnowledgeEmbeddingEntity update = new KnowledgeEmbeddingEntity();
+            update.setFileId(fileId);
+            update.setText(segment.text());
+            update.setMetadata(segment.metadata() != null ? segment.metadata().toMap() : Map.of());
+            knowledgeEmbeddingRepository.checkUpdate(
+                    update,
+                    Wrappers.<KnowledgeEmbeddingEntity>lambdaUpdate()
+                            .eq(KnowledgeEmbeddingEntity::getEmbeddingId, ids.get(i))
+            );
         }
     }
 
@@ -149,11 +193,11 @@ public class KnowledgeFileProcessingService {
         eventPublisher.publish(buildEvent(fileId, KnowledgeFileStatus.FAILED, 0, message));
     }
 
-    private boolean transition(String fileId, KnowledgeFileStatus expected, KnowledgeFileStatus target) {
+    private boolean transition(String fileId, KnowledgeFileStatus targetStatus, KnowledgeFileStatus... previewStatus) {
         LambdaUpdateWrapper<KnowledgeFileEntity> wrapper = Wrappers.<KnowledgeFileEntity>lambdaUpdate()
                 .eq(KnowledgeFileEntity::getId, fileId)
-                .eq(KnowledgeFileEntity::getStatus, expected)
-                .set(KnowledgeFileEntity::getStatus, target)
+                .in(KnowledgeFileEntity::getStatus, (Object[]) previewStatus)
+                .set(KnowledgeFileEntity::getStatus, targetStatus)
                 .set(KnowledgeFileEntity::getUpdatedAt, LocalDateTime.now());
         return knowledgeFileRepository.update(null, wrapper) > 0;
     }
@@ -161,7 +205,12 @@ public class KnowledgeFileProcessingService {
     private void transitionToFailed(String fileId) {
         LambdaUpdateWrapper<KnowledgeFileEntity> wrapper = Wrappers.<KnowledgeFileEntity>lambdaUpdate()
                 .eq(KnowledgeFileEntity::getId, fileId)
-                .in(KnowledgeFileEntity::getStatus, KnowledgeFileStatus.PENDING, KnowledgeFileStatus.PROCESSING)
+                .in(KnowledgeFileEntity::getStatus,
+                        KnowledgeFileStatus.PENDING,
+                        KnowledgeFileStatus.UPLOADING,
+                        KnowledgeFileStatus.SPLITTING,
+                        KnowledgeFileStatus.EMBEDDING,
+                        KnowledgeFileStatus.PROCESSING)
                 .set(KnowledgeFileEntity::getStatus, KnowledgeFileStatus.FAILED)
                 .set(KnowledgeFileEntity::getUpdatedAt, LocalDateTime.now());
         knowledgeFileRepository.update(null, wrapper);

@@ -87,7 +87,18 @@ knowledge:
     max-tokens: ${KNOWLEDGE_CHUNK_MAX_TOKENS:800}
   embedding:
     protocol: ${KNOWLEDGE_EMBED_PROTOCOL:OPENAI}
-    base-url: ${KNOWLEDGE_EMBED_BASE_URL:xxx}
-    api-key: ${KNOWLEDGE_EMBED_API_KEY:xxx}
-    model: ${KNOWLEDGE_EMBED_MODEL:xxx}
+    base-url: ${KNOWLEDGE_EMBED_BASE_URL:https://dashscope.aliyuncs.com/compatible-mode/v1}
+    api-key: ${KNOWLEDGE_EMBED_API_KEY:sk-6dc95137dedf4993a217fb19148aa330}
+    model: ${KNOWLEDGE_EMBED_MODEL:text-embedding-v4}
     batch-size: ${KNOWLEDGE_EMBED_BATCH:8}
+  vector-store:
+    host: ${DB_HOST:localhost}
+    port: ${DB_PORT:5432}
+    database: ${DB_NAME:xxx}
+    user: ${DB_USERNAME:xxx}
+    password: ${DB_PASSWORD:xxx}
+    table: ${KNOWLEDGE_VECTOR_TABLE:xxx}
+    dimension: ${KNOWLEDGE_VECTOR_DIMENSION:1024}
+    create-table: ${KNOWLEDGE_VECTOR_CREATE_TABLE:true}
+    use-index: ${KNOWLEDGE_VECTOR_USE_INDEX:true}
+    index-list-size: ${KNOWLEDGE_VECTOR_INDEX_LIST_SIZE:100}
